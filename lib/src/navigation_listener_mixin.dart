@@ -18,7 +18,7 @@ mixin NavigationListenerMixin {
         .listen(_didUpdateRoute);
   }
 
-  void _didUpdateRoute(MainRoute currentRoute) {
+  void _didUpdateRoute(DefaultRoute currentRoute) {
     // Do not update if page is being closed.
     if (mounted == false) return;
     // Get the name of the current page.
@@ -70,7 +70,7 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
     super.dispose();
   }
 
-  void _didUpdateRoute(MainRoute currentRoute) {
+  void _didUpdateRoute(DefaultRoute currentRoute) {
     // Do not update if page is being closed.
     if (mounted == false) return;
     // Get the name of the current page.
@@ -120,7 +120,7 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
     super.dispose();
   }
 
-  void _didUpdateRoute(MainRoute currentRoute) {
+  void _didUpdateRoute(DefaultRoute currentRoute) {
     // Do not update if page is being closed.
     if (mounted == false) return;
     // Get the name of the current page.

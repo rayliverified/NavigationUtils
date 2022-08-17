@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'navigation_delegate.dart';
 import 'route_builders/transparent_route.dart';
 
-typedef NavigationPageFactory = Widget Function(
-    BuildContext context, MainRoute routeData, Map<String, dynamic> globalData);
+typedef NavigationPageFactory = Widget Function(BuildContext context,
+    DefaultRoute routeData, Map<String, dynamic> globalData);
 
 class NavigationData {
   final String? label;
@@ -53,11 +53,11 @@ class NavigationBuilder {
       this.pageBuilder});
 
   List<Page> build(BuildContext context) {
-    MainRouterDelegate? mainRouterDelegate =
-        (Router.of(context).routerDelegate as MainRouterDelegate);
+    DefaultRouterDelegate? mainRouterDelegate =
+        (Router.of(context).routerDelegate as DefaultRouterDelegate);
     List<Page> pages = [];
     for (Object route in routeDataList) {
-      if (route is MainRoute) {
+      if (route is DefaultRoute) {
         NavigationData? navigationData;
 
         // Named routing.

@@ -5,17 +5,18 @@ import 'navigation_delegate.dart';
 
 /// The RouteInformationParser takes the RouteInformation
 /// from a RouteInformationProvider and parses it into a user-defined data type.
-class MainRouteInformationParser extends RouteInformationParser<MainRoute> {
+class MainRouteInformationParser extends RouteInformationParser<DefaultRoute> {
   Uri routeUri = Uri();
   Uri initialRouteUri = Uri();
   bool initialized = false;
 
-  MainRoute initialRouteData;
+  DefaultRoute initialRouteData;
 
   MainRouteInformationParser({required this.initialRouteData});
 
   @override
-  Future<MainRoute> parseRouteInformation(RouteInformation routeInformation) {
+  Future<DefaultRoute> parseRouteInformation(
+      RouteInformation routeInformation) {
     // Parse URL into URI.
     try {
       routeUri = Uri.parse(routeInformation.location ?? '');
@@ -31,7 +32,7 @@ class MainRouteInformationParser extends RouteInformationParser<MainRoute> {
       return SynchronousFuture(initialRouteData);
     }
 
-    return SynchronousFuture(MainRoute(
+    return SynchronousFuture(DefaultRoute(
         path: routeUri.path, queryParameters: routeUri.queryParameters));
   }
 }
