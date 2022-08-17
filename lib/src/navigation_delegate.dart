@@ -3,6 +3,8 @@ import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 
+import 'navigation_builder.dart';
+
 class DefaultRoute extends RouteSettings {
   final String label;
   final String path;
@@ -49,7 +51,7 @@ class DefaultRoute extends RouteSettings {
   int get hashCode => label.hashCode * path.hashCode;
 
   @override
-  String toString() => 'Route(label: $label, path: $path)';
+  String toString() => 'Route(label: $label, path: $path, name: $name)';
 
   operator [](String key) => queryParameters[key];
 
@@ -106,6 +108,8 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
 
   Map<String, dynamic> globalData = {};
 
+  List<NavigationData> namedRoutes = [];
+
   /// Internal method that takes a Navigator initial route
   /// and maps to a list of routes.
   ///
@@ -123,6 +127,7 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   @protected
   Future<void> setNewRoutePath(DefaultRoute configuration) async {
+    debugPrint('SetNewRoutePath: ${configuration}');
     // Do not set empty route.
     if (configuration.label.isEmpty && configuration.path.isEmpty) return;
     // Handle InitialRoutePath logic here. Adding a page here ensures
@@ -200,7 +205,11 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
       LinkedHashMap();
 
   Future<dynamic> push(DefaultRoute path) async {
-    if (_mainRoutes.contains(path)) return;
+    if (_mainRoutes.contains(path)) {
+      _mainRoutes.remove(path);
+      _mainRoutes.add(path);
+      return _pageCompleters[path]?.future;
+    }
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[path] = pageCompleter;
     _mainRoutes.add(path);
@@ -289,7 +298,22 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
   void setNamed(List<String> names) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
     _mainRoutes.clear();
-    _mainRoutes.addAll(names.map((e) => DefaultRoute(label: e)));
+    _mainRoutes.addAll(names.map((e) {
+      NavigationData? navigationData;
+      try {
+        navigationData = namedRoutes.firstWhere((element) =>
+            ((element.label?.isNotEmpty ?? false) && element.label == e));
+      } on StateError {
+        // ignore: empty_catches
+      }
+
+      if (navigationData == null) {
+        throw Exception(
+            'Named route not found. Must override `namedRoutes` with list of routes in DefaultRouterDelegate to use named routes.');
+      }
+
+      return DefaultRoute(label: e, path: navigationData.path);
+    }));
     debugPrint('Main Routes: $mainRoutes');
     notifyListeners();
   }
@@ -298,17 +322,35 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
       {Map<String, String>? queryParameters,
       Object? arguments,
       dynamic data}) async {
+    NavigationData? navigationData;
+    try {
+      navigationData = namedRoutes.firstWhere((element) =>
+          ((element.label?.isNotEmpty ?? false) && element.label == name));
+    } on StateError {
+      // ignore: empty_catches
+    }
+
+    if (navigationData == null) {
+      throw Exception(
+          'Named route not found. Must override `namedRoutes` with list of routes in DefaultRouterDelegate to use named routes.');
+    }
+
     DefaultRoute route = DefaultRoute(
         label: name,
+        path: navigationData.path,
         queryParameters: queryParameters ?? {},
         arguments: arguments,
         data: data);
 
-    if (_mainRoutes.contains(route)) return;
-
     // Save global data to name key.
     // TODO: Potentially support duplicate pages with different data.
     if (data != null) globalData[name] = data;
+
+    if (_mainRoutes.contains(route)) {
+      _mainRoutes.remove(route);
+      _mainRoutes.add(route);
+      return _pageCompleters[route]?.future;
+    }
 
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;

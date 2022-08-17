@@ -68,7 +68,7 @@ class NavigationBuilder {
               (element.path == route.path &&
                   element.path.isNotEmpty &&
                   route.path.isNotEmpty));
-        } on StateError catch (e) {
+        } on StateError {
           // ignore: empty_catches
         }
 
@@ -170,6 +170,7 @@ class NavigationBuilder {
     return from;
   }
 
+  // ignore: unused_element
   String _trim(String from, String pattern) {
     return _trimLeft(_trimRight(from, pattern), pattern);
   }
