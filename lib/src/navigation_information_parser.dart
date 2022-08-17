@@ -35,4 +35,14 @@ class MainRouteInformationParser extends RouteInformationParser<DefaultRoute> {
     return SynchronousFuture(DefaultRoute(
         path: routeUri.path, queryParameters: routeUri.queryParameters));
   }
+
+  @override
+  RouteInformation? restoreRouteInformation(DefaultRoute configuration) {
+    if (configuration.name?.isNotEmpty ?? false) {
+      return RouteInformation(
+          location: configuration.name, state: configuration.arguments);
+    }
+
+    return null;
+  }
 }
