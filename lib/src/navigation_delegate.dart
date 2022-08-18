@@ -51,7 +51,8 @@ class DefaultRoute extends RouteSettings {
   int get hashCode => label.hashCode * path.hashCode;
 
   @override
-  String toString() => 'Route(label: $label, path: $path, name: $name)';
+  String toString() =>
+      'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, arguments: $arguments)';
 
   operator [](String key) => queryParameters[key];
 
@@ -110,6 +111,8 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
 
   List<NavigationData> namedRoutes = [];
 
+  bool debugLog = false;
+
   /// Internal method that takes a Navigator initial route
   /// and maps to a list of routes.
   ///
@@ -117,6 +120,7 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   @protected
   Future<void> setInitialRoutePath(DefaultRoute configuration) {
+    _debugPrintMessage('setInitialRoutePath');
     return setNewRoutePath(configuration);
   }
 
@@ -127,7 +131,7 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   @protected
   Future<void> setNewRoutePath(DefaultRoute configuration) async {
-    debugPrint('SetNewRoutePath: ${configuration}');
+    _debugPrintMessage('setNewRoutePath: $configuration');
     // Do not set empty route.
     if (configuration.label.isEmpty && configuration.path.isEmpty) return;
     // Handle InitialRoutePath logic here. Adding a page here ensures
@@ -138,23 +142,23 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
       return;
     }
 
-    if (_canPop == false) return;
+    // TODO: Implement canPop.
 
     bool didChangeRoute = currentConfiguration != configuration;
-    debugPrint('Main Routes: $mainRoutes');
+    _debugPrintMessage('Main Routes $mainRoutes');
     _mainRoutes = _setNewRouteHistory(_mainRoutes, configuration);
     // User can customize returned routes with this exposed callback.
     _mainRoutes = setMainRoutes(_mainRoutes) ?? _mainRoutes;
     // Expose that the route has changed.
     if (didChangeRoute) onRouteChanged(_mainRoutes.last);
-    debugPrint('Main Routes Updated: $mainRoutes');
+    _debugPrintMessage('Main Routes Updated $mainRoutes');
     notifyListeners();
     return;
   }
 
   @override
   Future<bool> popRoute() {
-    debugPrint('Pop Route');
+    _debugPrintMessage('popRoute');
     return super.popRoute();
   }
 
@@ -314,7 +318,6 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
 
       return DefaultRoute(label: e, path: navigationData.path);
     }));
-    debugPrint('Main Routes: $mainRoutes');
     notifyListeners();
   }
 
@@ -365,14 +368,12 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
   }
 
   void setQueryParameters(Map<String, String> queryParameters) {
-    String path =
-        '${_mainRoutes.last.uri.path}?${_buildQueryParameters(queryParameters)}';
     _mainRoutes.last = _mainRoutes.last
         .copyWith(queryParameters: queryParameters) as DefaultRoute;
-    debugPrint('Page Name: $path, Last: ${_mainRoutes.last}');
     notifyListeners();
   }
 
+  // ignore: unused_element
   String _buildQueryParameters(Map<String, String> queryParameters) {
     return queryParameters.entries
         .map((e) => '${e.key}=${e.value}')
@@ -392,5 +393,11 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
       function.call();
       notifyListeners();
     });
+  }
+
+  void _debugPrintMessage(String message) {
+    if (debugLog) {
+      debugPrint('NavigationUtils: $message');
+    }
   }
 }
