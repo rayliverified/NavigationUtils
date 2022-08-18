@@ -1,6 +1,7 @@
 name: navigation_utils
-description: The missing navigation library for Flutter's Navigator 2.
-version: 0.0.1
+description: The missing navigation library for Navigator 2.
+version: 0.0.1-pre.1
+homepage: https://codelessly.com
 
 environment:
   sdk: ">=2.17.6 <3.0.0"

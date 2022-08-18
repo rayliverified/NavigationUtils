@@ -1,7 +1,7 @@
 # Navigation Utils
 [![Pub release](https://img.shields.io/pub/v/navigation_utils.svg?style=flat-square)](https://pub.dev/packages/navigation_utils) [![GitHub Release Date](https://img.shields.io/github/release-date/searchy2/NavigationUtils.svg?style=flat-square)](https://github.com/searchy2/NavigationUtils) [![GitHub issues](https://img.shields.io/github/issues/searchy2/NavigationUtils.svg?style=flat-square)](https://github.com/searchy2/NavigationUtils/issues) [![GitHub top language](https://img.shields.io/github/languages/top/searchy2/NavigationUtils.svg?style=flat-square)](https://github.com/searchy2/NavigationUtils) [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/searchy2/NavigationUtils.svg?style=flat-square)](https://github.com/searchy2/NavigationUtils) [![Libraries.io for GitHub](https://img.shields.io/librariesio/github/searchy2/NavigationUtils.svg?style=flat-square)](https://libraries.io/github/searchy2/NavigationUtils) [![License](https://img.shields.io/badge/License-BSD%200--Clause-orange.svg?style=flat-square)](https://opensource.org/licenses/0BSD)
 
-> ### The missing navigation library for Flutter's Navigator 2. 
+> ### The missing navigation library for Navigator 2. 
 
 A collection of convenience methods and wrappers to help implement Flutter's Navigator 2 from the ground up. Use this library to get a head start and save hundreds of hours.
 
@@ -34,6 +34,3 @@ As you implement more and more navigation features such as deeplinks, authentica
 </p>
 
 If you are running into navigation issues, bite the bullet and learn Navigator 2. There is an initial learning curve but the alternative is to run into countless issues, roadblocks, and limitations.
-
-### Why is Navigator 2 so difficult?
-
