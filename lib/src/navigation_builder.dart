@@ -9,20 +9,24 @@ typedef NavigationPageFactory = Widget Function(BuildContext context,
 
 class NavigationData {
   final String? label;
-  final String path;
+  final String url;
   final NavigationPageFactory builder;
   final PageType? pageType;
   final bool? fullScreenDialog;
   final Color? barrierColor;
 
+  String get path => Uri.tryParse(url)?.path ?? '';
+  Map<String, String> get queryParameters =>
+      Uri.tryParse(url)?.queryParameters ?? {};
+
   NavigationData(
       {this.label,
-      required this.path,
+      required this.url,
       required this.builder,
       this.pageType,
       this.fullScreenDialog,
       this.barrierColor})
-      : assert(path.startsWith('/'),
+      : assert(url.startsWith('/'),
             'Path must be prefixed with / to pattern match URLs.');
 
   @override
@@ -100,6 +104,9 @@ class NavigationBuilder {
           }
           Page page = buildPage(navigationData,
               navigationData.builder(context, route, globalPageData ?? {}),
+              queryParameters: route.queryParameters,
+              arguments: route.arguments,
+              data: route.data,
               pageType: navigationData.pageType ?? PageType.material,
               fullScreenDialog: navigationData.fullScreenDialog,
               barrierColor: navigationData.barrierColor);
@@ -125,11 +132,14 @@ class NavigationBuilder {
       PageType pageType = PageType.material,
       bool? fullScreenDialog,
       Color? barrierColor}) {
+    print(navigationData.queryParameters);
     String name =
         Uri(path: navigationData.path, queryParameters: queryParameters)
             .toString();
     name = _trimRight(name, '?');
     if (name.startsWith('/') == false) name = '/$name';
+
+    print('Name: $name');
 
     switch (pageType) {
       case PageType.material:

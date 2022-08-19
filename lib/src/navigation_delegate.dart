@@ -342,7 +342,7 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
     DefaultRoute route = DefaultRoute(
         label: name,
         path: navigationData.path,
-        queryParameters: queryParameters ?? {},
+        queryParameters: queryParameters ?? navigationData.queryParameters,
         arguments: arguments,
         data: data);
 
