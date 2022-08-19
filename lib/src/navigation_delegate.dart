@@ -212,6 +212,7 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
     if (_mainRoutes.contains(path)) {
       _mainRoutes.remove(path);
       _mainRoutes.add(path);
+      notifyListeners();
       return _pageCompleters[path]?.future;
     }
     Completer<dynamic> pageCompleter = Completer<dynamic>();
@@ -313,7 +314,7 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
 
       if (navigationData == null) {
         throw Exception(
-            'Named route not found. Must override `namedRoutes` with list of routes in DefaultRouterDelegate to use named routes.');
+            '`$e` route not found. Must override `namedRoutes` with list of routes in DefaultRouterDelegate to use named routes.');
       }
 
       return DefaultRoute(label: e, path: navigationData.path);
@@ -335,7 +336,7 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
 
     if (navigationData == null) {
       throw Exception(
-          'Named route not found. Must override `namedRoutes` with list of routes in DefaultRouterDelegate to use named routes.');
+          '`$name` route not found. Must override `namedRoutes` with list of routes in DefaultRouterDelegate to use named routes.');
     }
 
     DefaultRoute route = DefaultRoute(
@@ -346,12 +347,12 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
         data: data);
 
     // Save global data to name key.
-    // TODO: Potentially support duplicate pages with different data.
     if (data != null) globalData[name] = data;
 
     if (_mainRoutes.contains(route)) {
       _mainRoutes.remove(route);
       _mainRoutes.add(route);
+      notifyListeners();
       return _pageCompleters[route]?.future;
     }
 

@@ -64,13 +64,28 @@ class NavigationBuilder {
         try {
           navigationData = routes.firstWhere((element) =>
               ((element.label?.isNotEmpty ?? false) &&
-                  element.label == route.label) ||
-              (element.path == route.path &&
-                  element.path.isNotEmpty &&
-                  route.path.isNotEmpty));
+                  element.label == route.label));
         } on StateError {
           // ignore: empty_catches
         }
+
+        // Exact path match routing.
+        if (navigationData == null) {
+          try {
+            navigationData = routes.firstWhere((element) =>
+                ((element.path == route.path &&
+                    element.path.isNotEmpty &&
+                    route.path.isNotEmpty)));
+          } on StateError {
+            // ignore: empty_catches
+          }
+        }
+
+        // TODO: Add wildcard support and pattern matching.
+        // if (onGenerateRoutes.containsKey(route.path)) {
+        //   pages.add(onGenerateRoutes[route.path]!.call(context));
+        //   continue;
+        // }
 
         if (navigationData != null) {
           // Inject dynamic data to page builder.
@@ -91,12 +106,6 @@ class NavigationBuilder {
           pages.add(page);
           continue;
         }
-
-        // TODO: Add wildcard support and pattern matching.
-        // if (onGenerateRoutes.containsKey(route.path)) {
-        //   pages.add(onGenerateRoutes[route.path]!.call(context));
-        //   continue;
-        // }
       }
 
       Page? customPage = pageBuilder?.call(context, route);
