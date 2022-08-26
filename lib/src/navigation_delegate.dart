@@ -290,6 +290,8 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
     _mainRoutes.clear();
     _mainRoutes.addAll(routes);
+    // Notify route change listeners that route has changed.
+    onRouteChanged(_mainRoutes.last);
     notifyListeners();
   }
 
@@ -303,6 +305,7 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
   void setNamed(List<String> names) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
     _mainRoutes.clear();
+    // Map route names to routes.
     _mainRoutes.addAll(names.map((e) {
       NavigationData? navigationData;
       try {
@@ -319,6 +322,8 @@ abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
 
       return DefaultRoute(label: e, path: navigationData.path);
     }));
+    // Notify route change listeners that route has changed.
+    onRouteChanged(_mainRoutes.last);
     notifyListeners();
   }
 
