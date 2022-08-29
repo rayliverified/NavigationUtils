@@ -69,7 +69,7 @@ class DefaultRoute extends RouteSettings {
 }
 
 /// Pop until definition.
-typedef PopUntilRoute = bool Function(DefaultRoute route);
+typedef PopUntilRouteFunction = bool Function(DefaultRoute route);
 
 /// The RouteDelegate defines application specific behaviors of how the router
 /// learns about changes in the application state and how it responds to them.
@@ -208,7 +208,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   final LinkedHashMap<DefaultRoute, Completer<dynamic>> _pageCompleters =
       LinkedHashMap();
 
-  Future<dynamic> push(DefaultRoute path) async {
+  // Push
+
+  Future<dynamic> pushRoute(DefaultRoute path) async {
     if (_defaultRoutes.contains(path)) {
       _defaultRoutes.remove(path);
       _defaultRoutes.add(path);
@@ -222,6 +224,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     return pageCompleter.future;
   }
 
+  // Pop
+
   void pop([dynamic result]) {
     if (canPop) {
       if (_pageCompleters.containsKey(defaultRoutes.last)) {
@@ -233,23 +237,29 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
   }
 
-  void popUntil(PopUntilRoute popUntilRoute) {
+  // Pop Until
+
+  void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction) {
     DefaultRoute? pathEntry =
         _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     while (pathEntry != null) {
-      if (popUntilRoute(pathEntry)) break;
+      if (popUntilRouteFunction(pathEntry)) break;
       pop();
       pathEntry = _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     }
     notifyListeners();
   }
 
-  Future<dynamic> pushAndRemoveUntil(
-      DefaultRoute route, PopUntilRoute popUntilRoute) async {
-    popUntil(popUntilRoute);
+  // Push and Remove Until
+
+  Future<dynamic> pushAndRemoveUntilRoute(
+      DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction) async {
+    popUntilRoute(popUntilRouteFunction);
     _defaultRoutes.add(route);
     notifyListeners();
   }
+
+  // Remove
 
   void removeRoute(DefaultRoute route) {
     if (_defaultRoutes.contains(route)) {
@@ -258,10 +268,15 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
   }
 
-  Future<dynamic> pushReplacement(DefaultRoute route, [dynamic result]) async {
+  // Push Replacement
+
+  Future<dynamic> pushReplacementRoute(DefaultRoute route,
+      [dynamic result]) async {
     pop(result);
-    return await push(route);
+    return await pushRoute(route);
   }
+
+  // Remove Below
 
   void removeRouteBelow(DefaultRoute route) {
     int anchorIndex = _defaultRoutes.indexOf(route);
@@ -271,13 +286,17 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
   }
 
-  void replace(DefaultRoute oldRoute, DefaultRoute newRoute) {
+  // Replace
+
+  void replaceRoute(DefaultRoute oldRoute, DefaultRoute newRoute) {
     int index = _defaultRoutes.indexOf(oldRoute);
     if (index != -1) {
       _defaultRoutes[index] = newRoute;
       notifyListeners();
     }
   }
+
+  // Replace Below
 
   void replaceRouteBelow(DefaultRoute anchorRoute, DefaultRoute newRoute) {
     int index = _defaultRoutes.indexOf(anchorRoute);
@@ -287,20 +306,15 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
   }
 
-  void set(List<DefaultRoute> routes) {
+  // Set
+
+  void setRoutes(List<DefaultRoute> routes) {
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
     _defaultRoutes.clear();
     _defaultRoutes.addAll(routes);
     // Notify route change listeners that route has changed.
     onRouteChanged(_defaultRoutes.last);
     notifyListeners();
-  }
-
-  void setBackstack(List<DefaultRoute> routes) {
-    DefaultRoute currentRoute = _defaultRoutes.last;
-    _defaultRoutes.clear();
-    _defaultRoutes.addAll(routes);
-    _defaultRoutes.add(currentRoute);
   }
 
   void setNamed(List<String> names) {
@@ -325,6 +339,15 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Notify route change listeners that route has changed.
     onRouteChanged(_defaultRoutes.last);
     notifyListeners();
+  }
+
+  // Set Backstack
+
+  void setBackstackRoutes(List<DefaultRoute> routes) {
+    DefaultRoute currentRoute = _defaultRoutes.last;
+    _defaultRoutes.clear();
+    _defaultRoutes.addAll(routes);
+    _defaultRoutes.add(currentRoute);
   }
 
   Future<dynamic> pushNamed(String name,
