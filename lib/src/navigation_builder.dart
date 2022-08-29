@@ -57,8 +57,8 @@ class NavigationBuilder {
       this.pageBuilder});
 
   List<Page> build(BuildContext context) {
-    DefaultRouterDelegate? mainRouterDelegate =
-        (Router.of(context).routerDelegate as DefaultRouterDelegate);
+    BaseRouterDelegate? mainRouterDelegate =
+        (Router.of(context).routerDelegate as BaseRouterDelegate);
     List<Page> pages = [];
     for (Object route in routeDataList) {
       if (route is DefaultRoute) {

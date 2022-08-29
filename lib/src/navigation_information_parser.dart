@@ -11,9 +11,9 @@ class DefaultRouteInformationParser
   Uri initialRouteUri = Uri();
   bool initialized = false;
 
-  DefaultRoute initialRouteData;
+  DefaultRoute? initialRouteData;
 
-  DefaultRouteInformationParser({required this.initialRouteData});
+  DefaultRouteInformationParser({this.initialRouteData});
 
   @override
   Future<DefaultRoute> parseRouteInformation(
@@ -30,7 +30,7 @@ class DefaultRouteInformationParser
       initialized = true;
       initialRouteUri = routeUri;
       // Save initial route and handle after initialization.
-      return SynchronousFuture(initialRouteData);
+      return SynchronousFuture(initialRouteData ?? DefaultRoute(path: '/'));
     }
 
     return SynchronousFuture(DefaultRoute(

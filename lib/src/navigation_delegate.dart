@@ -75,7 +75,7 @@ typedef PopUntilRoute = bool Function(DefaultRoute route);
 /// learns about changes in the application state and how it responds to them.
 /// It listens to the RouteInformation Parser and the app state and builds the Navigator with
 /// the current list of pages (immutable object used to set navigator's history stack).
-abstract class DefaultRouterDelegate extends RouterDelegate<DefaultRoute>
+abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<DefaultRoute> {
   // Persist the navigator with a global key.
   @override
