@@ -15,13 +15,13 @@ class NavigationManager {
   }
 
   final DefaultRouterDelegate routerDelegate;
-  final MainRouteInformationParser routeInformationParser;
+  final DefaultRouteInformationParser routeInformationParser;
 
   NavigationManager._(this.routerDelegate, this.routeInformationParser);
 
   static NavigationManager init(
       {required DefaultRouterDelegate mainRouterDelegate,
-      required MainRouteInformationParser routeInformationParser}) {
+      required DefaultRouteInformationParser routeInformationParser}) {
     _instance = NavigationManager._(mainRouterDelegate, routeInformationParser);
     return _instance!;
   }
