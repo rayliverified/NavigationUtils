@@ -1,6 +1,13 @@
-import 'package:example/navigation/navigation_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:navigation_utils/navigation_utils.dart';
+
+List<NavigationData> namedRoutes = [
+  NavigationData(
+      label: MyHomePage.name,
+      url: '/',
+      builder: (context, routeData, globalData) =>
+          const MyHomePage(title: 'Navigation')),
+];
 
 void main() {
   NavigationManager.init(
