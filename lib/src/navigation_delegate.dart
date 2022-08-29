@@ -109,7 +109,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   Map<String, dynamic> globalData = {};
 
-  List<NavigationData> namedRoutes = [];
+  List<NavigationData> navigationDataRoutes = [];
 
   bool debugLog = false;
 
@@ -310,15 +310,14 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _defaultRoutes.addAll(names.map((e) {
       NavigationData? navigationData;
       try {
-        navigationData = namedRoutes.firstWhere((element) =>
+        navigationData = navigationDataRoutes.firstWhere((element) =>
             ((element.label?.isNotEmpty ?? false) && element.label == e));
       } on StateError {
         // ignore: empty_catches
       }
 
       if (navigationData == null) {
-        throw Exception(
-            '`$e` route not found. Must override `namedRoutes` with list of routes in DefaultRouterDelegate to use named routes.');
+        throw Exception('`$e` route not found.');
       }
 
       return DefaultRoute(label: e, path: navigationData.path);
@@ -334,15 +333,14 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       dynamic data}) async {
     NavigationData? navigationData;
     try {
-      navigationData = namedRoutes.firstWhere((element) =>
+      navigationData = navigationDataRoutes.firstWhere((element) =>
           ((element.label?.isNotEmpty ?? false) && element.label == name));
     } on StateError {
       // ignore: empty_catches
     }
 
     if (navigationData == null) {
-      throw Exception(
-          '`$name` route not found. Must override `namedRoutes` with list of routes in DefaultRouterDelegate to use named routes.');
+      throw Exception('`$name` route not found.');
     }
 
     DefaultRoute route = DefaultRoute(

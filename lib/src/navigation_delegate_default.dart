@@ -5,12 +5,13 @@ import 'package:navigation_utils/navigation_utils.dart';
 
 class DefaultRouterDelegate extends BaseRouterDelegate {
   @override
-  List<NavigationData> namedRoutes = [];
+  List<NavigationData> navigationDataRoutes = [];
 
   @override
   bool debugLog = false;
 
-  DefaultRouterDelegate({required this.namedRoutes, this.debugLog = false});
+  DefaultRouterDelegate(
+      {required this.navigationDataRoutes, this.debugLog = false});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
       pages: [
         ...NavigationBuilder(
           routeDataList: defaultRoutes,
-          routes: namedRoutes,
+          routes: navigationDataRoutes,
         ).build(context),
       ],
       onPopPage: (route, result) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
-List<NavigationData> namedRoutes = [
+List<NavigationData> routes = [
   NavigationData(
       label: MyHomePage.name,
       url: '/',
@@ -11,7 +11,7 @@ List<NavigationData> namedRoutes = [
 
 void main() {
   NavigationManager.init(
-      mainRouterDelegate: DefaultRouterDelegate(namedRoutes: namedRoutes),
+      mainRouterDelegate: DefaultRouterDelegate(navigationDataRoutes: routes),
       routeInformationParser: DefaultRouteInformationParser());
   runApp(const MyApp());
 }
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Flutter Demo',
+      title: 'Navigation Utils Demo',
       routerDelegate: NavigationManager.instance.routerDelegate,
       routeInformationParser: NavigationManager.instance.routeInformationParser,
     );
