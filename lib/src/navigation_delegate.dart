@@ -82,16 +82,16 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   /// Internal backstack and pages representation.
-  List<DefaultRoute> _mainRoutes = [];
+  List<DefaultRoute> _defaultRoutes = [];
 
-  List<DefaultRoute> get mainRoutes => _mainRoutes;
+  List<DefaultRoute> get defaultRoutes => _defaultRoutes;
 
   bool _canPop = true;
 
   bool get canPop {
     if (_canPop == false) return false;
 
-    return _mainRoutes.isNotEmpty;
+    return _defaultRoutes.isNotEmpty;
   }
 
   set canPop(bool canPop) => _canPop = canPop;
@@ -100,7 +100,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   /// It helps complete the browser history and enables browser back and forward buttons.
   @override
   DefaultRoute? get currentConfiguration =>
-      mainRoutes.isNotEmpty ? mainRoutes.last : null;
+      defaultRoutes.isNotEmpty ? defaultRoutes.last : null;
 
   // Current route name.
   StreamController<DefaultRoute> currentRouteController =
@@ -137,21 +137,21 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Handle InitialRoutePath logic here. Adding a page here ensures
     // there is always a page to display. The initial page is now set here
     // instead of in the Navigator widget.
-    if (_mainRoutes.isEmpty) {
-      _mainRoutes.add(configuration);
+    if (_defaultRoutes.isEmpty) {
+      _defaultRoutes.add(configuration);
       return;
     }
 
     // TODO: Implement canPop.
 
     bool didChangeRoute = currentConfiguration != configuration;
-    _debugPrintMessage('Main Routes $mainRoutes');
-    _mainRoutes = _setNewRouteHistory(_mainRoutes, configuration);
+    _debugPrintMessage('Main Routes $defaultRoutes');
+    _defaultRoutes = _setNewRouteHistory(_defaultRoutes, configuration);
     // User can customize returned routes with this exposed callback.
-    _mainRoutes = setMainRoutes(_mainRoutes) ?? _mainRoutes;
+    _defaultRoutes = setMainRoutes(_defaultRoutes) ?? _defaultRoutes;
     // Expose that the route has changed.
-    if (didChangeRoute) onRouteChanged(_mainRoutes.last);
-    _debugPrintMessage('Main Routes Updated $mainRoutes');
+    if (didChangeRoute) onRouteChanged(_defaultRoutes.last);
+    _debugPrintMessage('Main Routes Updated $defaultRoutes');
     notifyListeners();
     return;
   }
@@ -209,36 +209,37 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       LinkedHashMap();
 
   Future<dynamic> push(DefaultRoute path) async {
-    if (_mainRoutes.contains(path)) {
-      _mainRoutes.remove(path);
-      _mainRoutes.add(path);
+    if (_defaultRoutes.contains(path)) {
+      _defaultRoutes.remove(path);
+      _defaultRoutes.add(path);
       notifyListeners();
       return _pageCompleters[path]?.future;
     }
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[path] = pageCompleter;
-    _mainRoutes.add(path);
+    _defaultRoutes.add(path);
     notifyListeners();
     return pageCompleter.future;
   }
 
   void pop([dynamic result]) {
     if (canPop) {
-      if (_pageCompleters.containsKey(mainRoutes.last)) {
-        _pageCompleters[mainRoutes.last]!.complete(result);
-        _pageCompleters.remove(mainRoutes.last);
+      if (_pageCompleters.containsKey(defaultRoutes.last)) {
+        _pageCompleters[defaultRoutes.last]!.complete(result);
+        _pageCompleters.remove(defaultRoutes.last);
       }
-      _mainRoutes.removeLast();
+      _defaultRoutes.removeLast();
       notifyListeners();
     }
   }
 
   void popUntil(PopUntilRoute popUntilRoute) {
-    DefaultRoute? pathEntry = _mainRoutes.isNotEmpty ? _mainRoutes.last : null;
+    DefaultRoute? pathEntry =
+        _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     while (pathEntry != null) {
       if (popUntilRoute(pathEntry)) break;
       pop();
-      pathEntry = _mainRoutes.isNotEmpty ? _mainRoutes.last : null;
+      pathEntry = _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     }
     notifyListeners();
   }
@@ -246,13 +247,13 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   Future<dynamic> pushAndRemoveUntil(
       DefaultRoute route, PopUntilRoute popUntilRoute) async {
     popUntil(popUntilRoute);
-    _mainRoutes.add(route);
+    _defaultRoutes.add(route);
     notifyListeners();
   }
 
   void removeRoute(DefaultRoute route) {
-    if (_mainRoutes.contains(route)) {
-      _mainRoutes.remove(route);
+    if (_defaultRoutes.contains(route)) {
+      _defaultRoutes.remove(route);
       notifyListeners();
     }
   }
@@ -263,50 +264,50 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   }
 
   void removeRouteBelow(DefaultRoute route) {
-    int anchorIndex = _mainRoutes.indexOf(route);
+    int anchorIndex = _defaultRoutes.indexOf(route);
     if (anchorIndex >= 1) {
-      _mainRoutes.removeAt(anchorIndex - 1);
+      _defaultRoutes.removeAt(anchorIndex - 1);
       notifyListeners();
     }
   }
 
   void replace(DefaultRoute oldRoute, DefaultRoute newRoute) {
-    int index = _mainRoutes.indexOf(oldRoute);
+    int index = _defaultRoutes.indexOf(oldRoute);
     if (index != -1) {
-      _mainRoutes[index] = newRoute;
+      _defaultRoutes[index] = newRoute;
       notifyListeners();
     }
   }
 
   void replaceRouteBelow(DefaultRoute anchorRoute, DefaultRoute newRoute) {
-    int index = _mainRoutes.indexOf(anchorRoute);
+    int index = _defaultRoutes.indexOf(anchorRoute);
     if (index >= 1) {
-      _mainRoutes[index - 1] = newRoute;
+      _defaultRoutes[index - 1] = newRoute;
       notifyListeners();
     }
   }
 
   void set(List<DefaultRoute> routes) {
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
-    _mainRoutes.clear();
-    _mainRoutes.addAll(routes);
+    _defaultRoutes.clear();
+    _defaultRoutes.addAll(routes);
     // Notify route change listeners that route has changed.
-    onRouteChanged(_mainRoutes.last);
+    onRouteChanged(_defaultRoutes.last);
     notifyListeners();
   }
 
   void setBackstack(List<DefaultRoute> routes) {
-    DefaultRoute currentRoute = _mainRoutes.last;
-    _mainRoutes.clear();
-    _mainRoutes.addAll(routes);
-    _mainRoutes.add(currentRoute);
+    DefaultRoute currentRoute = _defaultRoutes.last;
+    _defaultRoutes.clear();
+    _defaultRoutes.addAll(routes);
+    _defaultRoutes.add(currentRoute);
   }
 
   void setNamed(List<String> names) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
-    _mainRoutes.clear();
+    _defaultRoutes.clear();
     // Map route names to routes.
-    _mainRoutes.addAll(names.map((e) {
+    _defaultRoutes.addAll(names.map((e) {
       NavigationData? navigationData;
       try {
         navigationData = namedRoutes.firstWhere((element) =>
@@ -323,7 +324,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       return DefaultRoute(label: e, path: navigationData.path);
     }));
     // Notify route change listeners that route has changed.
-    onRouteChanged(_mainRoutes.last);
+    onRouteChanged(_defaultRoutes.last);
     notifyListeners();
   }
 
@@ -354,16 +355,16 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Save global data to name key.
     if (data != null) globalData[name] = data;
 
-    if (_mainRoutes.contains(route)) {
-      _mainRoutes.remove(route);
-      _mainRoutes.add(route);
+    if (_defaultRoutes.contains(route)) {
+      _defaultRoutes.remove(route);
+      _defaultRoutes.add(route);
       notifyListeners();
       return _pageCompleters[route]?.future;
     }
 
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
-    _mainRoutes.add(route);
+    _defaultRoutes.add(route);
     notifyListeners();
     return pageCompleter.future;
   }
@@ -374,7 +375,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   }
 
   void setQueryParameters(Map<String, String> queryParameters) {
-    _mainRoutes.last = _mainRoutes.last
+    _defaultRoutes.last = _defaultRoutes.last
         .copyWith(queryParameters: queryParameters) as DefaultRoute;
     notifyListeners();
   }
