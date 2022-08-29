@@ -34,3 +34,58 @@ As you implement more and more navigation features such as deeplinks, authentica
 </p>
 
 If you are running into navigation issues, bite the bullet and learn Navigator 2. There is an initial learning curve but the alternative is to run into countless issues, roadblocks, and limitations.
+
+## Quickstart
+
+#### App Routing Setup
+
+```dart
+MaterialApp.router(
+      title: 'Navigation Utils Demo',
+      routerDelegate: NavigationManager.instance.routerDelegate,
+      routeInformationParser: NavigationManager.instance.routeInformationParser,
+    );
+```
+
+**Tip:** Navigator 2 uses `MaterialApp.router` and requires a `RouterDelegate` and `RouteInformationParser` that replaces the `routes` and `onGenerateRoute` builders.
+
+NavigationManager is a global singleton class. Here, it is used as a dependency injection and holds references to the `RouterDelegate` and `RouteInformationParser`. See the customization section for more information on how to use your own dependency injection and custom navigation lifecycle management.
+
+#### Initialize NavigationManager
+
+```dart
+void main() {
+  NavigationManager.init(
+      mainRouterDelegate: DefaultRouterDelegate(navigationDataRoutes: routes),
+      routeInformationParser: DefaultRouteInformationParser());
+  runApp(const MyApp());
+}
+
+```
+
+**Tip:** `DefaultRouterDelegate` and `DefaultRouteInformationParser` are convenience classes provided by this library to help you get up and running quickly. See the customization section for more information on using a custom implementation.
+
+#### Define Routes
+
+```dart
+List<NavigationData> routes = [
+  NavigationData(
+      url: '/',
+      builder: (context, routeData, globalData) =>
+          const MyHomePage()),
+  NavigationData(
+      label: 'projects',
+      url: '/projects',
+      builder: (context, routeData, globalData) =>
+          const Projects()),
+];
+
+```
+
+**Tip:** Each `NavigationData` maps a URL to a page widget. `NavigationData` bundles routing information together and provides them to places that the Flutter navigator needs. More information on passing query parameters and page constructors can be found later in the ReadMe.
+
+#### Navigate
+
+```dart
+NavigationManager.instance.routerDelegate.push()
+```
