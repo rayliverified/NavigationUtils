@@ -24,7 +24,7 @@ Navigation Utils is **NOT** more complex than other navigation libraries. Howeve
 A few compelling arguments for using Navigation Utils: 
 
 - You're learning how to use Flutter's Navigator 2, not a third party library. The time you invest won't be wasted.
-- You'll be able to implement any navigation, no matter how complex.
+- You'll be able to implement complex navigation without fighting the library.
 - Create navigation that conforms to your app and  architecture instead of letting navigation drive architecture decisions.
 
 As you implement more and more navigation features such as deeplinks, authentication, and URLs, you'll run into increasing roadblocks and limitations that increases cost. At a certain point, learning and working directly with Navigator 2 is imperative.
@@ -37,7 +37,7 @@ If you are running into navigation issues, bite the bullet and learn Navigator 2
 
 ## Quickstart
 
-#### App Routing Setup
+### App Routing Setup
 
 ```dart
 MaterialApp.router(
@@ -51,7 +51,7 @@ MaterialApp.router(
 
 NavigationManager is a global singleton class. Here, it is used as a dependency injection and holds references to the `RouterDelegate` and `RouteInformationParser`. See the customization section for more information on how to use your own dependency injection and custom navigation lifecycle management.
 
-#### Initialize NavigationManager
+### Initialize NavigationManager
 
 ```dart
 void main() {
@@ -63,9 +63,9 @@ void main() {
 
 ```
 
-**Tip:** `DefaultRouterDelegate` and `DefaultRouteInformationParser` are convenience classes provided by this library to help you get up and running quickly. See the customization section for more information on using a custom implementation.
+**Tip:** `DefaultRouterDelegate` and `DefaultRouteInformationParser` are convenience classes provided by this library to help you get up and running quickly. For more information on migrating an existing delegate or using a custom implementation, see the customization section.
 
-#### Define Routes
+### Define Routes
 
 ```dart
 List<NavigationData> routes = [
@@ -74,18 +74,40 @@ List<NavigationData> routes = [
       builder: (context, routeData, globalData) =>
           const MyHomePage()),
   NavigationData(
-      label: 'projects',
+      label: ProjectsPage.name,
       url: '/projects',
       builder: (context, routeData, globalData) =>
-          const Projects()),
+          const ProjectsPage()),
 ];
 
 ```
 
-**Tip:** Each `NavigationData` maps a URL to a page widget. `NavigationData` bundles routing information together and provides them to places that the Flutter navigator needs. More information on passing query parameters and page constructors can be found later in the ReadMe.
+**Tip:** URL is required for each route because `NavigationData` maps a URL to a page widget. The `NavigationData` data model / builder bundles routing information together for Flutter's navigation methods to read. For more information on passing query parameters and page constructors, see later sections of the ReadMe.
 
-#### Navigate
+`NavigationData` contains an optional `label` property to support named routing like in Navigator 1. Navigator 2 does not supported named routing out of the box so named routing is reimplemented. Here, `ProjectsPage.name` is a static constant defined in the ProjectPage widget.
 
 ```dart
-NavigationManager.instance.routerDelegate.push()
+class ProjectsPage extends StatefulWidget {
+  static const String name = 'projects';
+  
+  @override
+  _ProjectsPageState createState() => _ProjectsPageState();
+}
 ```
+
+### Navigation
+
+```dart
+// Path
+NavigationManager.instance.routerDelegate.push('/projects');
+
+// Name
+NavigationManager.instance.routerDelegate.push(ProjectsPage.name);
+
+// Route Object
+NavigationManager.instance.routerDelegate.pushRoute(DefaultRoute(path: '/projects'));
+```
+
+This library supports path, name, and Route object based routing. Access navigation methods on the Route Delegate directly through the NavigationManager instance.
+
+
