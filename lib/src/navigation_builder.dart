@@ -106,7 +106,6 @@ class NavigationBuilder {
               navigationData.builder(context, route, globalPageData ?? {}),
               queryParameters: route.queryParameters,
               arguments: route.arguments,
-              data: route.data,
               pageType: navigationData.pageType ?? PageType.material,
               fullScreenDialog: navigationData.fullScreenDialog,
               barrierColor: navigationData.barrierColor);
@@ -127,7 +126,6 @@ class NavigationBuilder {
 
   Page buildPage(NavigationData navigationData, Widget child,
       {Map<String, String> queryParameters = const {},
-      dynamic data,
       Object? arguments,
       PageType pageType = PageType.material,
       bool? fullScreenDialog,

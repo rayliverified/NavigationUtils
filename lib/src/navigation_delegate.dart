@@ -9,13 +9,11 @@ class DefaultRoute extends RouteSettings {
   final String label;
   final String path;
   final Map<String, String> queryParameters;
-  final dynamic data;
 
   DefaultRoute(
       {this.label = '',
       this.path = '',
       this.queryParameters = const {},
-      this.data = const {},
       super.arguments})
       : super(
             name: _trimRight(
@@ -30,14 +28,12 @@ class DefaultRoute extends RouteSettings {
       String? path,
       Map<String, String>? queryParameters,
       Object? arguments,
-      dynamic data,
       String? name}) {
     return DefaultRoute(
       label: label ?? this.label,
       path: path ?? this.path,
       queryParameters: queryParameters ?? this.queryParameters,
       arguments: arguments ?? this.arguments,
-      data: data ?? this.data,
     );
   }
 
@@ -213,7 +209,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   Future<dynamic> push(String name,
       {Map<String, String>? queryParameters,
       Object? arguments,
-      dynamic data}) async {
+      Map<String, dynamic> data = const {}}) async {
     NavigationData? navigationData =
         _getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationData == null) {
@@ -225,8 +221,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         label: navigationData.label ?? '',
         path: navigationData.path,
         queryParameters: queryParameters ?? navigationData.queryParameters,
-        arguments: arguments,
-        data: data);
+        arguments: arguments);
 
     // Save global data to name key.
     if (data != null) globalData[name] = data;
