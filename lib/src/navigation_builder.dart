@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'navigation_delegate.dart';
+import 'path_utils_go_router.dart';
 import 'route_builders/transparent_route.dart';
 
 typedef NavigationPageFactory = Widget Function(BuildContext context,
@@ -26,15 +27,15 @@ class NavigationData {
       this.pageType,
       this.fullScreenDialog,
       this.barrierColor})
-      : assert(url.startsWith('/'),
-            'Path must be prefixed with / to pattern match URLs.');
+      : assert(
+            url.startsWith('/'), 'Path must be prefixed with / to match URLs.');
 
   @override
   String toString() => 'NavigationData(label: $label, path: $path)';
 }
 
 /// Custom navigation builder for gradual migration support.
-/// Place the legacy navigation page builder function here.
+/// Wrapper the legacy navigation page builder with this function.
 typedef NavigationPageBuilder = Page? Function(
     BuildContext context, dynamic routeData);
 
@@ -85,11 +86,31 @@ class NavigationBuilder {
           }
         }
 
-        // TODO: Add wildcard support and pattern matching.
-        // if (onGenerateRoutes.containsKey(route.path)) {
-        //   pages.add(onGenerateRoutes[route.path]!.call(context));
-        //   continue;
-        // }
+        // Path pattern matching.
+        Map<String, String> pathParameters = {};
+        if (navigationData == null) {
+          try {
+            navigationData = routes.firstWhere((element) {
+              if ((element.path.isNotEmpty && route.path.isNotEmpty)) {
+                if (element.path.contains(':')) {
+                  final List<String> paramNames = <String>[];
+                  RegExp regExp = patternToRegExp(element.path, paramNames);
+                  final String? match = regExp.stringMatch(route.path);
+                  if (match == route.path) {
+                    final RegExpMatch match = regExp.firstMatch(route.path)!;
+                    pathParameters = extractPathParameters(paramNames, match);
+                    return true;
+                  }
+                }
+              }
+              return false;
+            });
+          } on StateError {
+            // ignore: empty_catches
+          }
+        }
+
+        // TODO: Add wildcard support.
 
         if (navigationData != null) {
           // Inject dynamic data to page builder.
@@ -102,8 +123,12 @@ class NavigationBuilder {
             // Get global data via path.
             globalPageData = globalData[navigationData.path];
           }
-          Page page = buildPage(navigationData,
-              navigationData.builder(context, route, globalPageData ?? {}),
+          Page page = buildPage(
+              navigationData,
+              navigationData.builder(
+                  context,
+                  route.copyWith(pathParameters: pathParameters),
+                  globalPageData ?? {}),
               queryParameters: route.queryParameters,
               arguments: route.arguments,
               pageType: navigationData.pageType ?? PageType.material,

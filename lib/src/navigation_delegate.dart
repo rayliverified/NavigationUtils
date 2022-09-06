@@ -9,11 +9,13 @@ class DefaultRoute extends RouteSettings {
   final String label;
   final String path;
   final Map<String, String> queryParameters;
+  final Map<String, String> pathParameters;
 
   DefaultRoute(
       {this.label = '',
       this.path = '',
       this.queryParameters = const {},
+      this.pathParameters = const {},
       super.arguments})
       : super(
             name: _trimRight(
@@ -23,16 +25,18 @@ class DefaultRoute extends RouteSettings {
   Uri get uri => Uri(path: path, queryParameters: queryParameters);
 
   @override
-  RouteSettings copyWith(
+  DefaultRoute copyWith(
       {String? label,
       String? path,
       Map<String, String>? queryParameters,
+      Map<String, String>? pathParameters,
       Object? arguments,
       String? name}) {
     return DefaultRoute(
       label: label ?? this.label,
       path: path ?? this.path,
       queryParameters: queryParameters ?? this.queryParameters,
+      pathParameters: pathParameters ?? this.pathParameters,
       arguments: arguments ?? this.arguments,
     );
   }

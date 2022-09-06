@@ -7,6 +7,10 @@ List<NavigationData> routes = [
       url: '/',
       builder: (context, routeData, globalData) =>
           const MyHomePage(title: 'Navigation')),
+  NavigationData(
+      url: '/project/:id',
+      builder: (context, routeData, globalData) => ProjectPage(
+          id: int.tryParse(routeData.pathParameters['id'] ?? '') ?? 0)),
 ];
 
 void main() {
@@ -73,6 +77,43 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class ProjectPage extends StatefulWidget {
+  final int id;
+
+  const ProjectPage({super.key, required this.id});
+
+  @override
+  _ProjectPageState createState() => _ProjectPageState();
+}
+
+class _ProjectPageState extends State<ProjectPage> {
+  int counter = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('Init Projects Page');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.pinkAccent,
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            Text('Projects Page ${widget.id}',
+                style: const TextStyle(color: Colors.white)),
+          ],
+        ),
       ),
     );
   }
