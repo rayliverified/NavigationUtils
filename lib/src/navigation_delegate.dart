@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'package:flutter/widgets.dart';
 
 import 'navigation_builder.dart';
+import 'path_utils_go_router.dart';
 
 class DefaultRoute extends RouteSettings {
   final String label;
@@ -213,22 +214,28 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   Future<dynamic> push(String name,
       {Map<String, String>? queryParameters,
       Object? arguments,
-      Map<String, dynamic> data = const {}}) async {
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {}}) async {
     NavigationData? navigationData =
         _getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationData == null) {
       throw Exception('`$name` route not found.');
     }
 
+    String path = navigationData.path;
+    if (navigationData.path.contains(':')) {
+      path = patternToPath(navigationData.path, pathParameters);
+    }
+
     // Build DefaultRoute.
     DefaultRoute route = DefaultRoute(
         label: navigationData.label ?? '',
-        path: navigationData.path,
+        path: path,
         queryParameters: queryParameters ?? navigationData.queryParameters,
         arguments: arguments);
 
     // Save global data to name key.
-    if (data != null) globalData[name] = data;
+    globalData[name] = data;
 
     // If route already exists, move to top.
     if (_defaultRoutes.contains(route)) {
@@ -496,8 +503,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   // Query Parameters
 
   void setQueryParameters(Map<String, String> queryParameters) {
-    _defaultRoutes.last = _defaultRoutes.last
-        .copyWith(queryParameters: queryParameters) as DefaultRoute;
+    _defaultRoutes.last =
+        _defaultRoutes.last.copyWith(queryParameters: queryParameters);
     notifyListeners();
   }
 
