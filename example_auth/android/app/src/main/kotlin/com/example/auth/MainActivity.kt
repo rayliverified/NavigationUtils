@@ -1,4 +1,4 @@
-package com.example.auth.example_auth
+package com.example.auth
 
 import io.flutter.embedding.android.FlutterActivity
 
