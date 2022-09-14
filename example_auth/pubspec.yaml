@@ -21,11 +21,18 @@ dependencies:
   firebase_crashlytics: ^2.8.10
   navigation_utils:
     path: ../
+  get_it: ^7.2.0
+  equatable: ^2.0.5
+  simple_gravatar: ^1.1.0
+  universal_io: ^2.0.4
+  json_annotation: ^4.6.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
+  json_serializable: ^6.3.2
+  build_runner: ^2.2.1
 
 flutter:
   uses-material-design: true

@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:firebase_core/firebase_core.dart';
+import 'package:example_auth/services/auth_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
-import 'firebase_options.dart';
 import 'navigation_routes.dart';
+import 'repositories/firebase_repository_base.dart';
 
 class Initialization {
   /// Initialization wrapper for consolidating main setup code.
@@ -25,8 +25,8 @@ class Initialization {
     // Run pre-initialization functions.
     preInitFunction?.call();
 
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
+    await FirebaseRepositoryBase.initialize();
+    AuthService.initialize();
 
     NavigationManager.init(
         mainRouterDelegate: DefaultRouterDelegate(navigationDataRoutes: routes),
