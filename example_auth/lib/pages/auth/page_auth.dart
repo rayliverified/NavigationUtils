@@ -13,16 +13,40 @@ enum AuthPageType {
   resetPassword,
 }
 
-class AuthPageWrapper extends StatelessWidget {
+class AuthPageWrapper extends StatefulWidget {
   final AuthPageType type;
 
-  const AuthPageWrapper({super.key, this.type = AuthPageType.signup});
+  const AuthPageWrapper({Key? key, required this.type}) : super(key: key);
+
+  @override
+  State<AuthPageWrapper> createState() => _AuthPageWrapperState();
+}
+
+class _AuthPageWrapperState extends State<AuthPageWrapper> {
+  late AuthPageModelBase authPageModelBase;
+
+  @override
+  void initState() {
+    super.initState();
+    authPageModelBase = AuthPageModel(context, widget.type);
+  }
+
+  @override
+  void dispose() {
+    authPageModelBase.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(AuthPageWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    authPageModelBase.setAuthPageType(widget.type);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AuthPageModelBase>(
-        create: (context) => AuthPageModel(context, type),
-        child: const AuthPage());
+    return ChangeNotifierProvider<AuthPageModelBase>.value(
+        value: authPageModelBase, child: const AuthPage());
   }
 }
 
@@ -47,29 +71,11 @@ class AuthPageModel extends AuthPageModelBase {
 
   @override
   void setAuthPageType(AuthPageType type) {
-    AuthPageType previousType = type;
-    switch (previousType) {
-      case AuthPageType.login:
-        break;
-      case AuthPageType.signup:
-        break;
-      case AuthPageType.resetPassword:
-        break;
+    if (type == this.type) {
+      return;
     }
 
     this.type = type;
-    switch (type) {
-      case AuthPageType.login:
-        NavigationManager.instance.routerDelegate.push(LoginForm.name);
-        break;
-      case AuthPageType.signup:
-        NavigationManager.instance.routerDelegate.push(SignUpForm.name);
-        break;
-      case AuthPageType.resetPassword:
-        NavigationManager.instance.routerDelegate.push(ResetPasswordForm.name);
-        break;
-    }
-
     notifyListeners();
   }
 }
@@ -89,7 +95,7 @@ class AuthPage extends StatelessWidget {
                 const Padding(padding: EdgeInsets.only(bottom: 48)),
                 Text(
                   getPageTitle(model),
-                  style: Theme.of(context).textTheme.headline1,
+                  style: Theme.of(context).textTheme.headline2,
                   textAlign: TextAlign.center,
                 ),
                 LayoutBuilder(builder: (context, constraints) {
@@ -117,16 +123,19 @@ class AuthPage extends StatelessWidget {
     switch (model.type) {
       case AuthPageType.login:
         return LoginForm(
-          onSignupTapped: () => model.setAuthPageType(AuthPageType.signup),
-          onResetPasswordTapped: () =>
-              model.setAuthPageType(AuthPageType.resetPassword),
+          onSignupTapped: () => NavigationManager.instance.routerDelegate
+              .pushReplacement(SignUpForm.name),
+          onResetPasswordTapped: () => NavigationManager.instance.routerDelegate
+              .push(ResetPasswordForm.name),
         );
       case AuthPageType.signup:
         return SignUpForm(
-            onLoginTapped: () => model.setAuthPageType(AuthPageType.login));
+            onLoginTapped: () => NavigationManager.instance.routerDelegate
+                .pushReplacement(LoginForm.name));
       case AuthPageType.resetPassword:
         return ResetPasswordForm(
-            onBackPressed: () => model.setAuthPageType(AuthPageType.login));
+            onBackPressed: () =>
+                NavigationManager.instance.routerDelegate.pop());
     }
   }
 
