@@ -105,6 +105,13 @@ class AuthService extends AuthServiceBase {
 
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
+  factory AuthService() {
+    DebugLogger.instance.printFunction('AuthService Initialized');
+    // An instance persists the AuthService.
+    _instance ??= AuthService._();
+    return _instance!;
+  }
+
   factory AuthService.initialize() {
     DebugLogger.instance.printFunction('AuthService Initialized');
     // An instance persists the AuthService.

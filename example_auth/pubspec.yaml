@@ -26,6 +26,7 @@ dependencies:
   simple_gravatar: ^1.1.0
   universal_io: ^2.0.4
   json_annotation: ^4.6.0
+  provider: ^6.0.3
 
 dev_dependencies:
   flutter_test:

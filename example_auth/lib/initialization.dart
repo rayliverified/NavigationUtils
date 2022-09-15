@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:example_auth/services/auth_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
 import 'navigation_routes.dart';
@@ -26,7 +27,7 @@ class Initialization {
     preInitFunction?.call();
 
     await FirebaseRepositoryBase.initialize();
-    AuthService.initialize();
+    GetIt.instance.registerSingleton(AuthService());
 
     NavigationManager.init(
         mainRouterDelegate: DefaultRouterDelegate(navigationDataRoutes: routes),
