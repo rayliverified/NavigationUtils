@@ -157,12 +157,6 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     return;
   }
 
-  @override
-  Future<bool> popRoute() {
-    _debugPrintMessage('popRoute');
-    return super.popRoute();
-  }
-
   /// Updates route path history.
   ///
   /// In a browser, forward and backward navigation
