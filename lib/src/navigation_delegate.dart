@@ -279,7 +279,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     DefaultRoute? route =
         _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     while (route != null) {
-      if (route.name == name || route.path == name) break;
+      if (route.name == name ||
+          route.path == name ||
+          _defaultRoutes.length == 1) break;
       pop();
       route = _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     }
@@ -290,7 +292,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     DefaultRoute? route =
         _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     while (route != null) {
-      if (popUntilRouteFunction(route)) break;
+      if (popUntilRouteFunction(route) || _defaultRoutes.length == 1) break;
       pop();
       route = _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     }
