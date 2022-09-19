@@ -15,6 +15,7 @@ class NavigationData {
   final PageType? pageType;
   final bool? fullScreenDialog;
   final Color? barrierColor;
+  final Map<String, dynamic> metadata;
 
   String get path => Uri.tryParse(url)?.path ?? '';
   Map<String, String> get queryParameters =>
@@ -26,7 +27,8 @@ class NavigationData {
       required this.builder,
       this.pageType,
       this.fullScreenDialog,
-      this.barrierColor})
+      this.barrierColor,
+      this.metadata = const {}})
       : assert(
             url.startsWith('/'), 'Path must be prefixed with / to match URLs.');
 

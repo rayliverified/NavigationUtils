@@ -511,6 +511,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   void removeOverride() {
     pageOverride = null;
+    notifyListeners();
   }
 
   // Query Parameters

@@ -7,7 +7,8 @@ List<NavigationData> routes = [
   NavigationData(
       label: HomePage.name,
       url: '/',
-      builder: (context, routeData, globalData) => const HomePage()),
+      builder: (context, routeData, globalData) => const HomePage(),
+      metadata: {'authentication': true}),
   NavigationData(
       label: LoginForm.name,
       url: '/login',
