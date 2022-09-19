@@ -88,29 +88,32 @@ class AuthPage extends StatelessWidget {
     return Consumer<AuthPageModelBase>(builder: (context, model, child) {
       return Scaffold(
         body: SafeArea(
-          child: SingleChildScrollView(
-            primary: false,
-            child: Column(
-              children: [
-                const Padding(padding: EdgeInsets.only(bottom: 48)),
-                Text(
-                  getPageTitle(model),
-                  style: Theme.of(context).textTheme.headline2,
-                  textAlign: TextAlign.center,
-                ),
-                LayoutBuilder(builder: (context, constraints) {
-                  double width = min(420, constraints.maxWidth);
-                  return Container(
-                    width: width,
-                    decoration: defaultShadow,
-                    margin: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 32),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 24),
-                    child: getPage(model),
-                  );
-                }),
-              ],
+          child: SizedBox(
+            width: double.infinity,
+            child: SingleChildScrollView(
+              primary: false,
+              child: Column(
+                children: [
+                  const Padding(padding: EdgeInsets.only(bottom: 48)),
+                  Text(
+                    getPageTitle(model),
+                    style: Theme.of(context).textTheme.headline2,
+                    textAlign: TextAlign.center,
+                  ),
+                  LayoutBuilder(builder: (context, constraints) {
+                    double width = min(420, constraints.maxWidth);
+                    return Container(
+                      width: width,
+                      decoration: defaultShadow,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 32),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 24),
+                      child: getPage(model),
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
         ),

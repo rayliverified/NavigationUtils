@@ -6,7 +6,8 @@ import 'package:navigation_utils/navigation_utils.dart';
 import 'package:provider/provider.dart';
 
 import 'initialization.dart';
-import 'pages/auth/auth_components.dart';
+import 'models/model_user.dart';
+import 'navigation_routes.dart';
 import 'services/auth_service.dart';
 import 'services/debug_logger.dart';
 import 'ui/ui_page_wrapper.dart';
@@ -59,18 +60,64 @@ class AppModel extends AppModelBase {
   @override
   Future<void> init() async {
     print('Init App Model');
-    // Get saved auth state, if any.
-    AuthResult authResult = await authService.initAuthState();
+    // Attach navigation callback that hooks into the app state.
+    NavigationManager.instance.routerDelegate.setMainRoutes =
+        (routes) => setMainRoutes(routes);
+    // Set initialization page.
+    NavigationManager.instance.routerDelegate
+        .setOverride(const InitializationPage());
+    // Navigate after authentication and user model loads.
+    authService.userModel.addListener(_userModelListener);
+    // // Get saved auth state, if any.
+    // AuthResult authResult = await authService.initAuthState();
     // No saved auth state. Redirect to unauthenticated start page.
-    if (authResult.success == false) {
-      NavigationManager.instance.routerDelegate.set([SignUpForm.name]);
-    } else {}
+    // if (authResult.success) {
+    // } else {
+    //   NavigationManager.instance.routerDelegate.set([SignUpForm.name]);
+    // }
   }
 
   @override
   void dispose() {
     GetIt.instance.reset();
     super.dispose();
+  }
+
+  Future<void> _userModelListener() async {
+    UserModel userModel = authService.userModel.value;
+    print('User Model Stream: $userModel');
+    print('User Model Stream Initialized');
+    // Attempt to load the initial route URI.
+    if (loadInitialRoute) {
+      Uri initialRouteUri =
+          NavigationManager.instance.routeInformationParser.initialRouteUri;
+      print('Initial Route URI: $initialRouteUri');
+      // Only navigate to the initial route if the URL is not empty.
+      if (initialRouteUri.pathSegments.isNotEmpty) {
+        print('Has Path');
+        loadInitialRoute = false;
+        NavigationManager.instance.routerDelegate.set([initialRouteUri.path]);
+        NavigationData? routeData = NavigationUtils.getNavigationDataFromUri(
+            routes: routes, uri: initialRouteUri);
+        // if (route.requiresAuthentication &&
+        //     authService.isAuthenticated == false) {
+        //   // Not authenticated, block navigation and fallback to resolveAuthNavigation.
+        //   // TODO: Add authentication error screen.
+        // }
+        // if (authService.isAuthenticated &&
+        //     (route == DefaultRoute.login() || route == DefaultRoute.signup())) {
+        //   navigationManager.routerDelegate.set([DefaultRoute.home()]);
+        // } else {
+        //   navigationManager.routerDelegate.set([route]);
+        //   return;
+        // }
+      }
+    }
+  }
+
+  List<DefaultRoute> setMainRoutes(List<DefaultRoute> routes) {
+    List<DefaultRoute> routesHolder = routes;
+    return routesHolder;
   }
 }
 
