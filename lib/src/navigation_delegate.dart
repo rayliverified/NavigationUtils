@@ -72,6 +72,10 @@ class DefaultRoute extends RouteSettings {
 /// Pop until definition.
 typedef PopUntilRouteFunction = bool Function(DefaultRoute route);
 
+/// Set navigation callback.
+typedef SetMainRoutesCallback = List<DefaultRoute> Function(
+    List<DefaultRoute> controller);
+
 /// The RouteDelegate defines application specific behaviors of how the router
 /// learns about changes in the application state and how it responds to them.
 /// It listens to the RouteInformation Parser and the app state and builds the Navigator with
@@ -114,6 +118,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   Widget? pageOverride;
 
+  /// Exposes the [routes] history to the implementation to allow
+  /// modifying the navigation stack based on app state.
+  SetMainRoutesCallback? setMainRoutes;
+
   bool debugLog = false;
 
   /// Internal method that takes a Navigator initial route
@@ -151,7 +159,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _debugPrintMessage('Main Routes $defaultRoutes');
     _defaultRoutes = _setNewRouteHistory(_defaultRoutes, configuration);
     // User can customize returned routes with this exposed callback.
-    _defaultRoutes = setMainRoutes(_defaultRoutes) ?? _defaultRoutes;
+    _defaultRoutes = setMainRoutes?.call(_defaultRoutes) ?? _defaultRoutes;
     // Expose that the route has changed.
     if (didChangeRoute) onRouteChanged(_defaultRoutes.last);
     _debugPrintMessage('Main Routes Updated $defaultRoutes');
@@ -191,10 +199,6 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     return pathsHolder;
   }
-
-  /// Exposes the [routes] history to the implementation to allow
-  /// modifying the navigation stack based on app state.
-  List<DefaultRoute>? setMainRoutes(List<DefaultRoute> routes) => routes;
 
   /// Exposes a callback for when the route changes.
   void onRouteChanged(DefaultRoute route) {
