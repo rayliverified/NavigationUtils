@@ -8,3 +8,4 @@ export 'src/navigation_information_parser.dart';
 export 'src/navigation_listener_mixin.dart';
 export 'src/navigation_manager.dart';
 export 'src/route_builders/transparent_route.dart';
+export 'src/utils.dart';
