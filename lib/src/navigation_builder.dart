@@ -123,12 +123,16 @@ class NavigationBuilder {
             // Get global data via path.
             globalPageData = globalData[navigationData.path];
           }
-          Page page = buildPage(
-              navigationData,
-              navigationData.builder(
-                  context,
-                  route.copyWith(pathParameters: pathParameters),
-                  globalPageData ?? {}),
+          Widget child = navigationData.builder(
+              context,
+              route.copyWith(pathParameters: pathParameters),
+              globalPageData ?? {});
+
+          if (mainRouterDelegate.pageOverride != null) {
+            child = mainRouterDelegate.pageOverride!;
+          }
+
+          Page page = buildPage(navigationData, child,
               queryParameters: route.queryParameters,
               arguments: route.arguments,
               pageType: navigationData.pageType ?? PageType.material,

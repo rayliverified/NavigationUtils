@@ -112,6 +112,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   List<NavigationData> navigationDataRoutes = [];
 
+  Widget? pageOverride;
+
   bool debugLog = false;
 
   /// Internal method that takes a Navigator initial route
@@ -494,6 +496,17 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _defaultRoutes.addAll(routes);
     _defaultRoutes.add(currentRoute);
     notifyListeners();
+  }
+
+  // Set Override
+
+  void setOverride(Widget page) {
+    pageOverride = page;
+    notifyListeners();
+  }
+
+  void removeOverride() {
+    pageOverride = null;
   }
 
   // Query Parameters
