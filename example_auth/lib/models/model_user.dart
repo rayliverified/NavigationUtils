@@ -10,6 +10,7 @@ class UserModel extends Equatable {
   final String email;
   final String name;
   final String photoUrl;
+  final bool? initial;
 
   const UserModel({
     required this.id,
@@ -17,7 +18,11 @@ class UserModel extends Equatable {
     this.name = 'Guest',
     this.photoUrl =
         'https://www.gravatar.com/avatar/084e0343a0486ff05530df6c705c8bb9.png?s=200&d=retro&r=pg',
+    this.initial = false,
   });
+
+  factory UserModel.initial() =>
+      const UserModel(id: '', email: '', initial: true);
 
   factory UserModel.empty() => const UserModel(id: '', email: '');
 
@@ -40,7 +45,7 @@ class UserModel extends Equatable {
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 
   @override
-  List<Object?> get props => [id, email, name, photoUrl];
+  List<Object?> get props => [id, email, name, photoUrl, initial];
 
   @override
   String toString() => toJson().toString();

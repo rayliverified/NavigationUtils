@@ -27,7 +27,7 @@ class AuthResult {
 }
 
 abstract class AuthServiceBase implements Disposable {
-  ValueNotifier<UserModel> userModel = ValueNotifier(UserModel.empty());
+  ValueNotifier<UserModel> userModel = ValueNotifier(UserModel.initial());
   late StreamSubscription firebaseAuthListener;
 
   bool get isAuthenticated => userModel.value.id.isNotEmpty;
