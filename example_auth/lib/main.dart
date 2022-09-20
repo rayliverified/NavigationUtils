@@ -54,29 +54,20 @@ class AppModel extends AppModelBase {
   final AuthServiceBase authService = GetIt.instance.get<AuthServiceBase>();
 
   AppModel({super.context}) {
-    print('Init App');
     init();
   }
 
   @override
   Future<void> init() async {
-    print('Init App Model');
+    DebugLogger.instance.printFunction('Init App');
     // Attach navigation callback that hooks into the app state.
     NavigationManager.instance.routerDelegate.setMainRoutes =
         (routes) => setMainRoutes(routes);
     // Set initialization page.
-    print('Initialized: $initialized');
     NavigationManager.instance.routerDelegate
         .setOverride(const InitializationPage());
     // Navigate after authentication and user model loads.
     authService.firebaseAuthUserStream.listen(_userModelListener);
-    // Get saved auth state, if any.
-    // AuthResult authResult = await authService.initAuthState();
-    // // No saved auth state. Redirect to unauthenticated start page.
-    // if (authResult.success) {
-    // } else {
-    //   NavigationManager.instance.routerDelegate.set([SignUpForm.name]);
-    // }
   }
 
   @override
@@ -87,14 +78,13 @@ class AppModel extends AppModelBase {
 
   Future<void> _userModelListener(User? user) async {
     UserModel userModel = authService.userModel.value;
-    print('User Model Stream: $userModel');
-    print('User Model Stream Initialized');
+    DebugLogger.instance.printInfo('User Model Stream: $userModel');
     // Attempt to load the initial route URI.
     if (loadInitialRoute) {
       loadInitialRoute = false;
       Uri initialRouteUri =
           NavigationManager.instance.routeInformationParser.initialRouteUri;
-      print('Initial Route URI: $initialRouteUri');
+      DebugLogger.instance.printInfo('Initial Route URI: $initialRouteUri');
       if (initialRouteUri.pathSegments.isNotEmpty) {
         NavigationManager.instance.routerDelegate.set([initialRouteUri.path]);
       }
@@ -103,7 +93,7 @@ class AppModel extends AppModelBase {
   }
 
   List<DefaultRoute> setMainRoutes(List<DefaultRoute> routes) {
-    print('Set Main Routes: $routes');
+    DebugLogger.instance.printFunction('Set Main Routes Old: $routes');
     List<DefaultRoute> routesHolder = routes;
     // Authenticated route guard.
     if (AuthService.instance.isAuthenticated == false) {
@@ -120,7 +110,7 @@ class AppModel extends AppModelBase {
         routesHolder.add(DefaultRoute(label: HomePage.name, path: '/'));
       }
     }
-    print('Final Main Routes: $routes');
+    DebugLogger.instance.printFunction('Set Main Routes New: $routes');
     return routesHolder;
   }
 }
