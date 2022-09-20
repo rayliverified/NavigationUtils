@@ -13,12 +13,14 @@ List<NavigationData> routes = [
       label: LoginForm.name,
       url: '/login',
       builder: (context, routeData, globalData) =>
-          const AuthPageWrapper(type: AuthPageType.login)),
+          const AuthPageWrapper(type: AuthPageType.login),
+      metadata: {'type': 'auth'}),
   NavigationData(
       label: SignUpForm.name,
       url: '/signup',
       builder: (context, routeData, globalData) =>
-          const AuthPageWrapper(type: AuthPageType.signup)),
+          const AuthPageWrapper(type: AuthPageType.signup),
+      metadata: {'type': 'auth'}),
   NavigationData(
       label: ResetPasswordForm.name,
       url: '/reset_password',

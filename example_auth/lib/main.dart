@@ -112,6 +112,14 @@ class AppModel extends AppModelBase {
         routesHolder.add(DefaultRoute(label: SignUpForm.name, path: '/signup'));
       }
     }
+    // Remove login and signup page guard.
+    if (AuthService.instance.isAuthenticated) {
+      routesHolder
+          .removeWhere((element) => element.metadata?['type'] == 'auth');
+      if (routesHolder.isEmpty) {
+        routesHolder.add(DefaultRoute(label: HomePage.name, path: '/'));
+      }
+    }
     print('Final Main Routes: $routes');
     return routesHolder;
   }

@@ -151,6 +151,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Do not set empty route.
     if (configuration.label.isEmpty && configuration.path.isEmpty) return;
 
+    _debugPrintMessage('Main Routes: $defaultRoutes');
+
     // Resolve Route From Navigation Data.
     DefaultRoute configurationHolder =
         NavigationUtils.mapNavigationDataToDefaultRoute(
@@ -163,24 +165,23 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // there is always a page to display. The initial page is now set here
     // instead of in the Navigator widget.
     if (_defaultRoutes.isEmpty) {
-      print('Configuration empty.');
       _defaultRoutes.add(configurationHolder);
     }
+
+    _debugPrintMessage('New Resolved Route: $defaultRoutes');
 
     // TODO: Implement canPop.
 
     bool didChangeRoute = currentConfiguration != configurationHolder;
-    _debugPrintMessage('Main Routes $defaultRoutes');
     _defaultRoutes = _setNewRouteHistory(_defaultRoutes, configurationHolder);
     // User can customize returned routes with this exposed callback.
     _defaultRoutes = setMainRoutes?.call(_defaultRoutes) ?? _defaultRoutes;
-    print('defaultRoutes called');
     if (_defaultRoutes.isEmpty) {
       throw Exception('Routes cannot be empty.');
     }
     // Expose that the route has changed.
     if (didChangeRoute) onRouteChanged(_defaultRoutes.last);
-    _debugPrintMessage('Main Routes Updated $defaultRoutes');
+    _debugPrintMessage('Main Routes Updated: $defaultRoutes');
     notifyListeners();
     return;
   }

@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:example_auth/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
+import 'package:navigation_utils/navigation_utils.dart';
 import 'package:universal_io/io.dart';
 
 import '../../services/auth_service.dart';
@@ -65,7 +67,7 @@ class _SignUpFormState extends State<SignUpForm> {
         .registerWithEmailAndPassword(
             '', _emailController.text, _passwordController.text);
 
-    // Admittedly, the login and signup forms look very similar.
+    // The login and signup forms look very similar.
     // It is common to try to login through the signup form.
     // If the email exists, try to login user with credential automatically.
     if (!response.isSuccess &&
@@ -82,7 +84,7 @@ class _SignUpFormState extends State<SignUpForm> {
       isLoading = false;
       if (loginResult.isSuccess) {
         TextInput.finishAutofillContext();
-        if (mounted) setState(() {});
+        NavigationManager.instance.routerDelegate.set([HomePage.name]);
         return;
       }
     }
@@ -91,6 +93,8 @@ class _SignUpFormState extends State<SignUpForm> {
 
     if (response.isSuccess) {
       TextInput.finishAutofillContext();
+      NavigationManager.instance.routerDelegate.set([HomePage.name]);
+      return;
     } else {
       errorMessage = response.error.message;
     }
@@ -108,7 +112,10 @@ class _SignUpFormState extends State<SignUpForm> {
 
     isGoogleLoading = false;
 
-    if (!result.success) {
+    if (result.success) {
+      NavigationManager.instance.routerDelegate.set([HomePage.name]);
+      return;
+    } else {
       googleErrorMessage = result.errorMessage;
     }
     if (mounted) setState(() {});
@@ -273,6 +280,8 @@ class _LoginFormState extends State<LoginForm> {
     isLoading = false;
     if (result.isSuccess) {
       TextInput.finishAutofillContext();
+      NavigationManager.instance.routerDelegate.set([HomePage.name]);
+      return;
     } else {
       errorMessage = result.error.message;
     }
@@ -290,7 +299,10 @@ class _LoginFormState extends State<LoginForm> {
 
     isGoogleLoading = false;
 
-    if (!result.success) {
+    if (result.success) {
+      NavigationManager.instance.routerDelegate.set([HomePage.name]);
+      return;
+    } else {
       googleErrorMessage = result.errorMessage;
     }
     if (mounted) setState(() {});
