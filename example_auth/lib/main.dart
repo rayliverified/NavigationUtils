@@ -90,6 +90,14 @@ class AppModel extends AppModelBase {
       }
       NavigationManager.instance.routerDelegate.removeOverride();
     }
+    // Automatically navigate to auth screen when user is logged out.
+    if (AuthService.instance.isAuthenticated == false) {
+      if (NavigationManager.instance.routerDelegate.currentConfiguration
+              ?.metadata?['auth'] ==
+          true) {
+        NavigationManager.instance.routerDelegate.set([SignUpForm.name]);
+      }
+    }
   }
 
   List<DefaultRoute> setMainRoutes(List<DefaultRoute> routes) {
@@ -150,9 +158,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return const PageWrapper(
-      child: Center(
-        child: Text('Home Page'),
+    return PageWrapper(
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Home Page'),
+              MaterialButton(
+                onPressed: () {
+                  AuthService.instance.signOut();
+                },
+                color: Colors.blue,
+                child:
+                    const Text('Logout', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
