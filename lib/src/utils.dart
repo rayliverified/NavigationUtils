@@ -5,8 +5,9 @@ class NavigationUtils {
       {required List<NavigationData> routes, required Uri uri}) {
     NavigationData? navigationData;
     try {
-      String path = _trimRight(uri.path, '?');
-      navigationData = routes.firstWhere((element) => element.path == path);
+      navigationData = routes.firstWhere((element) =>
+          Uri(path: element.path, queryParameters: element.queryParameters) ==
+          uri);
     } on StateError {
       // ignore: empty_catches
     }
