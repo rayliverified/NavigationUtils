@@ -161,14 +161,11 @@ class NavigationBuilder {
       PageType pageType = PageType.material,
       bool? fullScreenDialog,
       Color? barrierColor}) {
-    print(navigationData.queryParameters);
     String name =
         Uri(path: navigationData.path, queryParameters: queryParameters)
             .toString();
     name = _trimRight(name, '?');
     if (name.startsWith('/') == false) name = '/$name';
-
-    print('Name: $name');
 
     switch (pageType) {
       case PageType.material:

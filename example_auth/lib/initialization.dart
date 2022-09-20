@@ -37,7 +37,8 @@ class Initialization {
     GetIt.instance.registerSingleton<AuthServiceBase>(AuthService());
 
     NavigationManager.init(
-        mainRouterDelegate: DefaultRouterDelegate(navigationDataRoutes: routes),
+        mainRouterDelegate:
+            DefaultRouterDelegate(navigationDataRoutes: routes, debugLog: true),
         routeInformationParser: DefaultRouteInformationParser());
 
     // Run post functions.
