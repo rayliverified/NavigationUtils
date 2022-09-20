@@ -11,12 +11,14 @@ class DefaultRoute extends RouteSettings {
   final String path;
   final Map<String, String> queryParameters;
   final Map<String, String> pathParameters;
+  final Map<String, dynamic>? metadata;
 
   DefaultRoute(
       {this.label = '',
       this.path = '',
       this.queryParameters = const {},
       this.pathParameters = const {},
+      this.metadata = const {},
       super.arguments})
       : super(
             name: _trimRight(
@@ -31,6 +33,7 @@ class DefaultRoute extends RouteSettings {
       String? path,
       Map<String, String>? queryParameters,
       Map<String, String>? pathParameters,
+      Map<String, dynamic>? metadata,
       Object? arguments,
       String? name}) {
     return DefaultRoute(
@@ -38,6 +41,7 @@ class DefaultRoute extends RouteSettings {
       path: path ?? this.path,
       queryParameters: queryParameters ?? this.queryParameters,
       pathParameters: pathParameters ?? this.pathParameters,
+      metadata: metadata ?? this.metadata,
       arguments: arguments ?? this.arguments,
     );
   }
@@ -53,7 +57,7 @@ class DefaultRoute extends RouteSettings {
 
   @override
   String toString() =>
-      'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, arguments: $arguments)';
+      'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, metadata: $metadata, arguments: $arguments)';
 
   operator [](String key) => queryParameters[key];
 
@@ -232,6 +236,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         label: navigationData.label ?? '',
         path: path,
         queryParameters: queryParameters ?? navigationData.queryParameters,
+        metadata: navigationData.metadata,
         arguments: arguments);
 
     // Save global data to name key.
@@ -458,7 +463,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         throw Exception('`$e` route not found.');
       }
 
-      return DefaultRoute(label: e, path: navigationData.path);
+      return DefaultRoute(
+          label: e,
+          path: navigationData.path,
+          metadata: navigationData.metadata);
     }));
     // Notify route change listeners that route has changed.
     onRouteChanged(_defaultRoutes.last);
@@ -488,7 +496,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         throw Exception('`$e` route not found.');
       }
 
-      return DefaultRoute(label: e, path: navigationData.path);
+      return DefaultRoute(
+          label: e,
+          path: navigationData.path,
+          metadata: navigationData.metadata);
     }));
     _defaultRoutes.add(currentRoute);
     notifyListeners();
