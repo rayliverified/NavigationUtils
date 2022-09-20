@@ -1,9 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'navigation_delegate.dart';
-import 'path_utils_go_router.dart';
-import 'route_builders/transparent_route.dart';
+import 'package:navigation_utils/navigation_utils.dart';
 
 typedef NavigationPageFactory = Widget Function(BuildContext context,
     DefaultRoute routeData, Map<String, dynamic> globalData);
@@ -66,56 +63,18 @@ class NavigationBuilder {
     List<Page> pages = [];
     for (Object route in routeDataList) {
       if (route is DefaultRoute) {
-        NavigationData? navigationData;
-
-        // Named routing.
-        try {
-          navigationData = routes.firstWhere((element) =>
-              ((element.label?.isNotEmpty ?? false) &&
-                  element.label == route.label));
-        } on StateError {
-          // ignore: empty_catches
-        }
-
-        // Exact path match routing.
-        if (navigationData == null) {
-          try {
-            navigationData = routes.firstWhere((element) =>
-                ((element.path == route.path &&
-                    element.path.isNotEmpty &&
-                    route.path.isNotEmpty)));
-          } on StateError {
-            // ignore: empty_catches
-          }
-        }
-
-        // Path pattern matching.
-        Map<String, String> pathParameters = {};
-        if (navigationData == null) {
-          try {
-            navigationData = routes.firstWhere((element) {
-              if ((element.path.isNotEmpty && route.path.isNotEmpty)) {
-                if (element.path.contains(':')) {
-                  final List<String> paramNames = <String>[];
-                  RegExp regExp = patternToRegExp(element.path, paramNames);
-                  final String? match = regExp.stringMatch(route.path);
-                  if (match == route.path) {
-                    final RegExpMatch match = regExp.firstMatch(route.path)!;
-                    pathParameters = extractPathParameters(paramNames, match);
-                    return true;
-                  }
-                }
-              }
-              return false;
-            });
-          } on StateError {
-            // ignore: empty_catches
-          }
-        }
+        NavigationData? navigationData =
+            NavigationUtils.getNavigationDataFromRoute(
+                routes: routes, route: route);
 
         // TODO: Add wildcard support.
 
         if (navigationData != null) {
+          Map<String, String> pathParameters = {};
+          if (navigationData.path.contains(':')) {
+            pathParameters = NavigationUtils.extractPathParametersWithPattern(
+                route.path, navigationData.path);
+          }
           // Inject dynamic data to page builder.
           Map<String, dynamic> globalData = mainRouterDelegate.globalData;
           Map<String, dynamic>? globalPageData = {};

@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import 'navigation_builder.dart';
 import 'path_utils_go_router.dart';
+import 'utils.dart';
 
 class DefaultRoute extends RouteSettings {
   final String path;
@@ -150,26 +151,19 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Do not set empty route.
     if (configuration.label.isEmpty && configuration.path.isEmpty) return;
 
-    DefaultRoute configurationHolder = configuration;
+    // Resolve Route From Navigation Data.
+    DefaultRoute configurationHolder =
+        NavigationUtils.mapNavigationDataToDefaultRoute(
+                route: configuration,
+                routes: navigationDataRoutes,
+                globalData: globalData) ??
+            configuration;
 
     // Handle InitialRoutePath logic here. Adding a page here ensures
     // there is always a page to display. The initial page is now set here
     // instead of in the Navigator widget.
     if (_defaultRoutes.isEmpty) {
       print('Configuration empty.');
-      // Resolve Route From Navigation Data.
-      NavigationData? navigationData = _getNavigationDataFromName(
-          navigationDataRoutes, configurationHolder.path);
-      print('NavigationData: $navigationData');
-      if (navigationData != null) {
-        configurationHolder = DefaultRoute(
-          label: navigationData.label ?? '',
-          path: navigationData.path,
-          metadata: navigationData.metadata,
-          queryParameters: navigationData.queryParameters,
-        );
-      }
-
       _defaultRoutes.add(configurationHolder);
     }
 
