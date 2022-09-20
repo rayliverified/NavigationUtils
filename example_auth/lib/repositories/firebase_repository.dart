@@ -108,10 +108,8 @@ class FirebaseRepository extends FirebaseRepositoryBase {
   }
 
   @override
-  Stream<String?> authStateChanges() => FirebaseAuth.instance
-      .authStateChanges()
-      .map((event) => event?.uid)
-      .asBroadcastStream();
+  Stream<User?> authStateChanges() =>
+      FirebaseAuth.instance.authStateChanges().asBroadcastStream();
 
   @override
   Future<ValueResponse<UserModel>> createUserWithEmailAndPassword(

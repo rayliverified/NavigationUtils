@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example_auth/repositories/firebase_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:universal_io/io.dart';
@@ -85,7 +86,7 @@ abstract class FirebaseRepositoryBase {
           String id, UserModel user) =>
       throw UnimplementedError('Use implementation');
 
-  Stream<String?> authStateChanges() =>
+  Stream<User?> authStateChanges() =>
       throw UnimplementedError('Use implementation');
 
   Future<ValueResponse<UserModel>> createUserWithEmailAndPassword({

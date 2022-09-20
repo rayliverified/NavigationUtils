@@ -28,6 +28,7 @@ class AuthResult {
 
 abstract class AuthServiceBase implements Disposable {
   ValueNotifier<UserModel> userModel = ValueNotifier(UserModel.initial());
+  late Stream<User?> firebaseAuthUserStream;
   late StreamSubscription firebaseAuthListener;
 
   bool get isAuthenticated => userModel.value.id.isNotEmpty;
@@ -120,13 +121,14 @@ class AuthService extends AuthServiceBase {
   }
 
   AuthService._() {
+    firebaseAuthUserStream = FirebaseRepositoryBase.instance.authStateChanges();
     firebaseAuthListener =
-        FirebaseRepositoryBase.instance.authStateChanges().listen((uid) {
-      DebugLogger.instance.printFunction('authStateChanges: $uid');
-      if (uid != null) {
-        fetchAndSetUserModel(uid);
+        FirebaseRepositoryBase.instance.authStateChanges().listen((user) {
+      DebugLogger.instance.printFunction('authStateChanges: $user');
+      if (user != null) {
+        fetchAndSetUserModel(user.uid);
         if (userModel.value.id.isEmpty) {
-          onUserAuthenticated(uid);
+          onUserAuthenticated(user.uid);
         }
       } else {
         resetUserModel();

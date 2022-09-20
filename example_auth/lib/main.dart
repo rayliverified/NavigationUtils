@@ -64,13 +64,14 @@ class AppModel extends AppModelBase {
     NavigationManager.instance.routerDelegate.setMainRoutes =
         (routes) => setMainRoutes(routes);
     // Set initialization page.
+    print('Initialized: $initialized');
     NavigationManager.instance.routerDelegate
         .setOverride(const InitializationPage());
     // Navigate after authentication and user model loads.
-    authService.userModel.addListener(_userModelListener);
-    // // Get saved auth state, if any.
+    authService.firebaseAuthUserStream.listen(_userModelListener);
+    // Get saved auth state, if any.
     // AuthResult authResult = await authService.initAuthState();
-    // No saved auth state. Redirect to unauthenticated start page.
+    // // No saved auth state. Redirect to unauthenticated start page.
     // if (authResult.success) {
     // } else {
     //   NavigationManager.instance.routerDelegate.set([SignUpForm.name]);
@@ -83,40 +84,34 @@ class AppModel extends AppModelBase {
     super.dispose();
   }
 
-  Future<void> _userModelListener() async {
+  Future<void> _userModelListener(User? user) async {
     UserModel userModel = authService.userModel.value;
     print('User Model Stream: $userModel');
     print('User Model Stream Initialized');
     // Attempt to load the initial route URI.
     if (loadInitialRoute) {
+      loadInitialRoute = false;
       Uri initialRouteUri =
           NavigationManager.instance.routeInformationParser.initialRouteUri;
       print('Initial Route URI: $initialRouteUri');
-      // Only navigate to the initial route if the URL is not empty.
       if (initialRouteUri.pathSegments.isNotEmpty) {
-        print('Has Path');
-        loadInitialRoute = false;
         NavigationManager.instance.routerDelegate.set([initialRouteUri.path]);
-        NavigationData? routeData = NavigationUtils.getNavigationDataFromUri(
-            routes: routes, uri: initialRouteUri);
-        // if (route.requiresAuthentication &&
-        //     authService.isAuthenticated == false) {
-        //   // Not authenticated, block navigation and fallback to resolveAuthNavigation.
-        //   // TODO: Add authentication error screen.
-        // }
-        // if (authService.isAuthenticated &&
-        //     (route == DefaultRoute.login() || route == DefaultRoute.signup())) {
-        //   navigationManager.routerDelegate.set([DefaultRoute.home()]);
-        // } else {
-        //   navigationManager.routerDelegate.set([route]);
-        //   return;
-        // }
       }
+      NavigationManager.instance.routerDelegate.removeOverride();
     }
   }
 
   List<DefaultRoute> setMainRoutes(List<DefaultRoute> routes) {
+    print('Set Main Routes: $routes');
     List<DefaultRoute> routesHolder = routes;
+    // Authenticated route guard.
+    if (AuthService.instance.isAuthenticated == false) {
+      routesHolder.removeWhere((element) => element.metadata?['auth'] == true);
+      if (routesHolder.isEmpty) {
+        routesHolder.add(DefaultRoute(label: SignUpForm.name, path: '/signup'));
+      }
+    }
+    print('Final Main Routes: $routes');
     return routesHolder;
   }
 }
