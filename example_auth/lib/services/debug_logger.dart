@@ -16,22 +16,26 @@ class DebugLogger {
   }
 
   void printRebuild(Object? obj) {
-    if (kReleaseMode || kProfileMode) return;
+    if (config.printInProduction == false && (kReleaseMode || kProfileMode))
+      return;
     if (config.printRebuilds ?? false) print('Rebuild $obj');
   }
 
   void printAction(Object? obj) {
-    if (kReleaseMode || kProfileMode) return;
+    if (config.printInProduction == false && (kReleaseMode || kProfileMode))
+      return;
     if (config.printActions ?? false) print(obj);
   }
 
   void printFunction(Object? obj) {
-    if (kReleaseMode || kProfileMode) return;
+    if (config.printInProduction == false && (kReleaseMode || kProfileMode))
+      return;
     if (config.printFunctions ?? false) print(obj);
   }
 
   void printInfo(Object? obj) {
-    if (kReleaseMode || kProfileMode) return;
+    if (config.printInProduction == false && (kReleaseMode || kProfileMode))
+      return;
     if (config.printInfo ?? false) print(obj);
   }
 }
@@ -41,10 +45,12 @@ class DebugLoggerConfig {
   final bool? printFunctions;
   final bool? printActions;
   final bool? printInfo;
+  final bool printInProduction;
 
   DebugLoggerConfig(
       {this.printRebuilds,
       this.printFunctions,
       this.printActions,
-      this.printInfo});
+      this.printInfo,
+      this.printInProduction = false});
 }
