@@ -17,7 +17,11 @@ Future<void> main() async =>
     Initialization.main(const AppWrapper(), preInitFunction: () {
       /// Set log controls for debugging.
       DebugLogger.config = DebugLoggerConfig(
-          printRebuilds: true, printActions: true, printFunctions: true);
+          printRebuilds: true,
+          printActions: true,
+          printFunctions: true,
+          printInProduction: true,
+          printInfo: true);
     });
 
 /// Provide [AppModel] to [App].
@@ -85,9 +89,7 @@ class AppModel extends AppModelBase {
       Uri initialRouteUri =
           NavigationManager.instance.routeInformationParser.initialRouteUri;
       DebugLogger.instance.printInfo('Initial Route URI: $initialRouteUri');
-      if (initialRouteUri.pathSegments.isNotEmpty) {
-        NavigationManager.instance.routerDelegate.set([initialRouteUri.path]);
-      }
+      NavigationManager.instance.routerDelegate.set([initialRouteUri.path]);
       NavigationManager.instance.routerDelegate.removeOverride();
     }
     // Automatically navigate to auth screen when user is logged out.
