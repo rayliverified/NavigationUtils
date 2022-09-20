@@ -33,7 +33,8 @@ class NavigationData {
             url.startsWith('/'), 'Path must be prefixed with / to match URLs.');
 
   @override
-  String toString() => 'NavigationData(label: $label, path: $path)';
+  String toString() =>
+      'NavigationData(label: $label, url: $url, metadata: $metadata)';
 }
 
 /// Custom navigation builder for gradual migration support.

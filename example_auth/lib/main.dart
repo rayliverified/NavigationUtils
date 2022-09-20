@@ -1,3 +1,6 @@
+import 'package:example_auth/pages/auth/auth_components.dart';
+import 'package:example_auth/services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,8 +10,6 @@ import 'package:provider/provider.dart';
 
 import 'initialization.dart';
 import 'models/model_user.dart';
-import 'navigation_routes.dart';
-import 'services/auth_service.dart';
 import 'services/debug_logger.dart';
 import 'ui/ui_page_wrapper.dart';
 

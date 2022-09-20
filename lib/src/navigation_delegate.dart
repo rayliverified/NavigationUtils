@@ -7,15 +7,15 @@ import 'navigation_builder.dart';
 import 'path_utils_go_router.dart';
 
 class DefaultRoute extends RouteSettings {
-  final String label;
   final String path;
+  final String label;
   final Map<String, String> queryParameters;
   final Map<String, String> pathParameters;
   final Map<String, dynamic>? metadata;
 
   DefaultRoute(
-      {this.label = '',
-      this.path = '',
+      {required this.path,
+      this.label = '',
       this.queryParameters = const {},
       this.pathParameters = const {},
       this.metadata = const {},
@@ -149,21 +149,41 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _debugPrintMessage('setNewRoutePath: $configuration');
     // Do not set empty route.
     if (configuration.label.isEmpty && configuration.path.isEmpty) return;
+
+    DefaultRoute configurationHolder = configuration;
+
     // Handle InitialRoutePath logic here. Adding a page here ensures
     // there is always a page to display. The initial page is now set here
     // instead of in the Navigator widget.
     if (_defaultRoutes.isEmpty) {
-      _defaultRoutes.add(configuration);
-      return;
+      print('Configuration empty.');
+      // Resolve Route From Navigation Data.
+      NavigationData? navigationData = _getNavigationDataFromName(
+          navigationDataRoutes, configurationHolder.path);
+      print('NavigationData: $navigationData');
+      if (navigationData != null) {
+        configurationHolder = DefaultRoute(
+          label: navigationData.label ?? '',
+          path: navigationData.path,
+          metadata: navigationData.metadata,
+          queryParameters: navigationData.queryParameters,
+        );
+      }
+
+      _defaultRoutes.add(configurationHolder);
     }
 
     // TODO: Implement canPop.
 
-    bool didChangeRoute = currentConfiguration != configuration;
+    bool didChangeRoute = currentConfiguration != configurationHolder;
     _debugPrintMessage('Main Routes $defaultRoutes');
-    _defaultRoutes = _setNewRouteHistory(_defaultRoutes, configuration);
+    _defaultRoutes = _setNewRouteHistory(_defaultRoutes, configurationHolder);
     // User can customize returned routes with this exposed callback.
     _defaultRoutes = setMainRoutes?.call(_defaultRoutes) ?? _defaultRoutes;
+    print('defaultRoutes called');
+    if (_defaultRoutes.isEmpty) {
+      throw Exception('Routes cannot be empty.');
+    }
     // Expose that the route has changed.
     if (didChangeRoute) onRouteChanged(_defaultRoutes.last);
     _debugPrintMessage('Main Routes Updated $defaultRoutes');
@@ -454,6 +474,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   void set(List<String> names) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
+    DefaultRoute oldRoute = _defaultRoutes.last;
+
     _defaultRoutes.clear();
     // Map route names to routes.
     _defaultRoutes.addAll(names.map((e) {
@@ -468,17 +490,30 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
           path: navigationData.path,
           metadata: navigationData.metadata);
     }));
-    // Notify route change listeners that route has changed.
-    onRouteChanged(_defaultRoutes.last);
+
+    bool didChangeRoute = oldRoute != _defaultRoutes.last;
+
+    _defaultRoutes = setMainRoutes?.call(_defaultRoutes) ?? _defaultRoutes;
+    if (_defaultRoutes.isEmpty) {
+      throw Exception('Routes cannot be empty.');
+    }
+    // Expose that the route has changed.
+    if (didChangeRoute) onRouteChanged(_defaultRoutes.last);
     notifyListeners();
   }
 
   void setRoutes(List<DefaultRoute> routes) {
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
+    bool didChangeRoute = routes.last != _defaultRoutes.last;
+
     _defaultRoutes.clear();
     _defaultRoutes.addAll(routes);
-    // Notify route change listeners that route has changed.
-    onRouteChanged(_defaultRoutes.last);
+    _defaultRoutes = setMainRoutes?.call(_defaultRoutes) ?? _defaultRoutes;
+    if (_defaultRoutes.isEmpty) {
+      throw Exception('Routes cannot be empty.');
+    }
+    // Expose that the route has changed.
+    if (didChangeRoute) onRouteChanged(_defaultRoutes.last);
     notifyListeners();
   }
 
