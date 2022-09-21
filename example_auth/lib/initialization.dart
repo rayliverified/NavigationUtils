@@ -31,7 +31,6 @@ class Initialization {
     ValueResponse<void> firebaseResponse =
         await FirebaseRepositoryBase.initialize();
     if (firebaseResponse.isError) {
-      // TODO [ERROR_HANDLING]: handle error.
       throw firebaseResponse.error;
     }
 

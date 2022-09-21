@@ -41,6 +41,8 @@ abstract class FirebaseRepositoryBase {
       _instance = FirebaseRepository();
     } else {
       debugPrint('Firebase is not yet supported on this platform.');
+      return ValueResponse.error(
+          'Firebase is not yet supported on this platform.');
     }
     return ValueResponse.success();
   }
