@@ -10,8 +10,13 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
   @override
   bool debugLog = false;
 
+  @override
+  OnUnknownRoute? onUnknownRoute;
+
   DefaultRouterDelegate(
-      {required this.navigationDataRoutes, this.debugLog = false});
+      {required this.navigationDataRoutes,
+      this.debugLog = false,
+      this.onUnknownRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +26,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
         ...NavigationBuilder(
           routeDataList: defaultRoutes,
           routes: navigationDataRoutes,
+          onUnknownRoute: onUnknownRoute,
         ).build(context),
       ],
       onPopPage: (route, result) {

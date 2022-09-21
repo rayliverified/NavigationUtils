@@ -5,6 +5,8 @@ import 'package:navigation_utils/navigation_utils.dart';
 typedef NavigationPageFactory = Widget Function(BuildContext context,
     DefaultRoute routeData, Map<String, dynamic> globalData);
 
+typedef OnUnknownRoute = Page Function(DefaultRoute route);
+
 class NavigationData {
   final String? label;
   final String url;
@@ -48,13 +50,13 @@ enum PageType {
 class NavigationBuilder {
   final List<Object> routeDataList;
   final List<NavigationData> routes;
-  final Object? onGenerateRoutes;
+  final OnUnknownRoute? onUnknownRoute;
   final NavigationPageBuilder? pageBuilder;
 
   NavigationBuilder(
       {required this.routeDataList,
       this.routes = const [],
-      this.onGenerateRoutes = const {},
+      this.onUnknownRoute,
       this.pageBuilder});
 
   List<Page> build(BuildContext context) {
@@ -109,6 +111,10 @@ class NavigationBuilder {
       if (customPage != null) {
         pages.add(customPage);
         continue;
+      }
+
+      if (onUnknownRoute != null) {
+        pages.add(onUnknownRoute!.call(route as DefaultRoute));
       }
     }
 

@@ -222,24 +222,58 @@ class InitializationErrorPage extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: double.infinity,
-        child: Center(
-          child: Column(
-            children: [
-              Text(
-                model.errorMessage ?? 'Unknown error. Please try again.',
-                style: Theme.of(context).textTheme.bodyText1,
-                textAlign: TextAlign.center,
-              ),
-              Container(
-                height: 15,
-              ),
-              TextButton(
-                onPressed: model.init,
-                child: const Text('Reload',
-                    style: TextStyle(color: Colors.white, fontSize: 16)),
-              )
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              model.errorMessage ?? 'Unknown error. Please try again.',
+              style: Theme.of(context).textTheme.headline4,
+              textAlign: TextAlign.center,
+            ),
+            Container(
+              height: 15,
+            ),
+            TextButton(
+              onPressed: model.init,
+              child: const Text('Reload',
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class UnknownPage extends StatelessWidget {
+  static const String name = 'unknown';
+
+  const UnknownPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PageWrapper(
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '404',
+              style: Theme.of(context).textTheme.headline1,
+              textAlign: TextAlign.center,
+            ),
+            Container(
+              height: 15,
+            ),
+            MaterialButton(
+              onPressed: () => NavigationManager.instance.routerDelegate.pop(),
+              color: Colors.blue,
+              child: const Text('Back',
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
+            )
+          ],
         ),
       ),
     );

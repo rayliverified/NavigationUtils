@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
+import 'main.dart';
 import 'navigation_routes.dart';
 import 'repositories/firebase_repository_base.dart';
 import 'services/auth_service.dart';
@@ -37,8 +38,12 @@ class Initialization {
     GetIt.instance.registerSingleton<AuthServiceBase>(AuthService());
 
     NavigationManager.init(
-        mainRouterDelegate:
-            DefaultRouterDelegate(navigationDataRoutes: routes, debugLog: true),
+        mainRouterDelegate: DefaultRouterDelegate(
+          navigationDataRoutes: routes,
+          debugLog: true,
+          onUnknownRoute: (route) =>
+              const MaterialPage(name: UnknownPage.name, child: UnknownPage()),
+        ),
         routeInformationParser: DefaultRouteInformationParser());
 
     // Run post functions.

@@ -127,6 +127,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   /// modifying the navigation stack based on app state.
   SetMainRoutesCallback? setMainRoutes;
 
+  /// Unknown route generation function.
+  OnUnknownRoute? onUnknownRoute;
+
   bool debugLog = false;
 
   /// Internal method that takes a Navigator initial route
@@ -154,12 +157,17 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _debugPrintMessage('Main Routes: $defaultRoutes');
 
     // Resolve Route From Navigation Data.
-    DefaultRoute configurationHolder =
+    DefaultRoute? configurationHolder =
         NavigationUtils.mapNavigationDataToDefaultRoute(
-                route: configuration,
-                routes: navigationDataRoutes,
-                globalData: globalData) ??
-            configuration;
+            route: configuration,
+            routes: navigationDataRoutes,
+            globalData: globalData);
+
+    // Unknown route, do not navigate if unknown route is not implemented.
+    if (configurationHolder == null && onUnknownRoute != null) {
+      configurationHolder = configuration;
+    }
+    if (configurationHolder == null) return;
 
     // Handle InitialRoutePath logic here. Adding a page here ensures
     // there is always a page to display. The initial page is now set here
