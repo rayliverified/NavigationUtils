@@ -1,8 +1,5 @@
 import 'dart:async';
-
-import 'package:example_auth/repositories/firebase_repository.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+e:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:simple_gravatar/simple_gravatar.dart';
@@ -140,13 +137,11 @@ class AuthService extends AuthServiceBase {
   }
 
   void onUserAuthenticated(String uid) {
-    DebugLogger.instance
-        .printFunction('Running onUserAuthenticated callback for user $uid');
+    DebugLogger.instance.printFunction('onUserAuthenticated $uid');
   }
 
   void onUserUnauthenticated() {
-    DebugLogger.instance
-        .printFunction('Running onUserUnauthenticated callback.');
+    DebugLogger.instance.printFunction('onUserUnauthenticated');
   }
 
   @override

@@ -8,13 +8,6 @@ import '../models/model_user.dart';
 import '../utils/value_response.dart';
 import 'firebase_repository_base.dart';
 
-/// Allows to quickly convert any firebase exception to [ExceptionWrapper].
-extension FirebaseExceptionExtension on FirebaseException {
-  ExceptionWrapper toException([StackTrace? trace]) =>
-      ExceptionWrapper(message ?? 'An error has occurred.',
-          stackTrace: trace ?? stackTrace, code: code);
-}
-
 class FirebaseRepository extends FirebaseRepositoryBase {
   @override
   void dumpToConsole(Object error, StackTrace stackTrace, [String? library]) =>

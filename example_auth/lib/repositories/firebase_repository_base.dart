@@ -119,3 +119,10 @@ abstract class FirebaseRepositoryBase {
   Future<ValueResponse<void>> signOut() =>
       throw UnimplementedError('Use implementation');
 }
+
+/// Allows to quickly convert any firebase exception to [ExceptionWrapper].
+extension FirebaseExceptionExtension on FirebaseException {
+  ExceptionWrapper toException([StackTrace? trace]) =>
+      ExceptionWrapper(message ?? 'An error has occurred.',
+          stackTrace: trace ?? stackTrace, code: code);
+}
