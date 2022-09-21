@@ -71,7 +71,9 @@ class AppModel extends AppModelBase {
     NavigationManager.instance.routerDelegate
         .setOverride(const InitializationPage());
     // Navigate after authentication and user model loads.
-    authService.firebaseAuthUserStream.listen(_userModelListener);
+    authService.firebaseAuthUserStream
+        .asBroadcastStream()
+        .listen(_userModelListener);
   }
 
   @override
