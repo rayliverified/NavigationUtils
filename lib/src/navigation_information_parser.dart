@@ -7,8 +7,8 @@ import 'navigation_delegate.dart';
 /// from a RouteInformationProvider and parses it into a user-defined data type.
 class DefaultRouteInformationParser
     extends RouteInformationParser<DefaultRoute> {
-  Uri routeUri = Uri();
-  Uri initialRouteUri = Uri();
+  Uri routeUri = Uri(path: '/');
+  Uri initialRouteUri = Uri(path: '/');
   bool initialized = false;
 
   DefaultRoute? initialRouteData;
@@ -23,7 +23,7 @@ class DefaultRouteInformationParser
       routeUri = Uri.parse(routeInformation.location ?? '');
     } on FormatException catch (e) {
       debugPrint(e.toString());
-      routeUri = Uri();
+      routeUri = Uri(path: '/');
     }
     // Save initial URL.
     if (initialized == false) {
