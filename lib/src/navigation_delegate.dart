@@ -22,9 +22,8 @@ class DefaultRoute extends RouteSettings {
       this.metadata = const {},
       super.arguments})
       : super(
-            name: _trimRight(
-                Uri(path: path, queryParameters: queryParameters).toString(),
-                '?'));
+            name: canonicalUri(
+                Uri(path: path, queryParameters: queryParameters).toString()));
 
   Uri get uri => Uri(path: path, queryParameters: queryParameters);
 
@@ -61,17 +60,6 @@ class DefaultRoute extends RouteSettings {
       'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, metadata: $metadata, arguments: $arguments)';
 
   operator [](String key) => queryParameters[key];
-
-  static String _trimRight(String from, String pattern) {
-    if (from.isEmpty || pattern.isEmpty || pattern.length > from.length) {
-      return from;
-    }
-
-    while (from.endsWith(pattern)) {
-      from = from.substring(0, from.length - pattern.length);
-    }
-    return from;
-  }
 }
 
 /// Pop until definition.
@@ -244,14 +232,21 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       Map<String, dynamic> data = const {},
       Map<String, String> pathParameters = const {}}) async {
     NavigationData? navigationData =
-        _getNavigationDataFromName(navigationDataRoutes, name);
+        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationData == null) {
       throw Exception('`$name` route not found.');
     }
 
-    String path = navigationData.path;
-    if (navigationData.path.contains(':')) {
+    String? path;
+    // Final path provided.
+    if (name.startsWith('/') && name.contains(':') == false) {
+      path = canonicalUri(name);
+    } else if (navigationData.path.contains(':')) {
+      // Named pattern path provided.
       path = patternToPath(navigationData.path, pathParameters);
+    } else {
+      // Named direct path provided.
+      path = navigationData.path;
     }
 
     // Build DefaultRoute.
@@ -350,7 +345,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   void remove(String name) {
     NavigationData? navigationData =
-        _getNavigationDataFromName(navigationDataRoutes, name);
+        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationData == null) return;
 
     DefaultRoute route = DefaultRoute(
@@ -383,7 +378,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   void removeBelow(String name) {
     NavigationData? navigationData =
-        _getNavigationDataFromName(navigationDataRoutes, name);
+        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationData == null) return;
 
     DefaultRoute route = DefaultRoute(
@@ -411,7 +406,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         'Route and route name cannot both be empty.');
 
     NavigationData? navigationDataOld =
-        _getNavigationDataFromName(navigationDataRoutes, oldName);
+        NavigationUtils.getNavigationDataFromName(
+            navigationDataRoutes, oldName);
     if (navigationDataOld == null) return;
 
     DefaultRoute oldRoute = DefaultRoute(
@@ -424,7 +420,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     if (newName != null) {
       NavigationData? navigationDataNew =
-          _getNavigationDataFromName(navigationDataRoutes, newName);
+          NavigationUtils.getNavigationDataFromName(
+              navigationDataRoutes, newName);
       if (navigationDataNew == null) return;
 
       defaultRouteHolder = DefaultRoute(
@@ -444,7 +441,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   void replaceBelow(String anchorName, String name) {
     NavigationData? navigationDataAnchor =
-        _getNavigationDataFromName(navigationDataRoutes, name);
+        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationDataAnchor == null) return;
 
     DefaultRoute anchorRoute = DefaultRoute(
@@ -454,7 +451,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int index = _defaultRoutes.indexOf(anchorRoute);
     if (index >= 1) {
       NavigationData? navigationData =
-          _getNavigationDataFromName(navigationDataRoutes, name);
+          NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
       if (navigationData == null) return;
 
       DefaultRoute newRoute = DefaultRoute(
@@ -484,7 +481,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Map route names to routes.
     _defaultRoutes.addAll(names.map((e) {
       NavigationData? navigationData =
-          _getNavigationDataFromName(navigationDataRoutes, e);
+          NavigationUtils.getNavigationDataFromName(navigationDataRoutes, e);
       if (navigationData == null) {
         throw Exception('`$e` route not found.');
       }
@@ -531,7 +528,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Map route names to routes.
     _defaultRoutes.addAll(names.map((e) {
       NavigationData? navigationData =
-          _getNavigationDataFromName(navigationDataRoutes, e);
+          NavigationUtils.getNavigationDataFromName(navigationDataRoutes, e);
       if (navigationData == null) {
         throw Exception('`$e` route not found.');
       }
@@ -595,30 +592,6 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       function.call();
       notifyListeners();
     });
-  }
-
-  // Util Methods
-
-  NavigationData? _getNavigationDataFromName(
-      List<NavigationData> navigationDataRoutes, String name) {
-    NavigationData? navigationData;
-    if (name.startsWith('/') == false) {
-      try {
-        navigationData = navigationDataRoutes.firstWhere((element) =>
-            ((element.label?.isNotEmpty ?? false) && element.label == name));
-      } on StateError {
-        // ignore: empty_catches
-      }
-    } else {
-      try {
-        navigationData = navigationDataRoutes
-            .firstWhere((element) => (element.path == name));
-      } on StateError {
-        // ignore: empty_catches
-      }
-    }
-
-    return navigationData;
   }
 
   void _debugPrintMessage(String message) {

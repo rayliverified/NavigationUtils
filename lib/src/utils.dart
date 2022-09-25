@@ -89,6 +89,48 @@ class NavigationUtils {
     return routeHolder;
   }
 
+  static NavigationData? getNavigationDataFromName(
+      List<NavigationData> routes, String name) {
+    if (name.isEmpty) return null;
+
+    NavigationData? navigationData;
+    if (name.startsWith('/') == false) {
+      try {
+        navigationData = routes.firstWhere((element) =>
+            ((element.label?.isNotEmpty ?? false) && element.label == name));
+      } on StateError {
+        // ignore: empty_catches
+      }
+    } else {
+      String path = canonicalUri(Uri.tryParse(name)?.path ?? '');
+
+      // Exact path match routing.
+      if (navigationData == null) {
+        try {
+          navigationData =
+              routes.firstWhere((element) => (element.path == path));
+        } on StateError {
+          // ignore: empty_catches
+        }
+      }
+
+      // Path pattern matching.
+      if (navigationData == null) {
+        try {
+          navigationData = routes.firstWhere((element) {
+            Map<String, String> pathParameters =
+                extractPathParametersWithPattern(path, element.path);
+            return pathParameters.isNotEmpty;
+          });
+        } on StateError {
+          // ignore: empty_catches
+        }
+      }
+    }
+
+    return navigationData;
+  }
+
   static Map<String, String> extractPathParametersWithPattern(
       String route, String pattern) {
     Map<String, String> pathParameters = {};
@@ -109,7 +151,7 @@ class NavigationUtils {
     return pathParameters;
   }
 
-  static String _trimRight(String from, String pattern) {
+  static String trimRight(String from, String pattern) {
     if (from.isEmpty || pattern.isEmpty || pattern.length > from.length) {
       return from;
     }

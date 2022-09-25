@@ -5,10 +5,10 @@ List<NavigationData> routes = [
   NavigationData(
       label: MyHomePage.name,
       url: '/',
-      builder: (context, routeData, globalData) =>
-          const MyHomePage(title: 'Navigation')),
+      builder: (context, routeData, globalData) => const MyHomePage()),
   NavigationData(
       url: '/project/:id',
+      label: ProjectPage.name,
       builder: (context, routeData, globalData) => ProjectPage(
           id: int.tryParse(routeData.pathParameters['id'] ?? '') ?? 0)),
 ];
@@ -36,82 +36,76 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   static const String name = 'home';
 
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text('Home'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            MaterialButton(
+              onPressed: () =>
+                  NavigationManager.instance.routerDelegate.push('/project/1'),
+              child: const Text('Open Project Path'),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
+            MaterialButton(
+              onPressed: () => NavigationManager.instance.routerDelegate
+                  .push(ProjectPage.name, pathParameters: {'id': '2'}),
+              child: const Text('Open Project Named'),
+            )
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
 class ProjectPage extends StatefulWidget {
+  static const String name = 'project';
+
   final int id;
 
   const ProjectPage({super.key, required this.id});
 
   @override
-  _ProjectPageState createState() => _ProjectPageState();
+  State<ProjectPage> createState() => _ProjectPageState();
 }
 
 class _ProjectPageState extends State<ProjectPage> {
-  int counter = 0;
-
   @override
   void initState() {
     super.initState();
-    debugPrint('Init Projects Page');
+    debugPrint('Init Projects Page: ${widget.id}');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Project ${widget.id}'),
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.pinkAccent,
         alignment: Alignment.center,
         child: Column(
           children: [
             Text('Projects Page ${widget.id}',
                 style: const TextStyle(color: Colors.white)),
+            MaterialButton(
+                onPressed: () =>
+                    NavigationManager.instance.routerDelegate.pop(),
+                child: const Text('Back')),
           ],
         ),
       ),

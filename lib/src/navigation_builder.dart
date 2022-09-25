@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
+import 'path_utils_go_router.dart';
+
 typedef NavigationPageFactory = Widget Function(BuildContext context,
     DefaultRoute routeData, Map<String, dynamic> globalData);
 
@@ -16,7 +18,7 @@ class NavigationData {
   final Color? barrierColor;
   final Map<String, dynamic> metadata;
 
-  String get path => Uri.tryParse(url)?.path ?? '';
+  String get path => canonicalUri(Uri.tryParse(url)?.path ?? '');
   Map<String, String> get queryParameters =>
       Uri.tryParse(url)?.queryParameters ?? {};
 
@@ -33,7 +35,7 @@ class NavigationData {
 
   @override
   String toString() =>
-      'NavigationData(label: $label, url: $url, metadata: $metadata)';
+      'NavigationData(label: $label, url: $url, metadata: $metadata, path: $path)';
 }
 
 /// Custom navigation builder for gradual migration support.
@@ -130,8 +132,8 @@ class NavigationBuilder {
     String name =
         Uri(path: navigationData.path, queryParameters: queryParameters)
             .toString();
-    name = _trimRight(name, '?');
     if (name.startsWith('/') == false) name = '/$name';
+    name = canonicalUri(name);
 
     switch (pageType) {
       case PageType.material:
