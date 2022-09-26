@@ -162,9 +162,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // instead of in the Navigator widget.
     if (_defaultRoutes.isEmpty) {
       _defaultRoutes.add(configurationHolder);
+      _debugPrintMessage('New Initialized Route: $defaultRoutes');
     }
-
-    _debugPrintMessage('New Resolved Route: $defaultRoutes');
 
     // TODO: Implement canPop.
 

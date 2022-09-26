@@ -82,7 +82,7 @@ class NavigationUtils {
           label: navigationData.label ?? '',
           path: path,
           pathParameters: pathParameters,
-          queryParameters: navigationData.queryParameters,
+          queryParameters: route.queryParameters,
           metadata: navigationData.metadata);
     }
 
