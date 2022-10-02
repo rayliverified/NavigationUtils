@@ -32,6 +32,18 @@ class NavigationUtils {
       // ignore: empty_catches
     }
 
+    // Exact URL match routing.
+    if (navigationData == null) {
+      try {
+        navigationData = routes.firstWhere((element) =>
+            ((element.uri == route.uri &&
+                element.path.isNotEmpty &&
+                route.path.isNotEmpty)));
+      } on StateError {
+        // ignore: empty_catches
+      }
+    }
+
     // Exact path match routing.
     if (navigationData == null) {
       try {
@@ -103,6 +115,16 @@ class NavigationUtils {
       }
     } else {
       String path = canonicalUri(Uri.tryParse(name)?.path ?? '');
+
+      // Exact URL match routing.
+      if (navigationData == null) {
+        try {
+          navigationData =
+              routes.firstWhere((element) => (element.url == name));
+        } on StateError {
+          // ignore: empty_catches
+        }
+      }
 
       // Exact path match routing.
       if (navigationData == null) {

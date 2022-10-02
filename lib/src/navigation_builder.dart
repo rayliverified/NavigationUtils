@@ -18,6 +18,7 @@ class NavigationData {
   final Color? barrierColor;
   final Map<String, dynamic> metadata;
 
+  Uri get uri => Uri.tryParse(url) ?? Uri();
   String get path => canonicalUri(Uri.tryParse(url)?.path ?? '');
   Map<String, String> get queryParameters =>
       Uri.tryParse(url)?.queryParameters ?? {};
