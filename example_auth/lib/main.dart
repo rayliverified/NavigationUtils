@@ -88,10 +88,10 @@ class AppModel extends AppModelBase {
     // Attempt to load the initial route URI.
     if (loadInitialRoute) {
       loadInitialRoute = false;
-      Uri initialRouteUri =
-          NavigationManager.instance.routeInformationParser.initialRouteUri;
-      DebugLogger.instance.printInfo('Initial Route URI: $initialRouteUri');
-      NavigationManager.instance.routerDelegate.set([initialRouteUri.path]);
+      String initialRoute =
+          NavigationManager.instance.routeInformationParser.initialRoute;
+      DebugLogger.instance.printInfo('Initial Route: $initialRoute');
+      NavigationManager.instance.routerDelegate.set([initialRoute]);
       NavigationManager.instance.routerDelegate.removeOverride();
     }
     // Automatically navigate to auth screen when user is logged out.
