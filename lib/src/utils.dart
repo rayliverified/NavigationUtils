@@ -153,6 +153,26 @@ class NavigationUtils {
     return navigationData;
   }
 
+  static DefaultRoute buildDefaultRouteFromName(
+      List<NavigationData> navigationDataRoutes, String name) {
+    NavigationData? navigationData =
+        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
+    if (navigationData == null) {
+      throw Exception('`$name` route not found.');
+    }
+
+    // Named route.
+    if (name.startsWith('/') == false) {
+      return DefaultRoute(
+          label: navigationData.label ?? '',
+          path: navigationData.path,
+          metadata: navigationData.metadata);
+    } else {
+      return DefaultRoute.fromUrl(name,
+          label: navigationData.label ?? '', metadata: navigationData.metadata);
+    }
+  }
+
   static Map<String, String> extractPathParametersWithPattern(
       String route, String pattern) {
     Map<String, String> pathParameters = {};

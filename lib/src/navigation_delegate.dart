@@ -14,6 +14,8 @@ class DefaultRoute extends RouteSettings {
   final Map<String, String> pathParameters;
   final Map<String, dynamic>? metadata;
 
+  Uri get uri => Uri(path: path, queryParameters: queryParameters);
+
   DefaultRoute(
       {required this.path,
       this.label = '',
@@ -25,7 +27,15 @@ class DefaultRoute extends RouteSettings {
             name: canonicalUri(
                 Uri(path: path, queryParameters: queryParameters).toString()));
 
-  Uri get uri => Uri(path: path, queryParameters: queryParameters);
+  factory DefaultRoute.fromUrl(String url,
+      {String label = '', Map<String, dynamic>? metadata}) {
+    Uri uri = Uri.parse(url);
+    return DefaultRoute(
+        path: uri.path,
+        queryParameters: uri.queryParameters,
+        label: label,
+        metadata: metadata);
+  }
 
   @override
   DefaultRoute copyWith(
@@ -343,12 +353,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   // Remove
 
   void remove(String name) {
-    NavigationData? navigationData =
-        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
-    if (navigationData == null) return;
-
-    DefaultRoute route = DefaultRoute(
-        label: navigationData.label ?? '', path: navigationData.path);
+    DefaultRoute route =
+        NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
     removeRoute(route);
   }
@@ -376,12 +382,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   // Remove Below
 
   void removeBelow(String name) {
-    NavigationData? navigationData =
-        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
-    if (navigationData == null) return;
-
-    DefaultRoute route = DefaultRoute(
-        label: navigationData.label ?? '', path: navigationData.path);
+    DefaultRoute route =
+        NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
     int anchorIndex = _defaultRoutes.indexOf(route);
     if (anchorIndex >= 1) {
@@ -404,13 +406,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     assert((newName != null || newRoute != null),
         'Route and route name cannot both be empty.');
 
-    NavigationData? navigationDataOld =
-        NavigationUtils.getNavigationDataFromName(
-            navigationDataRoutes, oldName);
-    if (navigationDataOld == null) return;
-
-    DefaultRoute oldRoute = DefaultRoute(
-        label: navigationDataOld.label ?? '', path: navigationDataOld.path);
+    DefaultRoute? oldRoute = NavigationUtils.buildDefaultRouteFromName(
+        navigationDataRoutes, oldName);
 
     int index = _defaultRoutes.indexOf(oldRoute);
     if (index == -1) return;
@@ -418,13 +415,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     DefaultRoute? defaultRouteHolder = newRoute;
 
     if (newName != null) {
-      NavigationData? navigationDataNew =
-          NavigationUtils.getNavigationDataFromName(
-              navigationDataRoutes, newName);
-      if (navigationDataNew == null) return;
-
-      defaultRouteHolder = DefaultRoute(
-          label: navigationDataNew.label ?? '', path: navigationDataNew.path);
+      defaultRouteHolder = NavigationUtils.buildDefaultRouteFromName(
+          navigationDataRoutes, newName);
     }
 
     _defaultRoutes[index] = defaultRouteHolder!;
@@ -449,12 +441,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     int index = _defaultRoutes.indexOf(anchorRoute);
     if (index >= 1) {
-      NavigationData? navigationData =
-          NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
-      if (navigationData == null) return;
-
-      DefaultRoute newRoute = DefaultRoute(
-          label: navigationData.label ?? '', path: navigationData.path);
+      DefaultRoute newRoute =
+          NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
       _defaultRoutes[index - 1] = newRoute;
       notifyListeners();
@@ -479,16 +467,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _defaultRoutes.clear();
     // Map route names to routes.
     _defaultRoutes.addAll(names.map((e) {
-      NavigationData? navigationData =
-          NavigationUtils.getNavigationDataFromName(navigationDataRoutes, e);
-      if (navigationData == null) {
-        throw Exception('`$e` route not found.');
-      }
-
-      return DefaultRoute(
-          label: e,
-          path: navigationData.path,
-          metadata: navigationData.metadata);
+      return NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, e);
     }));
 
     bool didChangeRoute = oldRoute != _defaultRoutes.last;
@@ -526,16 +505,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _defaultRoutes.clear();
     // Map route names to routes.
     _defaultRoutes.addAll(names.map((e) {
-      NavigationData? navigationData =
-          NavigationUtils.getNavigationDataFromName(navigationDataRoutes, e);
-      if (navigationData == null) {
-        throw Exception('`$e` route not found.');
-      }
-
-      return DefaultRoute(
-          label: e,
-          path: navigationData.path,
-          metadata: navigationData.metadata);
+      return NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, e);
     }));
     _defaultRoutes.add(currentRoute);
     notifyListeners();

@@ -8,7 +8,7 @@ import 'navigation_delegate.dart';
 class DefaultRouteInformationParser
     extends RouteInformationParser<DefaultRoute> {
   Uri routeUri = Uri(path: '/');
-  Uri initialRouteUri = Uri(path: '/');
+  String initialRoute = '/';
   bool initialized = false;
 
   DefaultRoute? initialRouteData;
@@ -28,7 +28,7 @@ class DefaultRouteInformationParser
     // Save initial URL.
     if (initialized == false) {
       initialized = true;
-      initialRouteUri = routeUri;
+      initialRoute = routeInformation.location ?? '/';
       // Save initial route and handle after initialization.
       return SynchronousFuture(initialRouteData ?? DefaultRoute(path: '/'));
     }
