@@ -419,6 +419,7 @@ class AuthService extends AuthServiceBase {
     DebugLogger.instance.printFunction('resetUserModel');
 
     userModel.value = UserModel.empty();
+    user.value = null;
   }
 
 // END: User Model.
