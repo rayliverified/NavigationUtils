@@ -88,6 +88,7 @@ class AppModel extends AppModelBase {
     // Attempt to load the initial route URI.
     if (loadInitialRoute) {
       loadInitialRoute = false;
+      initialized = true;
       String initialRoute =
           NavigationManager.instance.routeInformationParser.initialRoute;
       DebugLogger.instance.printInfo('Initial Route: $initialRoute');
@@ -108,7 +109,7 @@ class AppModel extends AppModelBase {
     DebugLogger.instance.printFunction('Set Main Routes Old: $routes');
     List<DefaultRoute> routesHolder = routes;
     // Authenticated route guard.
-    if (AuthService.instance.isAuthenticated == false) {
+    if (AuthService.instance.isAuthenticated == false && initialized == true) {
       routesHolder.removeWhere((element) => element.metadata?['auth'] == true);
       if (routesHolder.isEmpty) {
         routesHolder.add(DefaultRoute(label: SignUpForm.name, path: '/signup'));
