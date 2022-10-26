@@ -104,7 +104,6 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
   late BuildContext _context;
   late StreamSubscription navigationListener;
   bool mounted = true;
-  bool initialLoad = true;
 
   void initNavigationListener(BuildContext context) {
     _context = context;
@@ -133,14 +132,7 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
       onRoutePause(
           oldRouteName: routeName, newRouteName: currentRoute.name ?? '');
     } else if (routeName == currentRoute.name) {
-      // Resume is called even on initial load. Skip call on initial load.
-      if (initialLoad == false) {
-        // If the route update matches the current route name,
-        // the route has been resumed.
-        onRouteResume();
-      } else {
-        initialLoad = false;
-      }
+      onRouteResume();
     }
   }
 
