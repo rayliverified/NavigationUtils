@@ -307,7 +307,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         _pageCompleters.remove(defaultRoutes.last);
       }
       _defaultRoutes.removeLast();
-      onRouteChanged(_defaultRoutes.last);
+      if (_defaultRoutes.isNotEmpty) {
+        onRouteChanged(_defaultRoutes.last);
+      }
       notifyListeners();
     }
   }
