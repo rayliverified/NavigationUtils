@@ -320,7 +320,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     DefaultRoute? route =
         _defaultRoutes.isNotEmpty ? _defaultRoutes.last : null;
     while (route != null) {
-      if (route.name == name ||
+      if (route.label == name ||
           route.path == name ||
           _defaultRoutes.length == 1) break;
       pop();
