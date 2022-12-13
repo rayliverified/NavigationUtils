@@ -342,9 +342,17 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Push and Remove Until
 
-  Future<dynamic> pushAndRemoveUntil(String name, String routeUntilName) async {
+  Future<dynamic> pushAndRemoveUntil(String name, String routeUntilName,
+      {Map<String, String>? queryParameters,
+      Object? arguments,
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {}}) async {
     popUntil(routeUntilName);
-    return await push(name);
+    return await push(name,
+        queryParameters: queryParameters,
+        arguments: arguments,
+        data: data,
+        pathParameters: pathParameters);
   }
 
   Future<dynamic> pushAndRemoveUntilRoute(
@@ -371,9 +379,18 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Push Replacement
 
-  Future<dynamic> pushReplacement(String name, [dynamic result]) async {
+  Future<dynamic> pushReplacement(String name,
+      {Map<String, String>? queryParameters,
+      Object? arguments,
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {},
+      dynamic result}) async {
     pop(result);
-    return await push(name);
+    return await push(name,
+        queryParameters: queryParameters,
+        arguments: arguments,
+        data: data,
+        pathParameters: pathParameters);
   }
 
   Future<dynamic> pushReplacementRoute(DefaultRoute route,
@@ -405,7 +422,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Replace
 
-  void replace(String oldName, {String? newName, DefaultRoute? newRoute}) {
+  void replace(String oldName,
+      {String? newName, DefaultRoute? newRoute, Map<String, dynamic>? data}) {
     assert((newName != null || newRoute != null),
         'Route and route name cannot both be empty.');
 
@@ -423,6 +441,18 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
 
     _defaultRoutes[index] = defaultRouteHolder!;
+
+    // Save global data to name key.
+    if (data != null) {
+      if (newName != null) {
+        globalData[newName] = data;
+      }
+
+      if (newRoute != null) {
+        globalData[canonicalUri(newRoute.path)] = data;
+      }
+    }
+
     notifyListeners();
     return;
   }
