@@ -180,9 +180,22 @@ class AuthService extends AuthServiceBase {
     final String uid = response.data;
     final ValueResponse<UserModel> result =
         await FirebaseRepositoryBase.instance.fetchUserModel(uid);
-    if (result.isError) return ValueResponse.exception(result.error);
+    if (result.isError) {
+      // Initialize user model safety check for edge cases where
+      // user model is not initialized on account registration.
+      final UserModel firebaseUser = UserModel(
+        email: email,
+        id: uid,
+      );
+      UserModel? userModelHolder = await initUserModel(firebaseUser);
+      if (userModelHolder == null) {
+        return ValueResponse.error('Error: unable to create user.');
+      }
+      userModel.value = userModelHolder;
+    } else {
+      userModel.value = result.data;
+    }
 
-    userModel.value = result.data;
     return ValueResponse.success();
   }
 
