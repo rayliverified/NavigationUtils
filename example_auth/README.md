@@ -1,16 +1,6 @@
 # example_auth
 
-A new Flutter project.
+#### FlutterFire Configure
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+> export PATH="$PATH":"$HOME/.pub-cache/bin"
+> flutterfire configure --project=example-auth-1 --android-package-name=com.example.auth --macos-bundle-id=com.example.auth --ios-bundle-id=com.example.auth
