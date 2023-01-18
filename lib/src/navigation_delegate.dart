@@ -604,6 +604,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     });
   }
 
+  void apply() {
+    notifyListeners();
+  }
+
   void _debugPrintMessage(String message) {
     if (debugLog) {
       debugPrint('NavigationUtils: $message');
