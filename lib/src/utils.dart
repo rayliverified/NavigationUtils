@@ -1,5 +1,6 @@
-import 'package:navigation_utils/navigation_utils.dart';
-
+import 'model_deeplink.dart';
+import 'navigation_builder.dart';
+import 'navigation_delegate.dart';
 import 'path_utils_go_router.dart';
 
 class NavigationUtils {
@@ -202,5 +203,43 @@ class NavigationUtils {
       from = from.substring(0, from.length - pattern.length);
     }
     return from;
+  }
+
+  static DeeplinkDestination? getDeeplinkDestinationFromUrl(
+      List<DeeplinkDestination> deeplinkDestinations, String? url) {
+    if (url?.isEmpty ?? true) return null;
+    return getDeeplinkDestinationFromUri(
+        deeplinkDestinations, Uri.tryParse(url!));
+  }
+
+  static DeeplinkDestination? getDeeplinkDestinationFromUri(
+      List<DeeplinkDestination> deeplinkDestinations, Uri? uri) {
+    if (uri?.hasEmptyPath ?? true) return null;
+
+    String deeplinkPath = canonicalUri(uri!.path);
+    DeeplinkDestination? deeplinkDestination;
+
+    // Exact path match routing.
+    try {
+      deeplinkDestination = deeplinkDestinations
+          .firstWhere((element) => (element.path == deeplinkPath));
+    } on StateError {
+      // ignore: empty_catches
+    }
+
+    // Path pattern matching.
+    if (deeplinkDestination == null) {
+      try {
+        deeplinkDestination = deeplinkDestinations.firstWhere((element) {
+          Map<String, String> pathParameters = extractPathParametersWithPattern(
+              deeplinkPath, element.deeplinkUrl);
+          return pathParameters.isNotEmpty;
+        });
+      } on StateError {
+        // ignore: empty_catches
+      }
+    }
+
+    return deeplinkDestination;
   }
 }

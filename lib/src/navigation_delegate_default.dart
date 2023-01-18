@@ -1,7 +1,9 @@
 // ignore_for_file: overridden_fields
 
 import 'package:flutter/widgets.dart';
-import 'package:navigation_utils/navigation_utils.dart';
+
+import 'navigation_builder.dart';
+import 'navigation_delegate.dart';
 
 class DefaultRouterDelegate extends BaseRouterDelegate {
   @override
@@ -38,7 +40,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
         }
         return true;
       },
-      observers: [],
+      observers: const [],
     );
   }
 }
