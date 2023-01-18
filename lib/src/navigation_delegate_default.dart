@@ -24,7 +24,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
       key: navigatorKey,
       pages: [
         ...NavigationBuilder(
-          routeDataList: defaultRoutes,
+          routeDataList: routes,
           routes: navigationDataRoutes,
           onUnknownRoute: onUnknownRoute,
         ).build(context),
