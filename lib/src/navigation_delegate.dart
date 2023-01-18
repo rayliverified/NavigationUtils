@@ -239,7 +239,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       {Map<String, String>? queryParameters,
       Object? arguments,
       Map<String, dynamic> data = const {},
-      Map<String, String> pathParameters = const {}}) async {
+      Map<String, String> pathParameters = const {},
+      bool apply = true}) async {
     NavigationData? navigationData =
         NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationData == null) {
@@ -280,11 +281,11 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
     _routes.add(route);
-    notifyListeners();
+    if (apply) notifyListeners();
     return pageCompleter.future;
   }
 
-  Future<dynamic> pushRoute(DefaultRoute path) async {
+  Future<dynamic> pushRoute(DefaultRoute path, {bool apply = true}) async {
     if (_routes.contains(path)) {
       _routes.remove(path);
       _routes.add(path);
@@ -294,13 +295,13 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[path] = pageCompleter;
     _routes.add(path);
-    notifyListeners();
+    if (apply) notifyListeners();
     return pageCompleter.future;
   }
 
   // Pop
 
-  void pop([dynamic result]) {
+  void pop([dynamic result, bool apply = true]) {
     if (canPop) {
       if (_pageCompleters.containsKey(routes.last)) {
         _pageCompleters[routes.last]!.complete(result);
@@ -310,13 +311,13 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       if (_routes.isNotEmpty) {
         onRouteChanged(_routes.last);
       }
-      notifyListeners();
+      if (apply) notifyListeners();
     }
   }
 
   // Pop Until
 
-  void popUntil(String name) {
+  void popUntil(String name, {bool apply = true}) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
       if (route.label == name || route.path == name || _routes.length == 1)
@@ -324,17 +325,18 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       pop();
       route = _routes.isNotEmpty ? _routes.last : null;
     }
-    notifyListeners();
+    if (apply) notifyListeners();
   }
 
-  void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction) {
+  void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction,
+      {bool apply = true}) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
       if (popUntilRouteFunction(route) || _routes.length == 1) break;
       pop();
       route = _routes.isNotEmpty ? _routes.last : null;
     }
-    notifyListeners();
+    if (apply) notifyListeners();
   }
 
   // Push and Remove Until
@@ -343,34 +345,37 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       {Map<String, String>? queryParameters,
       Object? arguments,
       Map<String, dynamic> data = const {},
-      Map<String, String> pathParameters = const {}}) async {
-    popUntil(routeUntilName);
+      Map<String, String> pathParameters = const {},
+      bool apply = true}) async {
+    popUntil(routeUntilName, apply: apply);
     return await push(name,
         queryParameters: queryParameters,
         arguments: arguments,
         data: data,
-        pathParameters: pathParameters);
+        pathParameters: pathParameters,
+        apply: apply);
   }
 
   Future<dynamic> pushAndRemoveUntilRoute(
-      DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction) async {
-    popUntilRoute(popUntilRouteFunction);
-    return await pushRoute(route);
+      DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction,
+      {bool apply = true}) async {
+    popUntilRoute(popUntilRouteFunction, apply: apply);
+    return await pushRoute(route, apply: apply);
   }
 
   // Remove
 
-  void remove(String name) {
+  void remove(String name, {bool apply = true}) {
     DefaultRoute route =
         NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
-    removeRoute(route);
+    removeRoute(route, apply: apply);
   }
 
-  void removeRoute(DefaultRoute route) {
+  void removeRoute(DefaultRoute route, {bool apply = true}) {
     if (_routes.contains(route)) {
       _routes.remove(route);
-      notifyListeners();
+      if (apply) notifyListeners();
     }
   }
 
@@ -381,46 +386,51 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       Object? arguments,
       Map<String, dynamic> data = const {},
       Map<String, String> pathParameters = const {},
-      dynamic result}) async {
-    pop(result);
+      dynamic result,
+      bool apply = true}) async {
+    pop(result, apply);
     return await push(name,
         queryParameters: queryParameters,
         arguments: arguments,
         data: data,
-        pathParameters: pathParameters);
+        pathParameters: pathParameters,
+        apply: apply);
   }
 
   Future<dynamic> pushReplacementRoute(DefaultRoute route,
-      [dynamic result]) async {
-    pop(result);
-    return await pushRoute(route);
+      [dynamic result, bool apply = true]) async {
+    pop(result, apply);
+    return await pushRoute(route, apply: apply);
   }
 
   // Remove Below
 
-  void removeBelow(String name) {
+  void removeBelow(String name, {bool apply = true}) {
     DefaultRoute route =
         NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
       _routes.removeAt(anchorIndex - 1);
-      notifyListeners();
+      if (apply) notifyListeners();
     }
   }
 
-  void removeRouteBelow(DefaultRoute route) {
+  void removeRouteBelow(DefaultRoute route, {bool apply = true}) {
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
       _routes.removeAt(anchorIndex - 1);
-      notifyListeners();
+      if (apply) notifyListeners();
     }
   }
 
   // Replace
 
   void replace(String oldName,
-      {String? newName, DefaultRoute? newRoute, Map<String, dynamic>? data}) {
+      {String? newName,
+      DefaultRoute? newRoute,
+      Map<String, dynamic>? data,
+      bool apply = true}) {
     assert((newName != null || newRoute != null),
         'Route and route name cannot both be empty.');
 
@@ -450,17 +460,18 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       }
     }
 
-    notifyListeners();
+    if (apply) notifyListeners();
     return;
   }
 
-  void replaceRoute(DefaultRoute oldRoute, DefaultRoute newRoute) {
-    replace(oldRoute.path, newRoute: newRoute);
+  void replaceRoute(DefaultRoute oldRoute, DefaultRoute newRoute,
+      {bool apply = true}) {
+    replace(oldRoute.path, newRoute: newRoute, apply: apply);
   }
 
   // Replace Below
 
-  void replaceBelow(String anchorName, String name) {
+  void replaceBelow(String anchorName, String name, {bool apply = true}) {
     NavigationData? navigationDataAnchor =
         NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationDataAnchor == null) return;
@@ -475,21 +486,22 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
           NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
       _routes[index - 1] = newRoute;
-      notifyListeners();
+      if (apply) notifyListeners();
     }
   }
 
-  void replaceRouteBelow(DefaultRoute anchorRoute, DefaultRoute newRoute) {
+  void replaceRouteBelow(DefaultRoute anchorRoute, DefaultRoute newRoute,
+      {bool apply = true}) {
     int index = _routes.indexOf(anchorRoute);
     if (index >= 1) {
       _routes[index - 1] = newRoute;
-      notifyListeners();
+      if (apply) notifyListeners();
     }
   }
 
   // Set
 
-  void set(List<String> names) {
+  void set(List<String> names, {bool apply = true}) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
     DefaultRoute? oldRoute = _routes.isNotEmpty ? _routes.last : null;
 
@@ -507,10 +519,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
     // Expose that the route has changed.
     if (didChangeRoute) onRouteChanged(_routes.last);
-    notifyListeners();
+    if (apply) notifyListeners();
   }
 
-  void setRoutes(List<DefaultRoute> routes) {
+  void setRoutes(List<DefaultRoute> routes, {bool apply = true}) {
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
     bool didChangeRoute =
         routes.last != (_routes.isNotEmpty ? _routes.last : null);
@@ -523,32 +535,12 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
     // Expose that the route has changed.
     if (didChangeRoute) onRouteChanged(_routes.last);
-    notifyListeners();
-  }
-
-  void setRoutesInternal(List<String> names) {
-    assert(names.isNotEmpty, 'Names cannot be empty.');
-    DefaultRoute? oldRoute = _routes.isNotEmpty ? _routes.last : null;
-
-    _routes.clear();
-    // Map route names to routes.
-    _routes.addAll(names.map((e) {
-      return NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, e);
-    }));
-
-    bool didChangeRoute = oldRoute != _routes.last;
-
-    _routes = setMainRoutes?.call(_routes) ?? _routes;
-    if (_routes.isEmpty) {
-      throw Exception('Routes cannot be empty.');
-    }
-    // Expose that the route has changed.
-    if (didChangeRoute) onRouteChanged(_routes.last);
+    if (apply) notifyListeners();
   }
 
   // Set Backstack
 
-  void setBackstack(List<String> names) {
+  void setBackstack(List<String> names, {bool apply = true}) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
     DefaultRoute currentRoute = _routes.last;
     _routes.clear();
@@ -557,34 +549,35 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       return NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, e);
     }));
     _routes.add(currentRoute);
-    notifyListeners();
+    if (apply) notifyListeners();
   }
 
-  void setBackstackRoutes(List<DefaultRoute> routes) {
+  void setBackstackRoutes(List<DefaultRoute> routes, {bool apply = true}) {
     DefaultRoute currentRoute = _routes.last;
     _routes.clear();
     _routes.addAll(routes);
     _routes.add(currentRoute);
-    notifyListeners();
+    if (apply) notifyListeners();
   }
 
   // Set Override
 
-  void setOverride(Widget page) {
+  void setOverride(Widget page, {bool apply = true}) {
     pageOverride = page;
-    notifyListeners();
+    if (apply) notifyListeners();
   }
 
-  void removeOverride() {
+  void removeOverride({bool apply = true}) {
     pageOverride = null;
-    notifyListeners();
+    if (apply) notifyListeners();
   }
 
   // Query Parameters
 
-  void setQueryParameters(Map<String, String> queryParameters) {
+  void setQueryParameters(Map<String, String> queryParameters,
+      {bool apply = true}) {
     _routes.last = _routes.last.copyWith(queryParameters: queryParameters);
-    notifyListeners();
+    if (apply) notifyListeners();
   }
 
   // ignore: unused_element
