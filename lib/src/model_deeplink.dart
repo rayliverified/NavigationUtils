@@ -3,9 +3,13 @@ import 'path_utils_go_router.dart';
 
 typedef ShouldNavigateDeeplinkFunction = bool Function();
 typedef MapPathParameterFunction = Map<String, String> Function(
-    Map<String, String> pathParameters);
+    Map<String, String> pathParameters, Map<String, String> queryParameters);
 typedef MapQueryParameterFunction = Map<String, String> Function(
-    Map<String, String> queryParameters);
+    Map<String, String> queryParameters, Map<String, String> pathParameters);
+typedef MapArgumentsFunction = Object? Function(
+    Map<String, String> pathParameters, Map<String, String> queryParameters);
+typedef MapGlobalDataFunction = Map<String, dynamic> Function(
+    Map<String, String> pathParameters, Map<String, String> queryParameters);
 
 class DeeplinkDestination {
   final String deeplinkUrl;
@@ -17,6 +21,8 @@ class DeeplinkDestination {
   final ShouldNavigateDeeplinkFunction? shouldNavigateDeeplinkFunction;
   final MapPathParameterFunction? mapPathParameterFunction;
   final MapQueryParameterFunction? mapQueryParameterFunction;
+  final MapArgumentsFunction? mapArgumentsFunction;
+  final MapGlobalDataFunction? mapGlobalDataFunction;
   final bool authenticationRequired;
 
   Uri get uri => Uri.tryParse(deeplinkUrl) ?? Uri();
@@ -32,6 +38,8 @@ class DeeplinkDestination {
       this.shouldNavigateDeeplinkFunction,
       this.mapPathParameterFunction,
       this.mapQueryParameterFunction,
+      this.mapArgumentsFunction,
+      this.mapGlobalDataFunction,
       this.authenticationRequired = false})
       : assert(deeplinkUrl != '', 'Deeplink URL required.'),
         assert(destinationLabel != '' || destinationUrl != '',
