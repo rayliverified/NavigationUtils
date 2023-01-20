@@ -73,7 +73,7 @@ String patternToPath(String pattern, Map<String, String> pathParameters) {
       buffer.write(pattern.substring(start, match.start));
     }
     final String name = match[1]!;
-    buffer.write(pathParameters[name]);
+    buffer.write(pathParameters[name] ?? '');
     start = match.end;
   }
 
@@ -91,7 +91,8 @@ Map<String, String> extractPathParameters(
     List<String> parameters, RegExpMatch match) {
   return <String, String>{
     for (int i = 0; i < parameters.length; ++i)
-      parameters[i]: match.namedGroup(parameters[i])!
+      if (match.namedGroup(parameters[i]) != null)
+        parameters[i]: match.namedGroup(parameters[i])!
   };
 }
 
