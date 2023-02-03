@@ -78,9 +78,11 @@ class NavigationBuilder {
 
         if (navigationData != null) {
           Map<String, String> pathParameters = {};
+          pathParameters.addAll(route.pathParameters);
           if (navigationData.path.contains(':')) {
-            pathParameters = NavigationUtils.extractPathParametersWithPattern(
-                route.path, navigationData.path);
+            pathParameters.addAll(
+                NavigationUtils.extractPathParametersWithPattern(
+                    route.path, navigationData.path));
           }
           // Inject dynamic data to page builder.
           Map<String, dynamic> globalData = mainRouterDelegate.globalData;

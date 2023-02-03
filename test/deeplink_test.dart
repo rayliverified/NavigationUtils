@@ -16,11 +16,19 @@ void main() {
         deeplinkDestination,
       ];
 
+      // Match post ID.
       expect(
           NavigationUtils.getDeeplinkDestinationFromUrl(
               deeplinkDestinations, '/link/post/1'),
           deeplinkDestination);
 
+      // Match post ID with trailing slash.
+      expect(
+          NavigationUtils.getDeeplinkDestinationFromUrl(
+              deeplinkDestinations, '/link/post/1/'),
+          deeplinkDestination);
+
+      // No post ID, do not match.
       expect(
           NavigationUtils.getDeeplinkDestinationFromUrl(
               deeplinkDestinations, '/link/post'),
