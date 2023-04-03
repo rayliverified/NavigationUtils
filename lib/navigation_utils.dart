@@ -1,5 +1,6 @@
 library navigation_utils;
 
+export 'src/helpers/helpers.dart';
 export 'src/lifecycle_observer.dart';
 export 'src/model_deeplink.dart';
 export 'src/navigation_builder.dart';
