@@ -242,4 +242,120 @@ class NavigationUtils {
 
     return deeplinkDestination;
   }
+
+  static bool openDeeplinkDestination(
+      {required Uri? uri,
+      required List<DeeplinkDestination> deeplinkDestinations,
+      required BaseRouterDelegate routerDelegate,
+      DeeplinkDestination? deeplinkDestination,
+      bool authenticated = true,
+      DefaultRoute? currentRoute,
+      List<String> excludeDeeplinkNavigationPages = const []}) {
+    if (uri == null) return false;
+
+    DeeplinkDestination? deeplinkDestinationHolder = deeplinkDestination ??=
+        NavigationUtils.getDeeplinkDestinationFromUri(
+            deeplinkDestinations, uri);
+
+    if (deeplinkDestinationHolder == null) return false;
+
+    // Check if authentication is needed to navigate to deeplink.
+    if (deeplinkDestinationHolder.authenticationRequired) {
+      if (authenticated == false) {
+        return false;
+      }
+    }
+
+    // Check if user can navigate from the current page they are on.
+    // Do not navigate globally if user is on these pages.
+    if (excludeDeeplinkNavigationPages.contains(currentRoute?.label) ||
+        excludeDeeplinkNavigationPages.contains(currentRoute?.path)) {
+      return false;
+    }
+    // Do not navigate to destination if current page is in deny list.
+    if (deeplinkDestinationHolder.excludeDeeplinkNavigationPages
+            .contains(currentRoute?.label) ||
+        deeplinkDestinationHolder.excludeDeeplinkNavigationPages
+            .contains(currentRoute?.path)) {
+      return false;
+    }
+
+    // Check deeplink navigation conditional function.
+    bool shouldNavigate =
+        deeplinkDestinationHolder.shouldNavigateDeeplinkFunction?.call() ??
+            true;
+    if (shouldNavigate == false) return false;
+
+    // Navigate to deeplink destination.
+    if (deeplinkDestinationHolder.backstack != null) {
+      if (deeplinkDestinationHolder.backstack!.isEmpty) {
+        routerDelegate.clear();
+      } else {
+        routerDelegate.set(deeplinkDestinationHolder.backstack!, apply: false);
+      }
+    } else if (deeplinkDestinationHolder.backstackRoutes != null) {
+      if (deeplinkDestinationHolder.backstackRoutes!.isEmpty) {
+        routerDelegate.clear();
+      } else {
+        routerDelegate.setRoutes(deeplinkDestinationHolder.backstackRoutes!,
+            apply: false);
+      }
+    }
+
+    // Process deeplink path parameters.
+    // Process deeplink query parameters.
+    Map<String, String> pathParameters = {};
+    Map<String, String> queryParameters = {};
+    Object? arguments;
+    Map<String, dynamic> globalData = {};
+
+    Map<String, String> deeplinkPathParameters = {};
+
+    if (deeplinkDestinationHolder.deeplinkUrl.contains(':')) {
+      String deeplinkPath = canonicalUri(uri.path);
+      pathParameters = NavigationUtils.extractPathParametersWithPattern(
+          deeplinkPath, deeplinkDestinationHolder.deeplinkUrl);
+      deeplinkPathParameters.addAll(pathParameters);
+      if (deeplinkDestinationHolder.mapPathParameterFunction != null) {
+        pathParameters = deeplinkDestinationHolder.mapPathParameterFunction!(
+            pathParameters, uri.queryParameters);
+      }
+    }
+
+    if (deeplinkDestinationHolder.mapQueryParameterFunction != null) {
+      queryParameters = deeplinkDestinationHolder.mapQueryParameterFunction!(
+          uri.queryParameters, deeplinkPathParameters);
+    }
+
+    if (deeplinkDestinationHolder.mapArgumentsFunction != null) {
+      arguments = deeplinkDestinationHolder.mapArgumentsFunction!(
+          deeplinkPathParameters, uri.queryParameters);
+    }
+
+    if (deeplinkDestinationHolder.mapGlobalDataFunction != null) {
+      globalData = deeplinkDestinationHolder.mapGlobalDataFunction!(
+          deeplinkPathParameters, uri.queryParameters);
+    }
+
+    // Set deeplink destination.
+    if (deeplinkDestinationHolder.destinationLabel.isNotEmpty) {
+      routerDelegate.push(deeplinkDestinationHolder.destinationLabel,
+          pathParameters: pathParameters,
+          queryParameters: queryParameters,
+          data: globalData,
+          arguments: arguments,
+          apply: false);
+    } else if (deeplinkDestinationHolder.destinationUrl.isNotEmpty) {
+      routerDelegate.push(deeplinkDestinationHolder.destinationUrl,
+          pathParameters: pathParameters,
+          queryParameters: queryParameters,
+          data: globalData,
+          arguments: arguments,
+          apply: false);
+    }
+
+    routerDelegate.apply();
+
+    return true;
+  }
 }
