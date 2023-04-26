@@ -1,7 +1,6 @@
 import 'navigation_delegate.dart';
 import 'path_utils_go_router.dart';
 
-typedef ShouldNavigateDeeplinkFunction = bool Function();
 typedef MapPathParameterFunction = Map<String, String> Function(
     Map<String, String> pathParameters, Map<String, String> queryParameters);
 typedef MapQueryParameterFunction = Map<String, String> Function(
@@ -17,13 +16,14 @@ class DeeplinkDestination {
   final String destinationUrl;
   final List<String>? backstack;
   final List<DefaultRoute>? backstackRoutes;
-  final List<String> ignoreDeeplinkWhenOnThisPageList;
-  final ShouldNavigateDeeplinkFunction? shouldNavigateDeeplinkFunction;
+  final List<String> excludeDeeplinkNavigationPages;
+  final bool Function()? shouldNavigateDeeplinkFunction;
   final MapPathParameterFunction? mapPathParameterFunction;
   final MapQueryParameterFunction? mapQueryParameterFunction;
   final MapArgumentsFunction? mapArgumentsFunction;
   final MapGlobalDataFunction? mapGlobalDataFunction;
   final bool authenticationRequired;
+  // TODO: Add platform filter parameter.
 
   Uri get uri => Uri.tryParse(deeplinkUrl) ?? Uri();
   String get path => canonicalUri(Uri.tryParse(deeplinkUrl)?.path ?? '');
@@ -34,7 +34,7 @@ class DeeplinkDestination {
       this.destinationUrl = '',
       this.backstack,
       this.backstackRoutes,
-      this.ignoreDeeplinkWhenOnThisPageList = const [],
+      this.excludeDeeplinkNavigationPages = const [],
       this.shouldNavigateDeeplinkFunction,
       this.mapPathParameterFunction,
       this.mapQueryParameterFunction,
