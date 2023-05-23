@@ -9,7 +9,7 @@ mixin NavigationListenerMixin {
   late BuildContext _context;
   late StreamSubscription navigationListener;
   bool mounted = true;
-  bool initialLoad = true;
+  bool paused = false;
 
   void initNavigationListener(BuildContext context) {
     _context = context;
@@ -25,20 +25,19 @@ mixin NavigationListenerMixin {
     // The route is returned via the context of the page
     // the mixin is added to.
     String routeName = ModalRoute.of(_context)?.settings.name ?? '';
+    print('Update Route: $routeName, Current Route: ${currentRoute.name}');
     // If the route name changes, the current page is no
     // longer active and paused.
     if (routeName != currentRoute.name) {
+      if (paused) return;
+      paused = true;
       onRoutePause(
           oldRouteName: routeName, newRouteName: currentRoute.name ?? '');
     } else if (routeName == currentRoute.name) {
-      // Resume is called even on initial load. Skip call on initial load.
-      if (initialLoad == false) {
-        // If the route update matches the current route name,
-        // the route has been resumed.
-        onRouteResume();
-      } else {
-        initialLoad = false;
-      }
+      paused = false;
+      // Unlike other NavigationListeners, no initial call tracking
+      // is required as this NavigationListener does not make duplicate calls on start.
+      onRouteResume();
     }
   }
 
@@ -55,6 +54,7 @@ mixin NavigationListenerMixin {
 mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
   late StreamSubscription navigationListener;
   bool initialLoad = true;
+  bool paused = false;
 
   @override
   void initState() {
@@ -80,9 +80,12 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
     // If the route name changes, the current page is no
     // longer active and paused.
     if (routeName != currentRoute.name) {
+      if (paused) return;
+      paused = true;
       onRoutePause(
           oldRouteName: routeName, newRouteName: currentRoute.name ?? '');
     } else if (routeName == currentRoute.name) {
+      paused = false;
       // Resume is called even on initial load. Skip call on initial load.
       if (initialLoad == false) {
         // If the route update matches the current route name,
@@ -104,6 +107,7 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
   late BuildContext _context;
   late StreamSubscription navigationListener;
   bool mounted = true;
+  bool paused = false;
 
   void initNavigationListener(BuildContext context) {
     _context = context;
@@ -129,9 +133,12 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
     // If the route name changes, the current page is no
     // longer active and paused.
     if (routeName != currentRoute.name) {
+      if (paused) return;
+      paused = true;
       onRoutePause(
           oldRouteName: routeName, newRouteName: currentRoute.name ?? '');
     } else if (routeName == currentRoute.name) {
+      paused = false;
       onRouteResume();
     }
   }
