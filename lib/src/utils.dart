@@ -118,13 +118,10 @@ class NavigationUtils {
       String path = canonicalUri(Uri.tryParse(name)?.path ?? '');
 
       // Exact URL match routing.
-      if (navigationData == null) {
-        try {
-          navigationData =
-              routes.firstWhere((element) => (element.url == name));
-        } on StateError {
-          // ignore: empty_catches
-        }
+      try {
+        navigationData = routes.firstWhere((element) => (element.url == name));
+      } on StateError {
+        // ignore: empty_catches
       }
 
       // Exact path match routing.
@@ -325,6 +322,8 @@ class NavigationUtils {
     if (deeplinkDestinationHolder.mapQueryParameterFunction != null) {
       queryParameters = deeplinkDestinationHolder.mapQueryParameterFunction!(
           uri.queryParameters, deeplinkPathParameters);
+    } else {
+      queryParameters = uri.queryParameters;
     }
 
     if (deeplinkDestinationHolder.mapArgumentsFunction != null) {
