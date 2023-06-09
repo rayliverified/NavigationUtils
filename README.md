@@ -3,41 +3,46 @@
 
 > ### The missing navigation library for Navigator 2. 
 
-A collection of convenience methods and wrappers to help implement Flutter's Navigator 2 from the ground up. Use this library to get a head start and save hundreds of hours.
+NavigationUtils is a comprehensive package that simplifies the process of integrating Flutter's Navigator 2 into your applications. 
 
 ### Features
 
-- Reimplements the Navigator 1 API in Navigator 2 [push(), pop(), etc].
-- Absolute control over the navigation back stack [set()].
-- Named route support [pushNamed(), setNamed()].
-- Support for path based routing.
-- Functions for setting the URL and query parameters.
+- Reimplements the Navigator 1 API in Navigator 2, including `push()`, `pop()`, `pushAndReplace()` and more.
+- Full control over the navigation back stack through `set()`.
+- Named route functionality with `pushNamed()`, `setNamed()`.
+- Path-based routing support.
+- Convenient functions for setting the URL and query parameters.
 
 ### Should I use Navigation Utils?
 
-Here's a handy diagram to help one decide whether or not to use Navigation Utils.
+Use NavigationUtils if the existing Navigation Libraries aren't working for you and you need full control over the backstack.
+
+- ❌ DON'T USE NavigationUtils if an existing navigation library works for you (GoRouter, RouteMaster, etc).
+- ✅ USE NavigationUtils if you're thinking about implementing Navigator 2 directly or writing your own Navigation library.
+
+Here's a clear, helpful diagram for deciding whether NavigationUtils is the right fit for a project.
 
 ![Screenshots](packages/Use-Navigation-Utils-Decision-Diagram.png)
 
-Navigation Utils is **NOT** more complex than other navigation libraries. However, instead of attempting to abstract away the complexity of Navigator 2, this library exposes the nuance and complexity of implementing navigation.
+NavigationUtils does NOT add complexity. Instead, it embraces the intricacies of Navigator 2, providing a nuanced, comprehensive approach to implementing navigation.
 
 A few compelling arguments for using Navigation Utils: 
 
 - You're learning how to use Flutter's Navigator 2, not a third party library. The time you invest won't be wasted.
-- You'll be able to implement complex navigation without fighting the library.
-- Create navigation that conforms to your app and  architecture instead of letting navigation drive architecture decisions.
+- You can implement complex navigation schemas without wrestling with the library.
+- You can design navigation that seamlessly aligns with your app and architecture, rather than allowing navigation to dictate architectural choices.
 
-As you implement more and more navigation features such as deeplinks, authentication, and URLs, you'll run into increasing roadblocks and limitations that increases cost. At a certain point, learning and working directly with Navigator 2 is imperative.
+As you incorporate more advanced navigation features, like deeplinks, authentication, and URLs, you'll likely encounter growing challenges and limitations that can drive up costs. There comes a point when direct, hands-on experience with Navigator 2 becomes crucial.
 
 <p align="center">
 <img src="packages/Navigation-Utils-Breakeven-Graph.png" width="600">
 </p>
 
-If you are running into navigation issues, bite the bullet and learn Navigator 2. There is an initial learning curve but the alternative is to run into countless issues, roadblocks, and limitations.
+If navigation hurdles have become a constant in your development process, it's time to bite the bullet and master Navigator 2. The learning curve is steep, but the alternative is a seemingly endless cycle of issues, roadblocks, and limitations.
 
 ## Quickstart
 
-### App Routing Setup
+### Initial App Routing Configuration
 
 ```dart
 MaterialApp.router(
@@ -47,9 +52,9 @@ MaterialApp.router(
     );
 ```
 
-**Tip:** Navigator 2 uses `MaterialApp.router` and requires a `RouterDelegate` and `RouteInformationParser` that replaces the `routes` and `onGenerateRoute` builders.
+**Tip:** Navigator 2 utilizes `MaterialApp.router` and requires a `RouterDelegate` and `RouteInformationParser`. These components replace the `routes` and `onGenerateRoute` builders of Navigator 1.
 
-NavigationManager is a global singleton class. Here, it is used as a dependency injection and holds references to the `RouterDelegate` and `RouteInformationParser`. See the customization section for more information on how to use your own dependency injection and custom navigation lifecycle management.
+The NavigationManager acts as a global singleton, serving as a dependency injector while holding references to the `RouterDelegate` and `RouteInformationParser`. See the customization section for more information on how to use your own dependency injection and custom navigation lifecycle management.
 
 ### Initialize NavigationManager
 
@@ -82,7 +87,7 @@ List<NavigationData> routes = [
 
 ```
 
-**Tip:** URL is required for each route because `NavigationData` maps a URL to a page widget. The `NavigationData` data model / builder bundles routing information together for Flutter's navigation methods to read. For more information on passing query parameters and page constructors, see later sections of the ReadMe.
+**Note:** Each route requires a URL because `NavigationData` maps a URL to a specific page. The NavigationData model holds routing information that Flutter's navigator needs. For more insights on passing query parameters and using page constructors, see customization sections below.
 
 `NavigationData` contains an optional `label` property to support named routing like in Navigator 1. Navigator 2 does not supported named routing out of the box so named routing is reimplemented. Here, `ProjectsPage.name` is a static constant defined in the ProjectPage widget.
 
@@ -95,19 +100,31 @@ class ProjectsPage extends StatefulWidget {
 }
 ```
 
-### Navigation
+## Navigation
+
+NavigationUtils supports path, name, and Route object-based routing. You can directly access these navigation functions through `NavigationManager.instance`.
+
+### Path
+
+Path-based routing can be considered "absolute" routing as each URL path is unique. The path is also the URL shown in the address bar on Web.
 
 ```dart
-// Path
 NavigationManager.instance.routerDelegate.push('/projects');
-
-// Name
-NavigationManager.instance.routerDelegate.push(ProjectsPage.name);
-
-// Route Object
-NavigationManager.instance.routerDelegate.pushRoute(DefaultRoute(path: '/projects'));
 ```
 
-This library supports path, name, and Route object based routing. Access navigation methods on the Route Delegate directly through the NavigationManager instance.
+### Named
 
+Navigator 1's named route navigation. The name of the route is often defined in the respective page or component and used as a reference for navigation.
+
+```dart
+NavigationManager.instance.routerDelegate.push(ProjectsPage.name);
+```
+
+### Route Object
+
+Navigation can also use the raw Route object. Here, a DefaultRoute object is created with the specified path, which is then passed to the navigation. This method is primarily used internally and for supporting partial migrations to this library.
+
+```dart
+NavigationManager.instance.routerDelegate.pushRoute(DefaultRoute(path: '/projects'));
+```
 

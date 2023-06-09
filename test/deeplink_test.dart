@@ -4,6 +4,7 @@ import 'package:navigation_utils/navigation_utils.dart';
 void main() {
   group('getDeeplinkDestination', () {
     test('Empty', () {
+      // Method should not crash when null.
       NavigationUtils.getDeeplinkDestinationFromUrl([], null);
       NavigationUtils.getDeeplinkDestinationFromUrl([], '');
       NavigationUtils.getDeeplinkDestinationFromUri([], null);
