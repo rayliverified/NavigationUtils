@@ -3,24 +3,24 @@
 
 > ### The missing navigation library for Navigator 2. 
 
-NavigationUtils is a comprehensive package that simplifies the process of integrating Flutter's Navigator 2 into your applications. 
+NavigationUtils simplifies the process of integrating Flutter's Navigator 2 into your applications. 
 
 ### Features
 
 - Reimplements the Navigator 1 API in Navigator 2, including `push()`, `pop()`, `pushAndReplace()` and more.
 - Full control over the navigation back stack through `set()`.
-- Named route functionality with `pushNamed()`, `setNamed()`.
+- Named route support with `pushNamed()`, `setNamed()`.
 - Path-based routing support.
 - Convenient functions for setting the URL and query parameters.
 
 ### Should I use Navigation Utils?
 
-Use NavigationUtils if the existing Navigation Libraries aren't working for you and you need full control over the backstack.
+You should use NavigationUtils if the existing Navigation Libraries aren't working for you and you need full control.
 
 - ❌ DON'T USE NavigationUtils if an existing navigation library works for you (GoRouter, RouteMaster, etc).
 - ✅ USE NavigationUtils if you're thinking about implementing Navigator 2 directly or writing your own Navigation library.
 
-Here's a clear, helpful diagram for deciding whether NavigationUtils is the right fit for a project.
+Here's a helpful diagram for deciding whether NavigationUtils is the right fit for a project.
 
 ![Screenshots](packages/Use-Navigation-Utils-Decision-Diagram.png)
 
@@ -128,3 +128,101 @@ Navigation can also use the raw Route object. Here, a DefaultRoute object is cre
 NavigationManager.instance.routerDelegate.pushRoute(DefaultRoute(path: '/projects'));
 ```
 
+## Routing Parameters
+
+Navigator 2 does not support query parameters, path parameters, route guards, or non-serializable objects out of the box. The default `PageRoute` class only supports URLs and arguments.
+
+Please read and understand the following information as it is crucial to understanding how Navigator 2 works.
+
+**Important:**
+
+- **Arguments are NOT query parameters or related to URL routing in any way. Arguments are an internal parameter used to pass data between pages from the Legacy Navigator 1 implementation.**
+- **Navigator 2 uses the full URL string as a unique page identifier. By default it does not do any path processing or conform to expected URL routing logic or behavior. `/home` and `/home/` are treated as two distinct pages.**
+
+Navigator 2's default URL handling behavior is very limited and wrong by default for web. NavigationUtils adds support for URL routing parameters by extending `PageRoute` with a `DefaultRoute` and building an abstraction layer called `NavigationData` on top.
+
+### Query Parameters
+
+Access query parameters via `routeData.queryParameters` in `NavigationData`. Query parameters are stored in a `Map<String, String>` where the key is the query parameter name and the value is the query parameter value.
+
+#### Example
+
+```dart
+// Route Definition
+NavigationData(
+  label: ProjectPage.name,
+  url: '/project',
+  builder: (context, routeData, globalData) => ProjectPage(
+    tab: int.tryParse(routeData.queryParameters['id'] ?? ''),
+  ),
+)
+    
+// Route Navigation
+NavigationManager.instance.push(ProjectPage.name);
+NavigationManager.instance.push(ProjectPage.name, queryParameters: {'id': '320'});
+NavigationManager.instance.push('/project');
+NavigationManager.instance.push('/project', queryParameters: {'id': '320'});
+```
+
+`ProjectPage` is mapped to the URL (`'/project'`). An `id` query parameter is used to pass the ID of the project. 
+
+**Note:** All URL parameters are passed as Strings. This is because URLs are not "typed" and Strings by default.
+
+- Extract `ints` and `doubles` with `int.tryParse` and `double.tryParse`.
+- Extract `bools` with `routeData.queryParameters[variable] == 'true'` where the value passed in the URL is a `true` or `false` String.
+
+#### Implementation Details
+
+Navigator 2 does not support query parameters "out of the box" as the Navigator 2 API does not have a `query parameter` field. By default, Navigator 2 treats query parameters as part of the URL string and different query parameters as unique pages.
+
+For example, all of the below home `/` URLs are treated as different pages by Navigator 2:
+
+```
+/
+/?tab=community_page
+/?tab=community_page&post=80
+/?tab=message_page
+/?referrer=google_ads
+```
+
+This is a problem because all of the URLs should point to the same page and query parameters should be passed to that page. To support query parameters properly, this library strips query parameters from URLs, stores them, and then rebundles them during the route construction process.
+
+Internally, this library extracts the query parameters (`tab` ) and stores it in the constructed `DefaultRoute` object, passing only the root `/` URL to the underlying Navigator 2 API.
+
+Multiple `NavigationData` instances can be defined with different query parameters to handle various scenarios or variations of the same page, all pointing to the same destination.
+
+### Path Parameters
+
+Path parameters are used to capture dynamic parts of a URL's path. They are denoted by a colon (`:`) followed by a parameter name in the URL pattern. The corresponding values for each path parameter are extracted from the actual URL when a match is found.
+
+Access path parameters via `routeData.pathParameters` in `NavigationData`. Path parameters are stored in a `Map<String, String>` where the key is the path parameter name and the value is the path parameter value.
+
+#### Example
+
+```dart
+// Route definition
+NavigationData(
+  label: ProjectPage.name,
+  url: '/project/:projectId',
+  builder: (context, routeData, globalData) {
+    return ProjectPage(
+      postId: int.tryParse(routeData.pathParameters['projectId'] ?? ''),
+    );
+  },
+)
+    
+// Route navigation
+NavigationManager.instance.push(ProjectPage.name);
+NavigationManager.instance.push(ProjectPage.name, pathParameters: {'projectId': 320});
+NavigationManager.instance.push('/project/320');
+# Invalid: NavigationManager.instance.push('/project'); /project and /project/320 are different URLs.
+```
+
+In the example above, the `ProjectPage` is associated with the URL pattern `'/project/:projectId'`. The value of `projectId` is extracted from the actual URL. These parameters are then used to construct the `ProjectPage` with the corresponding values.
+
+Multiple `NavigationData` instances can be defined with different URL patterns and path parameters to handle various routes and dynamic parts of the URL path.
+
+**Note:** Ensure that the URL patterns in the `NavigationData` instances match the actual URLs accurately to enable correct parameter extraction.
+
+- `/project` and `/project/:projectId` are different URLs. To support both, define a `NavigationData(url: '/project')` and `NavigationData(url: '/project/:projectId')`.
+- A trailing slash such as `/project/` does not pass a null ID to `/project/:projectId`. Instead, `/project/` is equivalent to `/project`.
