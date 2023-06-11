@@ -102,6 +102,27 @@ class ProjectsPage extends StatefulWidget {
 
 ## Navigation
 
+The NavigationData class in the NavigationUtils library is used to encapsulate all the necessary data for defining a route in your application. It provides an easy way to define and manage your routes.
+
+```dart
+NavigationData(
+  label: ProjectPage.name,
+  url: '/project',
+  builder: (context, routeData, globalData) =>
+      const ProjectPage(),
+),
+```
+
+- `label`: An optional `String` for named navigation.
+- `url`: A `String` that represents the URL for the route. This is used to match the incoming route. It must start with a '/'. 
+- `builder`: A `NavigationPageFactory` object. It is a function that returns a `Page` widget. This builder is used to construct the page when the route is navigated to.
+- `pageType`: An optional `PageType` enum that can be used to further customize the type of the page. The PageType can be `material`, `cupertino`, or `transparent`.
+- `fullScreenDialog`: An optional `bool` that indicates whether the route is a full-screen modal dialog.
+- `barrierColor`: An optional `Color` that specifies the color of the barrier that will appear behind the dialog. This is used only if `fullScreenDialog` is `true`.
+- `metadata`: A `Map<String, dynamic>` that can hold any additional data you want to associate with the route.
+
+### Usage
+
 NavigationUtils supports path, name, and Route object-based routing. You can directly access these navigation functions through `NavigationManager.instance`.
 
 ### Path
@@ -153,7 +174,7 @@ NavigationData(
   label: ProjectPage.name,
   url: '/project',
   builder: (context, routeData, globalData) => ProjectPage(
-    tab: int.tryParse(routeData.queryParameters['id'] ?? ''),
+    id: int.tryParse(routeData.queryParameters['id'] ?? ''),
   ),
 )
     
@@ -204,9 +225,8 @@ Access path parameters via `routeData.pathParameters` in `NavigationData`. Path 
 NavigationData(
   label: ProjectPage.name,
   url: '/project/:projectId',
-  builder: (context, routeData, globalData) {
-    return ProjectPage(
-      postId: int.tryParse(routeData.pathParameters['projectId'] ?? ''),
+  builder: (context, routeData, globalData) => ProjectPage(
+      id: int.tryParse(routeData.pathParameters['projectId'] ?? ''),
     );
   },
 )
@@ -226,3 +246,134 @@ Multiple `NavigationData` instances can be defined with different URL patterns a
 
 - `/project` and `/project/:projectId` are different URLs. To support both, define a `NavigationData(url: '/project')` and `NavigationData(url: '/project/:projectId')`.
 - A trailing slash such as `/project/` does not pass a null ID to `/project/:projectId`. Instead, `/project/` is equivalent to `/project`.
+
+## Deeplinks
+
+A special feature of NavigationUtils is it supports *deeplinks as data* and defining them all *in a single list*. This is done by creating a list of `DeeplinkDestination` instances. 
+
+```dart
+List<DeeplinkDestination> deeplinkDestinations = [
+  DeeplinkDestination(
+    deeplinkUrl: '/deeplink/login',
+    destinationLabel: LoginPage.name),
+  DeeplinkDestination(
+    deeplinkUrl: '/deeplink/signup',
+    destinationLabel: SignUpPage.name),
+```
+
+Each `DeeplinkDestination` represents a unique deeplink within your application and includes properties such as `deeplinkUrl`, `destinationLabel`, and `destinationUrl` to define the behavior of the deeplink.
+
+This approach offers several advantages:
+
+- **Centralization**: By defining all deeplinks in one place, it becomes easier to manage and update them. You can quickly find, add, remove, or modify deeplinks as your application evolves.
+- **Consistency**: Having a single list ensures that every deeplink is defined in a consistent way, making your codebase more maintainable.
+- **Flexibility**: Since deeplinks are defined as data, you can dynamically generate, modify, or filter them based on your application's needs.
+
+### Custom Deeplinks Behavior
+
+```dart
+DeeplinkDestination(
+  deeplinkUrl: '/deeplink/login',
+  destinationLabel: LoginPage.name,
+  destinationUrl: '/login',
+  backstack: [InitializationPage.name, StartPage.name],
+  backstackRoutes: [InitializationRoute(), StartRoute()],
+  excludeDeeplinkNavigationPages: [ForgotPassword.name],
+  shouldNavigateDeeplinkFunction: () {
+    if (AuthService.instance.isAuthenticated) return false;
+    return true;
+  },
+  mapArgumentsFunction: (pathParameters, queryParameters) {
+    // Remap or process path and query parameters.
+    String referrerId = queryParameters['referrer'] ?? '';
+    InstallReferrer.instance.setReferrerId(referrerId);
+
+    return {'id': pathParameters['userId'] ?? ''};
+  },   
+  authenticationRequired: false,
+)
+```
+
+- `deeplinkUrl`: A required property representing the deep link URL.
+- `destinationLabel`: The named route destination of the deep link.
+- `destinationUrl`: The URL route of the destination.
+- `backstack` and `backstackRoutes`: Specify the route backstack to which the user should return when navigating away from the deep link. Only one of these can be set.
+- `excludeDeeplinkNavigationPages`: A list of pages that should be excluded from deep link navigation.
+- `shouldNavigateDeeplinkFunction`: A function that determines whether the deep link should be navigated.
+- `mapPathParameterFunction`, `mapQueryParameterFunction`, `mapArgumentsFunction`, `mapGlobalDataFunction`: Optional functions that map path parameters, query parameters, arguments, and global data, respectively.
+- `authenticationRequired`: A boolean indicating whether authentication is required to navigate the deeplink.
+
+By providing these parameters, NavigationUtils gives you the flexibility to customize deeplink behavior to suit your application's specific needs. Contributors are welcome to open an issue and PR to add additional functionality that might be missing.
+
+### Deeplinks Usage
+
+NavigationUtils includes a convenience function called `NavigationUtils.openDeeplinkDestination` to process URIs and map them to deeplinks. Here is a sample implementation:
+
+```dart
+class DefaultRouteParser {
+  static bool openDeeplink(Uri? uri) {
+    return NavigationUtils.openDeeplinkDestination(
+      deeplinkDestinations: deeplinkDestinations,
+      routerDelegate: NavigationManager.instance.routerDelegate,
+      uri: uri,
+      authenticated: AuthService.instance.isAuthenticated,
+      currentRoute:
+          NavigationManager.instance.routerDelegate.currentConfiguration,
+      excludeDeeplinkNavigationPages: doNotNavigateDeeplinkPages,
+    );
+  }
+}
+```
+
+- `uri`: The `Uri` object representing the deeplink that you want to open.
+
+- `deeplinkDestinations`: The list of `DeeplinkDestination` instances that define the deeplinks within your application.
+
+- `routerDelegate`: The `BaseRouterDelegate` instance that handles the actual navigation within your application.
+
+- `deeplinkDestination`: An optional `DeeplinkDestination` instance that you want to open. If not provided, the method will try to find the matching destination in the `deeplinkDestinations` list using the `uri`.
+
+- `authenticated`: A boolean value that indicates whether the user is authenticated. This is used when the `DeeplinkDestination` requires authentication. Defaults to `true`.
+
+- `currentRoute`: An optional `DefaultRoute` instance that represents the current route of the application. This is used for checking if the current page is in the `excludeDeeplinkNavigationPages` list.
+
+- `excludeDeeplinkNavigationPages`: A list of strings that represent the labels or paths of the routes that should be excluded from deeplink navigation. If the current route's label or path is in this list, the method will not perform the navigation.
+
+This method tries to find the matching `DeeplinkDestination` for the given `uri` and performs various checks before navigating to the destination. These checks include checking whether the user is authenticated (if required), whether the current route is in the excluded list, and whether a custom navigation function allows the navigation. After these checks, the method navigates to the destination and processes any path parameters, query parameters, arguments, and global data as defined by the `DeeplinkDestination`. Finally, the method updates the route stack using the `routerDelegate` and applies the changes. The method returns `true` if the navigation was successful, and `false` otherwise.
+
+### Route Guards
+
+#### Authentication
+
+NavigationUtils supports the common "Authenticated" route guard through the `authenticationRequired` boolean. 
+
+1. Annotate each `DeeplinkDestination` with `authenticationRequired`.
+2. Pass the authentication state from your Authentication Service to `NavigationUtils.openDeeplinkDestination(authenticated: AuthService.instance.isAuthenticated)`.
+
+#### Do Not Navigate Pages
+
+When the user is on certain pages, such as the onboarding page, you may often want to disable deeplinks. NavigationUtils supports this behavior with `excludeDeeplinkNavigationPages`. 
+
+1. Define the list of pages to exclude in `excludeDeeplinkNavigationPages`. This list accepts named routes and path routes.
+2. Pass the current page to `currentRoute` like `currentRoute: NavigationManager.instance.routerDelegate.currentConfiguration`.
+
+#### Custom Route Guards
+
+Setup Custom Route Guards by tagging `NavigationData` routes with custom `metadata`.
+
+First, add custom tags to `NavigationData(label: PremiumMemberPage.name, url: '/premium_page', metadata: {kUserStatus: PREMIUM})`. Here, the `PremiumPage` is tagged with `kUserStatus` and requires a `PREMIUM` status to navigate.
+
+```dart
+if (NavigationManager.instance.routerDelegate
+    .currentConfiguration?.metadata?['kUserStatus'] == PREMIUM) {
+  DefaultRouteParser.openDeeplink(uri);
+}
+```
+
+#### Async Route Guards
+
+NavigationUtils supports route guards through the `shouldNavigateDeeplinkFunction` property of the `DeeplinkDestination` class. This function is called before navigating to the deeplink destination and can be used to prevent navigation based on certain conditions. For example, you can check if a user is authenticated before allowing navigation to a protected route.
+
+### Async Navigation
+
+NavigationUtils supports asynchronous navigation, allowing you to perform asynchronous tasks such as data fetching or authentication checks before navigating to a deeplink destination. This is facilitated by the fact that the `shouldNavigateDeeplinkFunction` can be an asynchronous function, meaning it can return a `Future<bool>` instead of a simple `bool`. This lets you perform any necessary async operations and delay navigation until those operations complete.
