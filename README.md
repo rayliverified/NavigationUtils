@@ -22,7 +22,7 @@ You should use NavigationUtils if the existing Navigation Libraries aren't worki
 
 Here's a helpful diagram for deciding whether NavigationUtils is the right fit for a project.
 
-![Screenshots](packages/Use-Navigation-Utils-Decision-Diagram.png)
+![Screenshots](packages/DecisionDiagram.png)
 
 NavigationUtils does NOT add complexity. Instead, it embraces the intricacies of Navigator 2, providing a nuanced, comprehensive approach to implementing navigation.
 
@@ -35,7 +35,7 @@ A few compelling arguments for using Navigation Utils:
 As you incorporate more advanced navigation features, like deeplinks, authentication, and URLs, you'll likely encounter growing challenges and limitations that can drive up costs. There comes a point when direct, hands-on experience with Navigator 2 becomes crucial.
 
 <p align="center">
-<img src="packages/Navigation-Utils-Breakeven-Graph.png" width="600">
+<img src="packages/BreakevenGraph.png" width="600">
 </p>
 
 If navigation hurdles have become a constant in your development process, it's time to bite the bullet and master Navigator 2. The learning curve is steep, but the alternative is a seemingly endless cycle of issues, roadblocks, and limitations.
