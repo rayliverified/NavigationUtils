@@ -3,6 +3,12 @@ description: The missing navigation library for Navigator 2.
 version: 0.0.1-pre.2
 homepage: https://codelessly.com
 repository: https://github.com/rayliverified/NavigationUtils
+false_secrets:
+  - /example_auth/android/app/google-services.json
+  - /example_auth/ios/Runner/GoogleService-Info.plist
+  - /example_auth/example_auth/lib/firebase_options.dart
+  - /example_auth/macos/Runner/GoogleService-Info.plist
+  - /example_auth/lib/firebase_options.dart
 
 environment:
   sdk: ">=2.17.1 <4.0.0"
