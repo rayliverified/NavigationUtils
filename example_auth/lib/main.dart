@@ -230,7 +230,7 @@ class InitializationErrorPage extends StatelessWidget {
           children: [
             Text(
               model.errorMessage ?? 'Unknown error. Please try again.',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme.of(context).textTheme.headlineMedium,
               textAlign: TextAlign.center,
             ),
             Container(
@@ -264,7 +264,7 @@ class UnknownPage extends StatelessWidget {
           children: [
             Text(
               '404',
-              style: Theme.of(context).textTheme.headline1,
+              style: Theme.of(context).textTheme.displayLarge,
               textAlign: TextAlign.center,
             ),
             Container(

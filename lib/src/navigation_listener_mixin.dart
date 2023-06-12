@@ -25,7 +25,6 @@ mixin NavigationListenerMixin {
     // The route is returned via the context of the page
     // the mixin is added to.
     String routeName = ModalRoute.of(_context)?.settings.name ?? '';
-    print('Update Route: $routeName, Current Route: ${currentRoute.name}');
     // If the route name changes, the current page is no
     // longer active and paused.
     if (routeName != currentRoute.name) {

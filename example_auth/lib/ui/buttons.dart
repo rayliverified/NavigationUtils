@@ -35,7 +35,7 @@ class LoadingButton extends StatelessWidget {
       elevation: 0,
       textStyle: Theme.of(context)
           .textTheme
-          .button!
+          .labelLarge!
           .copyWith(fontWeight: FontWeight.normal)
           .merge(this.style),
     );

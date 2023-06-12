@@ -37,7 +37,6 @@ class DefaultRoute extends RouteSettings {
         metadata: metadata);
   }
 
-  @override
   DefaultRoute copyWith(
       {String? label,
       String? path,
@@ -321,8 +320,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   void popUntil(String name, {bool apply = true}) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
-      if (route.label == name || route.path == name || _routes.length == 1)
+      if (route.label == name || route.path == name || _routes.length == 1) {
         break;
+      }
       pop();
       route = _routes.isNotEmpty ? _routes.last : null;
     }

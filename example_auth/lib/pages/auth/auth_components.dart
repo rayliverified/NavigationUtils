@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'dart:async';
 
 import 'package:example_auth/main.dart';
@@ -201,11 +203,11 @@ class _SignUpFormState extends State<SignUpForm> {
                   children: [
                     TextSpan(
                       text: 'Already have an account? ',
-                      style: Theme.of(context).textTheme.bodyText1,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     TextSpan(
                       text: 'Login',
-                      style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: Colors.blue,
                           decoration: TextDecoration.underline),
                       recognizer: TapGestureRecognizer()
@@ -386,11 +388,11 @@ class _LoginFormState extends State<LoginForm> {
                   children: [
                     TextSpan(
                       text: 'Need an account? ',
-                      style: Theme.of(context).textTheme.bodyText1,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     TextSpan(
                       text: 'Register',
-                      style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: Colors.blue,
                           decoration: TextDecoration.underline),
                       recognizer: TapGestureRecognizer()
@@ -404,7 +406,7 @@ class _LoginFormState extends State<LoginForm> {
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   text: 'Forgot your password?',
-                  style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       color: Colors.blue, decoration: TextDecoration.underline),
                   recognizer: TapGestureRecognizer()
                     ..onTap = widget.onResetPasswordTapped as void Function()?,
@@ -497,7 +499,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
               textAlign: TextAlign.center,
               text: TextSpan(
                 text: 'Go back',
-                style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                     color: Colors.blue, decoration: TextDecoration.underline),
                 recognizer: TapGestureRecognizer()
                   ..onTap = widget.onBackPressed as void Function()?,
@@ -739,7 +741,7 @@ class GoogleLoginButton extends StatelessWidget {
           ),
           padding: buttonPaddingPlatformSpecific(),
           side: BorderSide(color: Theme.of(context).colorScheme.primary),
-          textStyle: Theme.of(context).textTheme.button,
+          textStyle: Theme.of(context).textTheme.labelMedium,
         ),
         icon: isLoading!
             ? const SizedBox(
@@ -768,11 +770,11 @@ class TermsAndConditionsText extends StatelessWidget {
       textAlign: TextAlign.center,
       text: TextSpan(
         text: 'By creating an account, you accept \nour ',
-        style: Theme.of(context).textTheme.bodyText2,
+        style: Theme.of(context).textTheme.bodyMedium,
         children: [
           TextSpan(
               text: 'Terms and Conditions',
-              style: Theme.of(context).textTheme.bodyText2!.copyWith(
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                   color: Colors.blue, decoration: TextDecoration.underline),
               recognizer: TapGestureRecognizer()..onTap = () {})
         ],
@@ -808,7 +810,7 @@ class OrDivider extends StatelessWidget {
             style: style ??
                 Theme.of(context)
                     .textTheme
-                    .bodyText2!
+                    .bodyMedium!
                     .copyWith(color: const Color(0xFFB4B4B4)),
           ),
         ),

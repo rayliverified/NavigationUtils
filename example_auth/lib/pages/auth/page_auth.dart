@@ -97,7 +97,7 @@ class AuthPage extends StatelessWidget {
                   const Padding(padding: EdgeInsets.only(bottom: 48)),
                   Text(
                     getPageTitle(model),
-                    style: Theme.of(context).textTheme.headline2,
+                    style: Theme.of(context).textTheme.displayMedium,
                     textAlign: TextAlign.center,
                   ),
                   LayoutBuilder(builder: (context, constraints) {
