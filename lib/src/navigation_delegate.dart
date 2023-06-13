@@ -263,7 +263,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         label: navigationData.label ?? '',
         path: path,
         pathParameters: pathParameters,
-        queryParameters: queryParameters ?? navigationData.queryParameters,
+        queryParameters: {
+          ...?queryParameters,
+          ...navigationData.queryParameters
+        },
         metadata: navigationData.metadata,
         arguments: arguments);
 
