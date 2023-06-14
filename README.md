@@ -1,7 +1,7 @@
 # Navigation Utils
 [![Pub release](https://img.shields.io/pub/v/navigation_utils.svg?style=flat-square)](https://pub.dev/packages/navigation_utils) [![GitHub Release Date](https://img.shields.io/github/release-date/rayliverified/NavigationUtils.svg?style=flat-square)](https://github.com/rayliverified/NavigationUtils) [![GitHub issues](https://img.shields.io/github/issues/rayliverified/NavigationUtils.svg?style=flat-square)](https://github.com/rayliverified/NavigationUtils/issues) [![GitHub top language](https://img.shields.io/github/languages/top/rayliverified/NavigationUtils.svg?style=flat-square)](https://github.com/rayliverified/NavigationUtils) [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/rayliverified/NavigationUtils.svg?style=flat-square)](https://github.com/rayliverified/NavigationUtils) [![License](https://img.shields.io/badge/License-BSD%200--Clause-orange.svg?style=flat-square)](https://opensource.org/licenses/0BSD)
 
-![Icon](packages/icon_navigation_utils_256x.png)
+![Screenshots](packages/icon_navigation_utils_256x.png)
 
 > ### The missing navigation library for Navigator 2. 
 
@@ -37,7 +37,7 @@ A few compelling arguments for using Navigation Utils:
 As you incorporate more advanced navigation features, like deeplinks, authentication, and URLs, you'll likely encounter growing challenges and limitations that can drive up costs. There comes a point when direct, hands-on experience with Navigator 2 becomes crucial.
 
 <p align="center">
-<img src="packages/breakeven_graph.png" width="600">
+<img src="https://raw.githubusercontent.com/rayliverified/NavigationUtils/master/packages/breakeven_graph.png" width="600">
 </p>
 
 If navigation hurdles have become a constant in your development process, it's time to bite the bullet and master Navigator 2. The learning curve is steep, but the alternative is a seemingly endless cycle of issues, roadblocks, and limitations.
