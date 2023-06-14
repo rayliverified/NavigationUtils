@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Example Auth Simple" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="filePath" value="$PROJECT_DIR$/example_auth/lib/main_firebase_simple.dart" />
+    <method v="2" />
+  </configuration>
+</component>
