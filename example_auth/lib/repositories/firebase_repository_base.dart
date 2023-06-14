@@ -28,22 +28,10 @@ abstract class FirebaseRepositoryBase {
     String? apiKey,
     String? databaseId,
   }) async {
-    if (kIsWeb || Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
       // TODO [ERROR_HANDLING]: handle error. Catch errors for
       await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform);
-      if (!kIsWeb) {
-        // Web has a different way of handling persistence, which is disabled
-        // by default.
-        FirebaseFirestore.instance.settings =
-            const Settings(persistenceEnabled: false);
-      }
       _instance = FirebaseRepository();
-    } else {
-      debugPrint('Firebase is not yet supported on this platform.');
-      return ValueResponse.error(
-          'Firebase is not yet supported on this platform.');
-    }
     return ValueResponse.success();
   }
 
