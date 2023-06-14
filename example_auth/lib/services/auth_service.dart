@@ -104,8 +104,6 @@ class AuthService extends AuthServiceBase {
     return _instance!;
   }
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-
   factory AuthService() {
     DebugLogger.instance.printFunction('AuthService Initialized');
     // An instance persists the AuthService.
@@ -274,9 +272,8 @@ class AuthService extends AuthServiceBase {
       // Web auth no longer requires the `google_signin` plugin.
       if (kIsWeb) {
         final ValueResponse<UserModel> response =
-            await FirebaseRepositoryBase.instance.signInWithPopup();
+            await FirebaseRepositoryBase.instance.signInWithGoogleWeb();
         if (response.isError) {
-          // TODO [ERROR_HANDLING]: handle error.
           return AuthResult.failure(response.error.message);
         }
         user = response.data;
@@ -286,7 +283,8 @@ class AuthService extends AuthServiceBase {
           return AuthResult.failure(
               'Sign in with Google is not yet supported on Windows');
         }
-        GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+        GoogleSignInAccount? googleSignInAccount =
+            await GoogleSignIn().signIn();
         if (googleSignInAccount == null) {
           return AuthResult.failure('Sign in canceled.');
         }
@@ -296,15 +294,11 @@ class AuthService extends AuthServiceBase {
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
-        final ValueResponse<UserModel> response =
-            await FirebaseRepositoryBase.instance.signInWithCredential(
-          providerId: credential.providerId,
-          signInMethod: credential.signInMethod,
-          token: credential.token,
-        );
+        final ValueResponse<UserModel> response = await FirebaseRepositoryBase
+            .instance
+            .signInWithGoogleNative(credential: credential);
 
         if (response.isError) {
-          // TODO [ERROR_HANDLING]: handle error.
           return AuthResult.failure(response.error.message);
         }
         user = response.data;

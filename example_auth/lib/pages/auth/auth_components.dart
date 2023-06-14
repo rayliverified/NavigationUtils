@@ -306,6 +306,11 @@ class _LoginFormState extends State<LoginForm> {
       return;
     } else {
       googleErrorMessage = result.errorMessage;
+      // Don't show error message when popup is closed by the user.
+      // Error codes list: https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#signinwithpopup
+      if (result.errorMessage?.contains('popup-closed-by-user') ?? false) {
+        googleErrorMessage = null;
+      }
     }
     if (mounted) setState(() {});
   }

@@ -100,14 +100,11 @@ abstract class FirebaseRepositoryBase {
   Future<ValueResponse<void>> sendPasswordResetEmail({required String email}) =>
       throw UnimplementedError('Use implementation');
 
-  Future<ValueResponse<UserModel>> signInWithCredential({
-    required String providerId,
-    required String signInMethod,
-    int? token,
-  }) =>
+  Future<ValueResponse<UserModel>> signInWithGoogleNative(
+          {required AuthCredential credential}) =>
       throw UnimplementedError('Use implementation');
 
-  Future<ValueResponse<UserModel>> signInWithPopup() =>
+  Future<ValueResponse<UserModel>> signInWithGoogleWeb() =>
       throw UnimplementedError();
 
   Future<ValueResponse<String>> signInWithEmailAndPassword({

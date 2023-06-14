@@ -129,44 +129,36 @@ class FirebaseRepository extends FirebaseRepositoryBase {
   }
 
   @override
-  Future<ValueResponse<UserModel>> signInWithCredential({
-    required String providerId,
-    required String signInMethod,
-    int? token,
-  }) {
+  Future<ValueResponse<UserModel>> signInWithGoogleNative(
+      {required AuthCredential credential}) {
     return returnResultOrError(() async {
-      final AuthCredential credential = AuthCredential(
-        providerId: providerId,
-        signInMethod: signInMethod,
-        token: token,
-      );
-      final UserCredential user =
+      final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
       // TODO: check for nulls?
       final UserModel model = UserModel(
-        id: user.user!.uid,
-        email: user.user?.email ?? '',
-        name: user.user?.displayName ?? '',
-        photoUrl: user.user?.photoURL ?? '',
+        id: userCredential.user!.uid,
+        email: userCredential.user?.email ?? '',
+        name: userCredential.user?.displayName ?? '',
+        photoUrl: userCredential.user?.photoURL ?? '',
       );
       return ValueResponse.success(model);
     });
   }
 
   @override
-  Future<ValueResponse<UserModel>> signInWithPopup() {
+  Future<ValueResponse<UserModel>> signInWithGoogleWeb() {
     return returnResultOrError(() async {
       GoogleAuthProvider googleProvider = GoogleAuthProvider();
 
-      final UserCredential user =
+      final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithPopup(googleProvider);
 
       // TODO: check for nulls?
       final UserModel model = UserModel(
-        id: user.user!.uid,
-        email: user.user?.email ?? '',
-        name: user.user?.displayName ?? '',
-        photoUrl: user.user?.photoURL ?? '',
+        id: userCredential.user!.uid,
+        email: userCredential.user?.email ?? '',
+        name: userCredential.user?.displayName ?? '',
+        photoUrl: userCredential.user?.photoURL ?? '',
       );
       return ValueResponse.success(model);
     });
