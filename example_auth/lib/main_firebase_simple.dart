@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       return Text('User: ${snapshot.data!}');
                     }
 
-                    return const Text('No data');
+                    return const Text('User: None');
                   }),
               TextButton(
                 onPressed: onLogin,

@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^2.14.0 # Missing Windows Support.
-  firebase_auth: ^4.6.3 # Missing Windows Support.
+  firebase_core: ^2.14.0
+  firebase_auth: ^4.6.3
   google_sign_in: ^6.1.4 # Missing Windows, macOS Support.
   cloud_firestore: ^4.8.1 # Missing Window Support.
   firebase_database: ^10.2.3 # Missing Windows Support.

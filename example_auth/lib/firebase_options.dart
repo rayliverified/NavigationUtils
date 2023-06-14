@@ -27,15 +27,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return web;
       case TargetPlatform.linux:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return web;
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -67,7 +61,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '146734299654',
     projectId: 'example-auth-1',
     storageBucket: 'example-auth-1.appspot.com',
-    iosClientId: '146734299654-gnc4uq31mi11ii8l1qe3a8p09f0gsf6a.apps.googleusercontent.com',
+    iosClientId:
+        '146734299654-gnc4uq31mi11ii8l1qe3a8p09f0gsf6a.apps.googleusercontent.com',
     iosBundleId: 'com.example.auth',
   );
 
@@ -77,7 +72,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '146734299654',
     projectId: 'example-auth-1',
     storageBucket: 'example-auth-1.appspot.com',
-    iosClientId: '146734299654-gnc4uq31mi11ii8l1qe3a8p09f0gsf6a.apps.googleusercontent.com',
+    iosClientId:
+        '146734299654-gnc4uq31mi11ii8l1qe3a8p09f0gsf6a.apps.googleusercontent.com',
     iosBundleId: 'com.example.auth',
   );
 }
