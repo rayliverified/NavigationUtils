@@ -54,12 +54,11 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             MaterialButton(
-              onPressed: () =>
-                  NavigationManager.instance.routerDelegate.push('/project/1'),
+              onPressed: () => NavigationManager.instance.push('/project/1'),
               child: const Text('Open Project Path'),
             ),
             MaterialButton(
-              onPressed: () => NavigationManager.instance.routerDelegate
+              onPressed: () => NavigationManager.instance
                   .push(ProjectPage.name, pathParameters: {'id': '2'}),
               child: const Text('Open Project Named'),
             )
@@ -103,8 +102,7 @@ class _ProjectPageState extends State<ProjectPage> {
             Text('Projects Page ${widget.id}',
                 style: const TextStyle(color: Colors.white)),
             MaterialButton(
-                onPressed: () =>
-                    NavigationManager.instance.routerDelegate.pop(),
+                onPressed: () => NavigationManager.instance.pop(),
                 child: const Text('Back')),
           ],
         ),

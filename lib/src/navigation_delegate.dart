@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 
+import 'models/navigation_interface.dart';
 import 'navigation_builder.dart';
 import 'path_utils_go_router.dart';
 import 'utils.dart';
@@ -18,14 +19,14 @@ class DefaultRoute extends RouteSettings {
 
   DefaultRoute(
       {required this.path,
-      this.label = '',
-      this.queryParameters = const {},
-      this.pathParameters = const {},
-      this.metadata = const {},
-      super.arguments})
+        this.label = '',
+        this.queryParameters = const {},
+        this.pathParameters = const {},
+        this.metadata = const {},
+        super.arguments})
       : super(
-            name: canonicalUri(
-                Uri(path: path, queryParameters: queryParameters).toString()));
+      name: canonicalUri(
+          Uri(path: path, queryParameters: queryParameters).toString()));
 
   factory DefaultRoute.fromUrl(String url,
       {String label = '', Map<String, dynamic>? metadata}) {
@@ -39,12 +40,12 @@ class DefaultRoute extends RouteSettings {
 
   DefaultRoute copyWith(
       {String? label,
-      String? path,
-      Map<String, String>? queryParameters,
-      Map<String, String>? pathParameters,
-      Map<String, dynamic>? metadata,
-      Object? arguments,
-      String? name}) {
+        String? path,
+        Map<String, String>? queryParameters,
+        Map<String, String>? pathParameters,
+        Map<String, dynamic>? metadata,
+        Object? arguments,
+        String? name}) {
     return DefaultRoute(
       label: label ?? this.label,
       path: path ?? this.path,
@@ -58,8 +59,8 @@ class DefaultRoute extends RouteSettings {
   @override
   bool operator ==(Object other) =>
       other is DefaultRoute &&
-      ((other.label.isNotEmpty && other.label == label) ||
-          (other.path == path && other.path.isNotEmpty && path.isNotEmpty));
+          ((other.label.isNotEmpty && other.label == label) ||
+              (other.path == path && other.path.isNotEmpty && path.isNotEmpty));
 
   @override
   int get hashCode => label.hashCode * path.hashCode;
@@ -83,7 +84,10 @@ typedef SetMainRoutesCallback = List<DefaultRoute> Function(
 /// It listens to the RouteInformation Parser and the app state and builds the Navigator with
 /// the current list of pages (immutable object used to set navigator's history stack).
 abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
-    with ChangeNotifier, PopNavigatorRouterDelegateMixin<DefaultRoute> {
+    with
+        ChangeNotifier,
+        PopNavigatorRouterDelegateMixin<DefaultRoute>,
+        NavigationInterface {
   // Persist the navigator with a global key.
   @override
   GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -111,7 +115,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Current route name.
   StreamController<DefaultRoute> currentRouteController =
-      StreamController<DefaultRoute>.broadcast();
+  StreamController<DefaultRoute>.broadcast();
   Stream<DefaultRoute> get getCurrentRoute => currentRouteController.stream;
 
   Map<String, dynamic> globalData = {};
@@ -155,10 +159,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     // Resolve Route From Navigation Data.
     DefaultRoute? configurationHolder =
-        NavigationUtils.mapNavigationDataToDefaultRoute(
-            route: configuration,
-            routes: navigationDataRoutes,
-            globalData: globalData);
+    NavigationUtils.mapNavigationDataToDefaultRoute(
+        route: configuration,
+        routes: navigationDataRoutes,
+        globalData: globalData);
 
     // Unknown route, do not navigate if unknown route is not implemented.
     if (configurationHolder == null && onUnknownRoute != null) {
@@ -230,18 +234,19 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   /// A Completer to help return results from a popped route.
   final LinkedHashMap<DefaultRoute, Completer<dynamic>> _pageCompleters =
-      LinkedHashMap();
+  LinkedHashMap();
 
   // Push
 
+  @override
   Future<dynamic> push(String name,
       {Map<String, String>? queryParameters,
-      Object? arguments,
-      Map<String, dynamic> data = const {},
-      Map<String, String> pathParameters = const {},
-      bool apply = true}) async {
+        Object? arguments,
+        Map<String, dynamic> data = const {},
+        Map<String, String> pathParameters = const {},
+        bool apply = true}) async {
     NavigationData? navigationData =
-        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
+    NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationData == null) {
       throw Exception('`$name` route not found.');
     }
@@ -288,6 +293,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     return pageCompleter.future;
   }
 
+  @override
   Future<dynamic> pushRoute(DefaultRoute path, {bool apply = true}) async {
     if (_routes.contains(path)) {
       _routes.remove(path);
@@ -304,6 +310,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Pop
 
+  @override
   void pop([dynamic result, bool apply = true]) {
     if (canPop) {
       if (_pageCompleters.containsKey(routes.last)) {
@@ -320,6 +327,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Pop Until
 
+  @override
   void popUntil(String name, {bool apply = true}) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
@@ -332,6 +340,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     if (apply) notifyListeners();
   }
 
+  @override
   void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction,
       {bool apply = true}) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
@@ -345,12 +354,13 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Push and Remove Until
 
+  @override
   Future<dynamic> pushAndRemoveUntil(String name, String routeUntilName,
       {Map<String, String>? queryParameters,
-      Object? arguments,
-      Map<String, dynamic> data = const {},
-      Map<String, String> pathParameters = const {},
-      bool apply = true}) async {
+        Object? arguments,
+        Map<String, dynamic> data = const {},
+        Map<String, String> pathParameters = const {},
+        bool apply = true}) async {
     popUntil(routeUntilName, apply: apply);
     return await push(name,
         queryParameters: queryParameters,
@@ -360,6 +370,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         apply: apply);
   }
 
+  @override
   Future<dynamic> pushAndRemoveUntilRoute(
       DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction,
       {bool apply = true}) async {
@@ -369,13 +380,15 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Remove
 
+  @override
   void remove(String name, {bool apply = true}) {
     DefaultRoute route =
-        NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+    NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
     removeRoute(route, apply: apply);
   }
 
+  @override
   void removeRoute(DefaultRoute route, {bool apply = true}) {
     if (_routes.contains(route)) {
       _routes.remove(route);
@@ -385,13 +398,14 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Push Replacement
 
+  @override
   Future<dynamic> pushReplacement(String name,
       {Map<String, String>? queryParameters,
-      Object? arguments,
-      Map<String, dynamic> data = const {},
-      Map<String, String> pathParameters = const {},
-      dynamic result,
-      bool apply = true}) async {
+        Object? arguments,
+        Map<String, dynamic> data = const {},
+        Map<String, String> pathParameters = const {},
+        dynamic result,
+        bool apply = true}) async {
     pop(result, apply);
     return await push(name,
         queryParameters: queryParameters,
@@ -401,6 +415,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         apply: apply);
   }
 
+  @override
   Future<dynamic> pushReplacementRoute(DefaultRoute route,
       [dynamic result, bool apply = true]) async {
     pop(result, apply);
@@ -409,9 +424,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Remove Below
 
+  @override
   void removeBelow(String name, {bool apply = true}) {
     DefaultRoute route =
-        NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+    NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
@@ -420,6 +436,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
   }
 
+  @override
   void removeRouteBelow(DefaultRoute route, {bool apply = true}) {
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
@@ -430,13 +447,14 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Replace
 
+  @override
   void replace(String oldName,
       {String? newName,
-      DefaultRoute? newRoute,
-      Map<String, dynamic>? data,
-      bool apply = true}) {
+        DefaultRoute? newRoute,
+        Map<String, dynamic>? data,
+        bool apply = true}) {
     assert((newName != null || newRoute != null),
-        'Route and route name cannot both be empty.');
+    'Route and route name cannot both be empty.');
 
     DefaultRoute? oldRoute = NavigationUtils.buildDefaultRouteFromName(
         navigationDataRoutes, oldName);
@@ -468,6 +486,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     return;
   }
 
+  @override
   void replaceRoute(DefaultRoute oldRoute, DefaultRoute newRoute,
       {bool apply = true}) {
     replace(oldRoute.path, newRoute: newRoute, apply: apply);
@@ -475,9 +494,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Replace Below
 
+  @override
   void replaceBelow(String anchorName, String name, {bool apply = true}) {
     NavigationData? navigationDataAnchor =
-        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
+    NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationDataAnchor == null) return;
 
     DefaultRoute anchorRoute = DefaultRoute(
@@ -487,13 +507,14 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int index = _routes.indexOf(anchorRoute);
     if (index >= 1) {
       DefaultRoute newRoute =
-          NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+      NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
       _routes[index - 1] = newRoute;
       if (apply) notifyListeners();
     }
   }
 
+  @override
   void replaceRouteBelow(DefaultRoute anchorRoute, DefaultRoute newRoute,
       {bool apply = true}) {
     int index = _routes.indexOf(anchorRoute);
@@ -505,6 +526,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Set
 
+  @override
   void set(List<String> names, {bool apply = true}) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
     DefaultRoute? oldRoute = _routes.isNotEmpty ? _routes.last : null;
@@ -526,6 +548,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     if (apply) notifyListeners();
   }
 
+  @override
   void setRoutes(List<DefaultRoute> routes, {bool apply = true}) {
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
     bool didChangeRoute =
@@ -544,6 +567,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Set Backstack
 
+  @override
   void setBackstack(List<String> names, {bool apply = true}) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
     DefaultRoute currentRoute = _routes.last;
@@ -556,6 +580,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     if (apply) notifyListeners();
   }
 
+  @override
   void setBackstackRoutes(List<DefaultRoute> routes, {bool apply = true}) {
     DefaultRoute currentRoute = _routes.last;
     _routes.clear();
@@ -566,11 +591,13 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Set Override
 
+  @override
   void setOverride(Widget page, {bool apply = true}) {
     pageOverride = page;
     if (apply) notifyListeners();
   }
 
+  @override
   void removeOverride({bool apply = true}) {
     pageOverride = null;
     if (apply) notifyListeners();
@@ -578,6 +605,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Query Parameters
 
+  @override
   void setQueryParameters(Map<String, String> queryParameters,
       {bool apply = true}) {
     _routes.last = _routes.last.copyWith(queryParameters: queryParameters);
@@ -594,6 +622,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Route Functions
 
+  @override
   void navigate(BuildContext context, Function function) {
     Router.navigate(context, () {
       function.call();
@@ -601,6 +630,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     });
   }
 
+  @override
   void neglect(BuildContext context, Function function) {
     Router.neglect(context, () {
       function.call();
@@ -614,6 +644,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   /// Call apply after modifying the route stack using
   /// push, set, etc with `apply = false`, once edits are
   /// finished and ready.
+  @override
   void apply() {
     notifyListeners();
   }
@@ -622,6 +653,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   ///
   /// Warning: Do not call without setting a new route stack
   /// as navigation requires a page at all times.
+  @override
   void clear() {
     _routes.clear();
   }

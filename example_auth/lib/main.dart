@@ -65,11 +65,10 @@ class AppModel extends AppModelBase {
   Future<void> init() async {
     DebugLogger.instance.printFunction('Init App');
     // Attach navigation callback that hooks into the app state.
-    NavigationManager.instance.routerDelegate.setMainRoutes =
+    NavigationManager.instance.setMainRoutes =
         (routes) => setMainRoutes(routes);
     // Set initialization page.
-    NavigationManager.instance.routerDelegate
-        .setOverride(const InitializationPage());
+    NavigationManager.instance.setOverride(const InitializationPage());
     // Navigate after authentication and user model loads.
     authService.firebaseAuthUserStream
         .asBroadcastStream()
@@ -92,15 +91,13 @@ class AppModel extends AppModelBase {
       String initialRoute =
           NavigationManager.instance.routeInformationParser.initialRoute;
       DebugLogger.instance.printInfo('Initial Route: $initialRoute');
-      NavigationManager.instance.routerDelegate.set([initialRoute]);
-      NavigationManager.instance.routerDelegate.removeOverride();
+      NavigationManager.instance.set([initialRoute]);
+      NavigationManager.instance.removeOverride();
     }
     // Automatically navigate to auth screen when user is logged out.
     if (AuthService.instance.isAuthenticated == false) {
-      if (NavigationManager.instance.routerDelegate.currentConfiguration
-              ?.metadata?['auth'] ==
-          true) {
-        NavigationManager.instance.routerDelegate.set([SignUpForm.name]);
+      if (NavigationManager.instance.currentRoute?.metadata?['auth'] == true) {
+        NavigationManager.instance.set([SignUpForm.name]);
       }
     }
   }
@@ -271,7 +268,7 @@ class UnknownPage extends StatelessWidget {
               height: 15,
             ),
             MaterialButton(
-              onPressed: () => NavigationManager.instance.routerDelegate.pop(),
+              onPressed: () => NavigationManager.instance.pop(),
               color: Colors.blue,
               child: const Text('Back',
                   style: TextStyle(color: Colors.white, fontSize: 16)),
