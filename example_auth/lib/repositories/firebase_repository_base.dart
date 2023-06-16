@@ -1,9 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example_auth/repositories/firebase_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:universal_io/io.dart';
 
 import '../../utils/value_response.dart';
 import '../firebase_options.dart';
@@ -28,10 +26,10 @@ abstract class FirebaseRepositoryBase {
     String? apiKey,
     String? databaseId,
   }) async {
-      // TODO [ERROR_HANDLING]: handle error. Catch errors for
-      await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform);
-      _instance = FirebaseRepository();
+    // TODO [ERROR_HANDLING]: handle error. Catch errors for
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    _instance = FirebaseRepository();
     return ValueResponse.success();
   }
 
