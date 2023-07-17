@@ -240,7 +240,7 @@ class NavigationUtils {
     return deeplinkDestination;
   }
 
-  static bool openDeeplinkDestination(
+  static bool canOpenDeeplinkDestination(
       {required Uri? uri,
       required List<DeeplinkDestination> deeplinkDestinations,
       required BaseRouterDelegate routerDelegate,
@@ -283,19 +283,52 @@ class NavigationUtils {
             true;
     if (shouldNavigate == false) return false;
 
-    // Navigate to deeplink destination.
-    if (deeplinkDestinationHolder.backstack != null) {
-      if (deeplinkDestinationHolder.backstack!.isEmpty) {
-        routerDelegate.clear();
-      } else {
-        routerDelegate.set(deeplinkDestinationHolder.backstack!, apply: false);
-      }
-    } else if (deeplinkDestinationHolder.backstackRoutes != null) {
-      if (deeplinkDestinationHolder.backstackRoutes!.isEmpty) {
-        routerDelegate.clear();
-      } else {
-        routerDelegate.setRoutes(deeplinkDestinationHolder.backstackRoutes!,
-            apply: false);
+    return true;
+  }
+
+  static bool openDeeplinkDestination(
+      {required Uri? uri,
+      required List<DeeplinkDestination> deeplinkDestinations,
+      required BaseRouterDelegate routerDelegate,
+      DeeplinkDestination? deeplinkDestination,
+      bool authenticated = true,
+      DefaultRoute? currentRoute,
+      List<String> excludeDeeplinkNavigationPages = const [],
+      bool push = false}) {
+    if (uri == null) return false;
+
+    DeeplinkDestination? deeplinkDestinationHolder = deeplinkDestination ??=
+        NavigationUtils.getDeeplinkDestinationFromUri(
+            deeplinkDestinations, uri);
+
+    if (deeplinkDestinationHolder == null) return false;
+
+    if (canOpenDeeplinkDestination(
+            uri: uri,
+            deeplinkDestinations: deeplinkDestinations,
+            routerDelegate: routerDelegate,
+            deeplinkDestination: deeplinkDestinationHolder,
+            authenticated: authenticated,
+            currentRoute: currentRoute,
+            excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages) ==
+        false) return false;
+
+    // Set backstack. If pushOverride is true, skip backstack behavior.
+    if (push == false) {
+      if (deeplinkDestinationHolder.backstack != null) {
+        if (deeplinkDestinationHolder.backstack!.isEmpty) {
+          routerDelegate.clear();
+        } else {
+          routerDelegate.set(deeplinkDestinationHolder.backstack!,
+              apply: false);
+        }
+      } else if (deeplinkDestinationHolder.backstackRoutes != null) {
+        if (deeplinkDestinationHolder.backstackRoutes!.isEmpty) {
+          routerDelegate.clear();
+        } else {
+          routerDelegate.setRoutes(deeplinkDestinationHolder.backstackRoutes!,
+              apply: false);
+        }
       }
     }
 
