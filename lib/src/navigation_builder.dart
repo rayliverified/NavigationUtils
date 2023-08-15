@@ -87,13 +87,8 @@ class NavigationBuilder {
           // Inject dynamic data to page builder.
           Map<String, dynamic> globalData = mainRouterDelegate.globalData;
           Map<String, dynamic>? globalPageData = {};
-          if (navigationData.label != null) {
-            // Get global data via name.
-            globalPageData = globalData[navigationData.label];
-          } else {
-            // Get global data via path.
-            globalPageData = globalData[navigationData.path];
-          }
+          // Get global data via path.
+          globalPageData = globalData[navigationData.path];
           Widget child = navigationData.builder(
               context,
               route.copyWith(pathParameters: pathParameters),
