@@ -275,24 +275,15 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         metadata: navigationData.metadata,
         arguments: arguments);
 
-    // If route already exists, move to top.
-    if (_routes.contains(route)) {
-      bool duplicate = true;
-
-      // If the path parameters are different, this is a new page.
-      // Push a new route.
-      // This only checks the last duplicate route to prevent
-      // inadvertently adding the same page twice.
-      if (navigationData.path.contains(':')) {
-        if (_routes[_routes.lastIndexOf(route)].path != route.path) {
-          duplicate = false;
-        }
-      }
-
-      if (duplicate) {
-        _routes.remove(route);
-        _routes.add(route);
-        notifyListeners();
+    // Check duplicate route to prevent inadvertently
+    // adding the same page twice. Duplicate pages are
+    // commonly added if a user presses a navigation button twice
+    // very quickly.
+    //
+    // If the path parameters are different, this is a new page.
+    // Else, return the current page.
+    if (_routes.last == route) {
+      if (_routes.last.path == route.path) {
         return _pageCompleters[route]?.future;
       }
     }
@@ -307,27 +298,23 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     return pageCompleter.future;
   }
 
+  // Push Route
+
   @override
   Future<dynamic> pushRoute(DefaultRoute route, {bool apply = true}) async {
-    // If route already exists, move to top.
-    if (_routes.contains(route)) {
-      bool duplicate = true;
-
-      // If the path parameters are different, this is a new page.
-      // Push a new route.
-      // This only checks the last duplicate route to prevent
-      // inadvertently adding the same page twice.
-      if (_routes[_routes.lastIndexOf(route)].path != route.path) {
-        duplicate = false;
-      }
-
-      if (duplicate) {
-        _routes.remove(route);
-        _routes.add(route);
-        notifyListeners();
+    // Check duplicate route to prevent inadvertently
+    // adding the same page twice. Duplicate pages are
+    // commonly added if a user presses a navigation button twice
+    // very quickly.
+    //
+    // If the path parameters are different, this is a new page.
+    // Else, return the current page.
+    if (_routes.last == route) {
+      if (_routes.last.path == route.path) {
         return _pageCompleters[route]?.future;
       }
     }
+
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
     _routes.add(route);
