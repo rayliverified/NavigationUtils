@@ -288,8 +288,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       }
     }
 
-    // Save global data to name key.
-    globalData[name] = data;
+    // Save global data to unique path key.
+    globalData[path] = data;
 
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
