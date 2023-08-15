@@ -88,7 +88,7 @@ class NavigationBuilder {
           Map<String, dynamic> globalData = mainRouterDelegate.globalData;
           Map<String, dynamic>? globalPageData = {};
           // Get global data via path.
-          globalPageData = globalData[navigationData.path];
+          globalPageData = globalData[route.path];
           Widget child = navigationData.builder(
               context,
               route.copyWith(pathParameters: pathParameters),

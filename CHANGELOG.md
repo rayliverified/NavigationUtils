@@ -1,4 +1,4 @@
-## 0.1.5
+## 0.1.6
 - Update global data to support duplicate routes.
 
 ## 0.1.2
