@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () => NavigationManager.instance
                   .push(ProjectPage.name, pathParameters: {'id': '2'}),
               child: const Text('Open Project Named'),
-            )
+            ),
           ],
         ),
       ),
@@ -101,6 +101,11 @@ class _ProjectPageState extends State<ProjectPage> {
           children: [
             Text('Projects Page ${widget.id}',
                 style: const TextStyle(color: Colors.white)),
+            MaterialButton(
+              onPressed: () => NavigationManager.instance.push(ProjectPage.name,
+                  pathParameters: {'id': (widget.id + 1).toString()}),
+              child: Text('Open Project Page ${(widget.id + 1).toString()}'),
+            ),
             MaterialButton(
                 onPressed: () => NavigationManager.instance.pop(),
                 child: const Text('Back')),

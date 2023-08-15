@@ -19,14 +19,14 @@ class DefaultRoute extends RouteSettings {
 
   DefaultRoute(
       {required this.path,
-        this.label = '',
-        this.queryParameters = const {},
-        this.pathParameters = const {},
-        this.metadata = const {},
-        super.arguments})
+      this.label = '',
+      this.queryParameters = const {},
+      this.pathParameters = const {},
+      this.metadata = const {},
+      super.arguments})
       : super(
-      name: canonicalUri(
-          Uri(path: path, queryParameters: queryParameters).toString()));
+            name: canonicalUri(
+                Uri(path: path, queryParameters: queryParameters).toString()));
 
   factory DefaultRoute.fromUrl(String url,
       {String label = '', Map<String, dynamic>? metadata}) {
@@ -40,12 +40,12 @@ class DefaultRoute extends RouteSettings {
 
   DefaultRoute copyWith(
       {String? label,
-        String? path,
-        Map<String, String>? queryParameters,
-        Map<String, String>? pathParameters,
-        Map<String, dynamic>? metadata,
-        Object? arguments,
-        String? name}) {
+      String? path,
+      Map<String, String>? queryParameters,
+      Map<String, String>? pathParameters,
+      Map<String, dynamic>? metadata,
+      Object? arguments,
+      String? name}) {
     return DefaultRoute(
       label: label ?? this.label,
       path: path ?? this.path,
@@ -59,8 +59,8 @@ class DefaultRoute extends RouteSettings {
   @override
   bool operator ==(Object other) =>
       other is DefaultRoute &&
-          ((other.label.isNotEmpty && other.label == label) ||
-              (other.path == path && other.path.isNotEmpty && path.isNotEmpty));
+      ((other.label.isNotEmpty && other.label == label) ||
+          (other.path == path && other.path.isNotEmpty && path.isNotEmpty));
 
   @override
   int get hashCode => label.hashCode * path.hashCode;
@@ -115,7 +115,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   // Current route name.
   StreamController<DefaultRoute> currentRouteController =
-  StreamController<DefaultRoute>.broadcast();
+      StreamController<DefaultRoute>.broadcast();
   Stream<DefaultRoute> get getCurrentRoute => currentRouteController.stream;
 
   Map<String, dynamic> globalData = {};
@@ -159,10 +159,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     // Resolve Route From Navigation Data.
     DefaultRoute? configurationHolder =
-    NavigationUtils.mapNavigationDataToDefaultRoute(
-        route: configuration,
-        routes: navigationDataRoutes,
-        globalData: globalData);
+        NavigationUtils.mapNavigationDataToDefaultRoute(
+            route: configuration,
+            routes: navigationDataRoutes,
+            globalData: globalData);
 
     // Unknown route, do not navigate if unknown route is not implemented.
     if (configurationHolder == null && onUnknownRoute != null) {
@@ -234,19 +234,19 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   /// A Completer to help return results from a popped route.
   final LinkedHashMap<DefaultRoute, Completer<dynamic>> _pageCompleters =
-  LinkedHashMap();
+      LinkedHashMap();
 
   // Push
 
   @override
   Future<dynamic> push(String name,
       {Map<String, String>? queryParameters,
-        Object? arguments,
-        Map<String, dynamic> data = const {},
-        Map<String, String> pathParameters = const {},
-        bool apply = true}) async {
+      Object? arguments,
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {},
+      bool apply = true}) async {
     NavigationData? navigationData =
-    NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
+        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationData == null) {
       throw Exception('`$name` route not found.');
     }
@@ -275,16 +275,30 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         metadata: navigationData.metadata,
         arguments: arguments);
 
-    // Save global data to name key.
-    globalData[name] = data;
-
     // If route already exists, move to top.
     if (_routes.contains(route)) {
-      _routes.remove(route);
-      _routes.add(route);
-      notifyListeners();
-      return _pageCompleters[route]?.future;
+      bool duplicate = true;
+
+      // If the path parameters are different, this is a new page.
+      // Push a new route.
+      // This only checks the last duplicate route to prevent
+      // inadvertently adding the same page twice.
+      if (navigationData.path.contains(':')) {
+        if (_routes[_routes.lastIndexOf(route)].path != route.path) {
+          duplicate = false;
+        }
+      }
+
+      if (duplicate) {
+        _routes.remove(route);
+        _routes.add(route);
+        notifyListeners();
+        return _pageCompleters[route]?.future;
+      }
     }
+
+    // Save global data to name key.
+    globalData[name] = data;
 
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
@@ -294,16 +308,29 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   }
 
   @override
-  Future<dynamic> pushRoute(DefaultRoute path, {bool apply = true}) async {
-    if (_routes.contains(path)) {
-      _routes.remove(path);
-      _routes.add(path);
-      notifyListeners();
-      return _pageCompleters[path]?.future;
+  Future<dynamic> pushRoute(DefaultRoute route, {bool apply = true}) async {
+    // If route already exists, move to top.
+    if (_routes.contains(route)) {
+      bool duplicate = true;
+
+      // If the path parameters are different, this is a new page.
+      // Push a new route.
+      // This only checks the last duplicate route to prevent
+      // inadvertently adding the same page twice.
+      if (_routes[_routes.lastIndexOf(route)].path != route.path) {
+        duplicate = false;
+      }
+
+      if (duplicate) {
+        _routes.remove(route);
+        _routes.add(route);
+        notifyListeners();
+        return _pageCompleters[route]?.future;
+      }
     }
     Completer<dynamic> pageCompleter = Completer<dynamic>();
-    _pageCompleters[path] = pageCompleter;
-    _routes.add(path);
+    _pageCompleters[route] = pageCompleter;
+    _routes.add(route);
     if (apply) notifyListeners();
     return pageCompleter.future;
   }
@@ -357,10 +384,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   Future<dynamic> pushAndRemoveUntil(String name, String routeUntilName,
       {Map<String, String>? queryParameters,
-        Object? arguments,
-        Map<String, dynamic> data = const {},
-        Map<String, String> pathParameters = const {},
-        bool apply = true}) async {
+      Object? arguments,
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {},
+      bool apply = true}) async {
     popUntil(routeUntilName, apply: apply);
     return await push(name,
         queryParameters: queryParameters,
@@ -383,17 +410,17 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void remove(String name, {bool apply = true}) {
     DefaultRoute route =
-    NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+        NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
     removeRoute(route, apply: apply);
   }
 
   @override
   void removeRoute(DefaultRoute route, {bool apply = true}) {
-    if (_routes.contains(route)) {
+    while (_routes.contains(route)) {
       _routes.remove(route);
-      if (apply) notifyListeners();
     }
+    if (apply) notifyListeners();
   }
 
   // Push Replacement
@@ -401,11 +428,11 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   Future<dynamic> pushReplacement(String name,
       {Map<String, String>? queryParameters,
-        Object? arguments,
-        Map<String, dynamic> data = const {},
-        Map<String, String> pathParameters = const {},
-        dynamic result,
-        bool apply = true}) async {
+      Object? arguments,
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {},
+      dynamic result,
+      bool apply = true}) async {
     pop(result, apply);
     return await push(name,
         queryParameters: queryParameters,
@@ -427,7 +454,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void removeBelow(String name, {bool apply = true}) {
     DefaultRoute route =
-    NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+        NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
@@ -450,11 +477,11 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void replace(String oldName,
       {String? newName,
-        DefaultRoute? newRoute,
-        Map<String, dynamic>? data,
-        bool apply = true}) {
+      DefaultRoute? newRoute,
+      Map<String, dynamic>? data,
+      bool apply = true}) {
     assert((newName != null || newRoute != null),
-    'Route and route name cannot both be empty.');
+        'Route and route name cannot both be empty.');
 
     DefaultRoute? oldRoute = NavigationUtils.buildDefaultRouteFromName(
         navigationDataRoutes, oldName);
@@ -497,7 +524,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void replaceBelow(String anchorName, String name, {bool apply = true}) {
     NavigationData? navigationDataAnchor =
-    NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
+        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
     if (navigationDataAnchor == null) return;
 
     DefaultRoute anchorRoute = DefaultRoute(
@@ -507,7 +534,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int index = _routes.indexOf(anchorRoute);
     if (index >= 1) {
       DefaultRoute newRoute =
-      NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+          NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
       _routes[index - 1] = newRoute;
       if (apply) notifyListeners();
