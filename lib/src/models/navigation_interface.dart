@@ -10,7 +10,7 @@ abstract class NavigationInterface {
       Map<String, String> pathParameters = const {},
       bool apply = true});
 
-  Future<dynamic> pushRoute(DefaultRoute path, {bool apply = true});
+  Future<dynamic> pushRoute(DefaultRoute route, {bool apply = true});
 
   void pop([dynamic result, bool apply = true]);
 

@@ -24,21 +24,22 @@ class NavigationManager implements NavigationInterface {
 
   static NavigationManager init(
       {required BaseRouterDelegate mainRouterDelegate,
-        required DefaultRouteInformationParser routeInformationParser}) {
+      required DefaultRouteInformationParser routeInformationParser}) {
     _instance = NavigationManager._(mainRouterDelegate, routeInformationParser);
     return _instance!;
   }
 
   DefaultRoute? get currentRoute => routerDelegate.currentConfiguration;
-  set setMainRoutes(SetMainRoutesCallback? setMainRoutes) => routerDelegate.setMainRoutes;
+  set setMainRoutes(SetMainRoutesCallback? setMainRoutes) =>
+      routerDelegate.setMainRoutes;
 
   @override
   Future<dynamic> push(String name,
       {Map<String, String>? queryParameters,
-        Object? arguments,
-        Map<String, dynamic> data = const {},
-        Map<String, String> pathParameters = const {},
-        bool apply = true}) {
+      Object? arguments,
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {},
+      bool apply = true}) {
     return routerDelegate.push(name,
         queryParameters: queryParameters,
         arguments: arguments,
@@ -48,8 +49,8 @@ class NavigationManager implements NavigationInterface {
   }
 
   @override
-  Future<dynamic> pushRoute(DefaultRoute path, {bool apply = true}) {
-    return routerDelegate.pushRoute(path, apply: apply);
+  Future<dynamic> pushRoute(DefaultRoute route, {bool apply = true}) {
+    return routerDelegate.pushRoute(route, apply: apply);
   }
 
   @override
@@ -71,10 +72,10 @@ class NavigationManager implements NavigationInterface {
   @override
   Future<dynamic> pushAndRemoveUntil(String name, String routeUntilName,
       {Map<String, String>? queryParameters,
-        Object? arguments,
-        Map<String, dynamic> data = const {},
-        Map<String, String> pathParameters = const {},
-        bool apply = true}) {
+      Object? arguments,
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {},
+      bool apply = true}) {
     return routerDelegate.pushAndRemoveUntil(name, routeUntilName,
         queryParameters: queryParameters,
         arguments: arguments,
@@ -104,11 +105,11 @@ class NavigationManager implements NavigationInterface {
   @override
   Future<dynamic> pushReplacement(String name,
       {Map<String, String>? queryParameters,
-        Object? arguments,
-        Map<String, dynamic> data = const {},
-        Map<String, String> pathParameters = const {},
-        dynamic result,
-        bool apply = true}) {
+      Object? arguments,
+      Map<String, dynamic> data = const {},
+      Map<String, String> pathParameters = const {},
+      dynamic result,
+      bool apply = true}) {
     return routerDelegate.pushReplacement(name,
         queryParameters: queryParameters,
         arguments: arguments,
@@ -137,9 +138,9 @@ class NavigationManager implements NavigationInterface {
   @override
   void replace(String oldName,
       {String? newName,
-        DefaultRoute? newRoute,
-        Map<String, dynamic>? data,
-        bool apply = true}) {
+      DefaultRoute? newRoute,
+      Map<String, dynamic>? data,
+      bool apply = true}) {
     routerDelegate.replace(oldName,
         newName: newName, newRoute: newRoute, data: data, apply: apply);
   }
