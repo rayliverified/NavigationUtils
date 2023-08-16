@@ -280,18 +280,13 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // commonly added if a user presses a navigation button twice
     // very quickly.
     //
-    // If the path parameters are different, this is a new page.
+    // If the path is different, this is a new page.
     // Else, return the current page.
-    if (_routes.last == route) {
-      if (routes.last.label != route.label) {
-        _routes.remove(route);
-        _routes.add(route);
-        notifyListeners();
-        return _pageCompleters[route]?.future;
-      }
-      if (_routes.last.path == route.path) {
-        return _pageCompleters[route]?.future;
-      }
+    if (_routes.last.path == route.path) {
+      _routes.remove(route);
+      _routes.add(route);
+      notifyListeners();
+      return _pageCompleters[route]?.future;
     }
 
     // Save global data to unique path key.
