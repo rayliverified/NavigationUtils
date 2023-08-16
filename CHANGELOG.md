@@ -1,3 +1,6 @@
+## 0.1.7
+- Fix ability to push the same route with different query parameters.
+
 ## 0.1.6
 - Update global data to support duplicate routes.
 
