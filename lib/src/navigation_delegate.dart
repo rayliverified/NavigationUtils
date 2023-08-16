@@ -669,6 +669,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   /// finished and ready.
   @override
   void apply() {
+    onRouteChanged(_routes.last);
     notifyListeners();
   }
 
