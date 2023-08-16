@@ -295,6 +295,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
     _routes.add(route);
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
     return pageCompleter.future;
   }
@@ -319,6 +320,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
     _routes.add(route);
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
     return pageCompleter.future;
   }
@@ -328,14 +330,13 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void pop([dynamic result, bool apply = true]) {
     if (canPop) {
+      if (_routes.length <= 1) return;
       if (_pageCompleters.containsKey(routes.last)) {
         _pageCompleters[routes.last]!.complete(result);
         _pageCompleters.remove(routes.last);
       }
       _routes.removeLast();
-      if (_routes.isNotEmpty) {
-        onRouteChanged(_routes.last);
-      }
+      if (apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
     }
   }
@@ -349,9 +350,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       if (route.label == name || route.path == name || _routes.length == 1) {
         break;
       }
-      pop();
+      pop(null, false);
       route = _routes.isNotEmpty ? _routes.last : null;
     }
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
@@ -361,9 +363,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
       if (popUntilRouteFunction(route) || _routes.length == 1) break;
-      pop();
+      pop(null, false);
       route = _routes.isNotEmpty ? _routes.last : null;
     }
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
@@ -376,7 +379,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       Map<String, dynamic> data = const {},
       Map<String, String> pathParameters = const {},
       bool apply = true}) async {
-    popUntil(routeUntilName, apply: apply);
+    popUntil(routeUntilName, apply: false);
     return await push(name,
         queryParameters: queryParameters,
         arguments: arguments,
@@ -389,7 +392,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   Future<dynamic> pushAndRemoveUntilRoute(
       DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction,
       {bool apply = true}) async {
-    popUntilRoute(popUntilRouteFunction, apply: apply);
+    popUntilRoute(popUntilRouteFunction, apply: false);
     return await pushRoute(route, apply: apply);
   }
 
@@ -405,9 +408,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   @override
   void removeRoute(DefaultRoute route, {bool apply = true}) {
-    while (_routes.contains(route)) {
+    while (_routes.contains(route) && _routes.length > 1) {
       _routes.remove(route);
     }
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
@@ -421,7 +425,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       Map<String, String> pathParameters = const {},
       dynamic result,
       bool apply = true}) async {
-    pop(result, apply);
+    pop(result, false);
     return await push(name,
         queryParameters: queryParameters,
         arguments: arguments,
@@ -433,7 +437,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   Future<dynamic> pushReplacementRoute(DefaultRoute route,
       [dynamic result, bool apply = true]) async {
-    pop(result, apply);
+    pop(result, false);
     return await pushRoute(route, apply: apply);
   }
 
@@ -447,6 +451,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
       _routes.removeAt(anchorIndex - 1);
+      if (apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
     }
   }
@@ -456,6 +461,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
       _routes.removeAt(anchorIndex - 1);
+      if (apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
     }
   }
@@ -488,15 +494,12 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     // Save global data to name key.
     if (data != null) {
-      if (newName != null) {
-        globalData[newName] = data;
-      }
-
       if (newRoute != null) {
-        globalData[canonicalUri(newRoute.path)] = data;
+        globalData[defaultRouteHolder.path] = data;
       }
     }
 
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
     return;
   }
@@ -525,6 +528,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
           NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
       _routes[index - 1] = newRoute;
+      if (apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
     }
   }
@@ -535,6 +539,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int index = _routes.indexOf(anchorRoute);
     if (index >= 1) {
       _routes[index - 1] = newRoute;
+      if (apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
     }
   }
@@ -552,14 +557,11 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       return NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, e);
     }));
 
-    bool didChangeRoute = oldRoute != _routes.last;
-
     _routes = setMainRoutes?.call(_routes) ?? _routes;
     if (_routes.isEmpty) {
       throw Exception('Routes cannot be empty.');
     }
-    // Expose that the route has changed.
-    if (didChangeRoute) onRouteChanged(_routes.last);
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
@@ -575,8 +577,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     if (_routes.isEmpty) {
       throw Exception('Routes cannot be empty.');
     }
-    // Expose that the route has changed.
-    if (didChangeRoute) onRouteChanged(_routes.last);
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
@@ -592,6 +593,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       return NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, e);
     }));
     _routes.add(currentRoute);
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
@@ -601,6 +603,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _routes.clear();
     _routes.addAll(routes);
     _routes.add(currentRoute);
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
@@ -609,12 +612,14 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void setOverride(Widget page, {bool apply = true}) {
     pageOverride = page;
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
   @override
   void removeOverride({bool apply = true}) {
     pageOverride = null;
+    if (apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }
 
