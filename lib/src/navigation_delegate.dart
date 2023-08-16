@@ -285,7 +285,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     if (_routes.last.path == route.path) {
       _routes.remove(route);
       _routes.add(route);
-      notifyListeners();
+      if (apply) onRouteChanged(_routes.last);
+      if (apply) notifyListeners();
       return _pageCompleters[route]?.future;
     }
 
@@ -309,12 +310,14 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // commonly added if a user presses a navigation button twice
     // very quickly.
     //
-    // If the path parameters are different, this is a new page.
+    // If the path is different, this is a new page.
     // Else, return the current page.
-    if (_routes.last == route) {
-      if (_routes.last.path == route.path) {
-        return _pageCompleters[route]?.future;
-      }
+    if (_routes.last.path == route.path) {
+      _routes.remove(route);
+      _routes.add(route);
+      if (apply) onRouteChanged(_routes.last);
+      if (apply) notifyListeners();
+      return _pageCompleters[route]?.future;
     }
 
     Completer<dynamic> pageCompleter = Completer<dynamic>();
