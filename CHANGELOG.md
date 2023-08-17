@@ -1,3 +1,7 @@
+## 0.1.8
+- Create navigation route updates for `NavigationManager.instance.getCurrentRoute` broadcast stream.
+- Listen to route changes and updates with `NavigationManager.instance.getCurrentRoute.listen((DefaultRoute currentRoute) {});`
+
 ## 0.1.7
 - Fix ability to push the same route with different query parameters.
 

@@ -1,6 +1,6 @@
 name: navigation_utils
 description: The missing navigation library for Navigator 2.
-version: 0.1.7
+version: 0.1.8
 homepage: https://codelessly.com
 repository: https://github.com/rayliverified/NavigationUtils
 false_secrets:

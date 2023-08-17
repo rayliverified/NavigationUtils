@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:navigation_utils/src/models/navigation_interface.dart';
 
@@ -29,6 +31,7 @@ class NavigationManager implements NavigationInterface {
     return _instance!;
   }
 
+  Stream<DefaultRoute> get getCurrentRoute => routerDelegate.getCurrentRoute;
   DefaultRoute? get currentRoute => routerDelegate.currentConfiguration;
   set setMainRoutes(SetMainRoutesCallback? setMainRoutes) =>
       routerDelegate.setMainRoutes;

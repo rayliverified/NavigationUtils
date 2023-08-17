@@ -552,8 +552,6 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void set(List<String> names, {bool apply = true}) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
-    DefaultRoute? oldRoute = _routes.isNotEmpty ? _routes.last : null;
-
     _routes.clear();
     // Map route names to routes.
     _routes.addAll(names.map((e) {
@@ -571,9 +569,6 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void setRoutes(List<DefaultRoute> routes, {bool apply = true}) {
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
-    bool didChangeRoute =
-        routes.last != (_routes.isNotEmpty ? _routes.last : null);
-
     _routes.clear();
     _routes.addAll(routes);
     _routes = setMainRoutes?.call(_routes) ?? _routes;
