@@ -282,7 +282,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     //
     // If the path is different, this is a new page.
     // Else, return the current page.
-    if (_routes.last.path == route.path) {
+    if (routes.isNotEmpty && _routes.last.path == route.path) {
       _routes.remove(route);
       _routes.add(route);
       if (apply) onRouteChanged(_routes.last);
@@ -312,7 +312,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     //
     // If the path is different, this is a new page.
     // Else, return the current page.
-    if (_routes.last.path == route.path) {
+    if (routes.isNotEmpty && _routes.last.path == route.path) {
       _routes.remove(route);
       _routes.add(route);
       if (apply) onRouteChanged(_routes.last);
