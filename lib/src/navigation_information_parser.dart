@@ -19,16 +19,11 @@ class DefaultRouteInformationParser
   Future<DefaultRoute> parseRouteInformation(
       RouteInformation routeInformation) {
     // Parse URL into URI.
-    try {
-      routeUri = Uri.parse(routeInformation.location ?? '');
-    } on FormatException catch (e) {
-      debugPrint(e.toString());
-      routeUri = Uri(path: '/');
-    }
+    routeUri = routeInformation.uri;
     // Save initial URL.
     if (initialized == false) {
       initialized = true;
-      initialRoute = routeInformation.location ?? '/';
+      initialRoute = routeInformation.uri.path;
       // Save initial route and handle after initialization.
       return SynchronousFuture(initialRouteData ?? DefaultRoute(path: '/'));
     }
@@ -41,7 +36,7 @@ class DefaultRouteInformationParser
   RouteInformation? restoreRouteInformation(DefaultRoute configuration) {
     if (configuration.name?.isNotEmpty ?? false) {
       return RouteInformation(
-          location: configuration.name, state: configuration.arguments);
+          uri: configuration.uri, state: configuration.arguments);
     }
 
     return null;
