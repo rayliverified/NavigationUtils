@@ -1,3 +1,7 @@
+## 0.2.0
+- Update deprecated RouteInformation. Use Uri instead of location string.
+- Fix add route empty check to all notify route changed calls.
+
 ## 0.1.9
 - Fix crash when pushing onto empty stack. 
 
