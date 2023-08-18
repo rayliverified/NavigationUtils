@@ -1,3 +1,6 @@
+## 0.1.9
+- Fix crash when pushing onto empty stack. 
+
 ## 0.1.8
 - Create navigation route updates for `NavigationManager.instance.getCurrentRoute` broadcast stream.
 - Listen to route changes and updates with `NavigationManager.instance.getCurrentRoute.listen((DefaultRoute currentRoute) {});`
