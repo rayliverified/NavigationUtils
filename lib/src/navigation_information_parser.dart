@@ -23,7 +23,7 @@ class DefaultRouteInformationParser
     // Save initial URL.
     if (initialized == false) {
       initialized = true;
-      initialRoute = routeInformation.uri.path;
+      initialRoute = routeInformation.uri.toString();
       // Save initial route and handle after initialization.
       return SynchronousFuture(initialRouteData ?? DefaultRoute(path: '/'));
     }
