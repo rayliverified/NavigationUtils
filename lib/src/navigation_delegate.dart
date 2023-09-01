@@ -347,10 +347,12 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   // Pop Until
 
   @override
-  void popUntil(String name, {bool apply = true}) {
+  void popUntil(String name, {bool apply = true, bool all = false}) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
-      if (route.label == name || route.path == name || _routes.length == 1) {
+      if (route.label == name ||
+          route.path == name ||
+          (all == false && _routes.length == 1)) {
         break;
       }
       pop(null, false);
@@ -362,10 +364,13 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   @override
   void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true}) {
+      {bool apply = true, bool all = false}) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
-      if (popUntilRouteFunction(route) || _routes.length == 1) break;
+      if (popUntilRouteFunction(route) ||
+          (all == false && _routes.length == 1)) {
+        break;
+      }
       pop(null, false);
       route = _routes.isNotEmpty ? _routes.last : null;
     }
@@ -382,7 +387,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       Map<String, dynamic> data = const {},
       Map<String, String> pathParameters = const {},
       bool apply = true}) async {
-    popUntil(routeUntilName, apply: false);
+    popUntil(routeUntilName, apply: false, all: true);
     return await push(name,
         queryParameters: queryParameters,
         arguments: arguments,
@@ -395,7 +400,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   Future<dynamic> pushAndRemoveUntilRoute(
       DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction,
       {bool apply = true}) async {
-    popUntilRoute(popUntilRouteFunction, apply: false);
+    popUntilRoute(popUntilRouteFunction, apply: false, all: true);
     return await pushRoute(route, apply: apply);
   }
 
