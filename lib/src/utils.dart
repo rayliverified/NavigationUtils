@@ -155,19 +155,21 @@ class NavigationUtils {
       List<NavigationData> navigationDataRoutes, String name) {
     NavigationData? navigationData =
         NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
-    if (navigationData == null) {
-      throw Exception('`$name` route not found.');
-    }
 
     // Named route.
     if (name.startsWith('/') == false) {
+      if (navigationData == null) {
+        throw Exception('`$name` route not found.');
+      }
+
       return DefaultRoute(
           label: navigationData.label ?? '',
           path: navigationData.path,
           metadata: navigationData.metadata);
     } else {
       return DefaultRoute.fromUrl(name,
-          label: navigationData.label ?? '', metadata: navigationData.metadata);
+          label: navigationData?.label ?? '',
+          metadata: navigationData?.metadata);
     }
   }
 
