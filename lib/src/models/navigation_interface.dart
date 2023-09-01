@@ -12,12 +12,12 @@ abstract class NavigationInterface {
 
   Future<dynamic> pushRoute(DefaultRoute route, {bool apply = true});
 
-  void pop([dynamic result, bool apply = true]);
+  void pop([dynamic result, bool apply = true, bool all = false]);
 
-  void popUntil(String name, {bool apply = true});
+  void popUntil(String name, {bool apply = true, bool all = false});
 
   void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true});
+      {bool apply = true, bool all = false});
 
   Future<dynamic> pushAndRemoveUntil(String name, String routeUntilName,
       {Map<String, String>? queryParameters,

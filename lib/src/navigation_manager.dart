@@ -57,19 +57,19 @@ class NavigationManager implements NavigationInterface {
   }
 
   @override
-  void pop([dynamic result, bool apply = true]) {
-    routerDelegate.pop(result, apply);
+  void pop([dynamic result, bool apply = true, bool all = false]) {
+    routerDelegate.pop(result, apply, all);
   }
 
   @override
-  void popUntil(String name, {bool apply = true}) {
-    routerDelegate.popUntil(name, apply: apply);
+  void popUntil(String name, {bool apply = true, bool all = false}) {
+    routerDelegate.popUntil(name, apply: apply, all: all);
   }
 
   @override
   void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true}) {
-    routerDelegate.popUntilRoute(popUntilRouteFunction, apply: apply);
+      {bool apply = true, bool all = false}) {
+    routerDelegate.popUntilRoute(popUntilRouteFunction, apply: apply, all: all);
   }
 
   @override

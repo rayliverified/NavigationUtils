@@ -331,9 +331,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   // Pop
 
   @override
-  void pop([dynamic result, bool apply = true]) {
+  void pop([dynamic result, bool apply = true, bool all = false]) {
     if (canPop) {
-      if (_routes.length <= 1) return;
+      if (all == false && _routes.length <= 1) return;
       if (_pageCompleters.containsKey(routes.last)) {
         _pageCompleters[routes.last]!.complete(result);
         _pageCompleters.remove(routes.last);
@@ -355,7 +355,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
           (all == false && _routes.length == 1)) {
         break;
       }
-      pop(null, false);
+      pop(null, false, all);
       route = _routes.isNotEmpty ? _routes.last : null;
     }
     if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
@@ -371,7 +371,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
           (all == false && _routes.length == 1)) {
         break;
       }
-      pop(null, false);
+      pop(null, false, all);
       route = _routes.isNotEmpty ? _routes.last : null;
     }
     if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
@@ -433,7 +433,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       Map<String, String> pathParameters = const {},
       dynamic result,
       bool apply = true}) async {
-    pop(result, false);
+    pop(result, false, true);
     return await push(name,
         queryParameters: queryParameters,
         arguments: arguments,
@@ -445,7 +445,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   Future<dynamic> pushReplacementRoute(DefaultRoute route,
       [dynamic result, bool apply = true]) async {
-    pop(result, false);
+    pop(result, false, true);
     return await pushRoute(route, apply: apply);
   }
 
