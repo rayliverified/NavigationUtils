@@ -1,3 +1,8 @@
+## 0.2.1
+- Add a new optional parameter `all` to the `pop` method. Pop `all` overrides the safety check that prevents removing all pages.
+- Update usage of `popUntil` and `pushReplacementRoute` methods to use `all` parameter.
+- Set initialRoute to the full URI instead of just the path in DefaultRouteInformationParser class.
+
 ## 0.2.0
 - Update deprecated RouteInformation. Use Uri instead of location string.
 - Fix add route empty check to all notify route changed calls.
