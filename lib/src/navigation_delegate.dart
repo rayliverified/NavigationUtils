@@ -122,7 +122,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   List<NavigationData> navigationDataRoutes = [];
 
-  Widget? pageOverride;
+  Page Function(String name)? pageOverride;
 
   /// Exposes the [routes] history to the implementation to allow
   /// modifying the navigation stack based on app state.
@@ -164,11 +164,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
             routes: navigationDataRoutes,
             globalData: globalData);
 
-    // Unknown route, do not navigate if unknown route is not implemented.
-    if (configurationHolder == null && onUnknownRoute != null) {
-      configurationHolder = configuration;
-    }
-    if (configurationHolder == null) return;
+    // Unknown route. Show unknown route.
+    configurationHolder ??= configuration;
 
     // Handle InitialRoutePath logic here. Adding a page here ensures
     // there is always a page to display. The initial page is now set here
@@ -613,8 +610,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   // Set Override
 
   @override
-  void setOverride(Widget page, {bool apply = true}) {
-    pageOverride = page;
+  void setOverride(Page Function(String name) pageBuilder,
+      {bool apply = true}) {
+    pageOverride = pageBuilder;
     if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }

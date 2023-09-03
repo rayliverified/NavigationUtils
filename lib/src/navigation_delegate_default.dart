@@ -1,6 +1,6 @@
 // ignore_for_file: overridden_fields
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'model_deeplink.dart';
 import 'navigation_builder.dart';
@@ -44,11 +44,15 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
     return Navigator(
       key: navigatorKey,
       pages: [
-        ...NavigationBuilder(
-          routeDataList: routes,
-          routes: navigationDataRoutes,
-          onUnknownRoute: onUnknownRoute,
-        ).build(context),
+        if (pageOverride != null)
+          pageOverride!(currentConfiguration?.name ?? '')
+        else ...[
+          ...NavigationBuilder(
+            routeDataList: routes,
+            routes: navigationDataRoutes,
+            onUnknownRoute: onUnknownRoute ?? _buildUnknownRoute,
+          ).build(context),
+        ],
       ],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
@@ -89,5 +93,38 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
     }
 
     return super.setNewRoutePath(configuration);
+  }
+
+  Page<dynamic> _buildUnknownRoute(DefaultRoute route) {
+    return MaterialPage(
+      name: route.name,
+      child: Scaffold(
+        body: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                '404',
+                style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              Container(
+                height: 15,
+              ),
+              ElevatedButton(
+                onPressed: () =>
+                    routes.length > 1 ? pop() : pushReplacement('/'),
+                child: const Text('Back', style: TextStyle(fontSize: 16)),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
