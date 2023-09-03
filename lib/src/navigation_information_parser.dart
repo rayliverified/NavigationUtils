@@ -56,7 +56,7 @@ class DefaultRouteInformationParser
         defaultRouteHolder = DefaultRoute.fromUrl(routeUrl);
       }
 
-      defaultRouteHolder ??= DefaultRoute(path: '/');
+      defaultRouteHolder ??= DefaultRoute(path: initialRoute);
 
       _debugPrintMessage(
           'parseRouteInformation: defaultRouteHolder: $defaultRouteHolder');

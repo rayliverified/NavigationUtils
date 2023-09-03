@@ -94,10 +94,6 @@ class NavigationBuilder {
               route.copyWith(pathParameters: pathParameters),
               globalPageData ?? {});
 
-          if (mainRouterDelegate.pageOverride != null) {
-            child = mainRouterDelegate.pageOverride!;
-          }
-
           Page page = buildPage(navigationData, child,
               queryParameters: route.queryParameters,
               arguments: route.arguments,

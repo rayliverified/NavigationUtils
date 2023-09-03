@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:navigation_utils/src/models/navigation_interface.dart';
 
 import 'navigation_delegate.dart';
@@ -197,8 +198,9 @@ class NavigationManager implements NavigationInterface {
   }
 
   @override
-  void setOverride(Widget page, {bool apply = true}) {
-    routerDelegate.setOverride(page, apply: apply);
+  void setOverride(Page Function(String name) pageBuilder,
+      {bool apply = true}) {
+    routerDelegate.setOverride(pageBuilder, apply: apply);
   }
 
   @override

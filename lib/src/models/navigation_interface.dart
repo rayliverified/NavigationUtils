@@ -71,7 +71,7 @@ abstract class NavigationInterface {
 
   void setBackstackRoutes(List<DefaultRoute> routes, {bool apply = true});
 
-  void setOverride(Widget page, {bool apply = true});
+  void setOverride(Page Function(String name) pageBuilder, {bool apply = true});
 
   void removeOverride({bool apply = true});
 
