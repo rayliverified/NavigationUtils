@@ -140,7 +140,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   @protected
   Future<void> setInitialRoutePath(DefaultRoute configuration) {
-    _debugPrintMessage('setInitialRoutePath');
+    _debugPrintMessage('setInitialRoutePath: $configuration');
     return setNewRoutePath(configuration);
   }
 
@@ -155,7 +155,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Do not set empty route.
     if (configuration.label.isEmpty && configuration.path.isEmpty) return;
 
-    _debugPrintMessage('Main Routes: $routes');
+    _debugPrintMessage('setNewRoutePath: Old Routes: $routes');
 
     // Resolve Route From Navigation Data.
     DefaultRoute? configurationHolder =
@@ -175,7 +175,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // instead of in the Navigator widget.
     if (_routes.isEmpty) {
       _routes.add(configurationHolder);
-      _debugPrintMessage('New Initialized Route: $routes');
+      _debugPrintMessage('setNewRoutePath: Handle Initial Route: $routes');
     }
 
     // TODO: Implement canPop.
@@ -189,7 +189,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
     // Expose that the route has changed.
     if (didChangeRoute) onRouteChanged(_routes.last);
-    _debugPrintMessage('Main Routes Updated: $routes');
+    _debugPrintMessage('setNewRoutePath: New Routes: $routes');
     notifyListeners();
     return;
   }

@@ -34,7 +34,7 @@ class DefaultRouteInformationParser
   @override
   Future<DefaultRoute> parseRouteInformation(
       RouteInformation routeInformation) {
-    _debugPrintMessage('parseRouteInformation - $routeInformation');
+    _debugPrintMessage('parseRouteInformation: $routeInformation');
     // Parse URL into URI.
     routeUri = routeInformation.uri;
     // Save initial URL.
@@ -59,7 +59,7 @@ class DefaultRouteInformationParser
       defaultRouteHolder ??= DefaultRoute(path: '/');
 
       _debugPrintMessage(
-          'parseRouteInformation, defaultRouteHolder - $defaultRouteHolder');
+          'parseRouteInformation: defaultRouteHolder: $defaultRouteHolder');
 
       // Save initial route and handle after initialization.
       return SynchronousFuture(defaultRouteHolder);
@@ -71,7 +71,7 @@ class DefaultRouteInformationParser
 
   @override
   RouteInformation? restoreRouteInformation(DefaultRoute configuration) {
-    _debugPrintMessage('restoreRouteInformation - $configuration');
+    _debugPrintMessage('restoreRouteInformation: $configuration');
     if (configuration.name?.isNotEmpty ?? false) {
       return RouteInformation(
           uri: configuration.uri, state: configuration.arguments);
