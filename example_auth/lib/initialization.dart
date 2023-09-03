@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:navigation_utils/navigation_utils.dart';
+// ignore: depend_on_referenced_packages
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'main.dart';
 import 'navigation_routes.dart';
@@ -27,6 +29,10 @@ class Initialization {
 
     // Run pre-initialization functions.
     preInitFunction?.call();
+
+    if (kIsWeb) {
+      usePathUrlStrategy();
+    }
 
     ValueResponse<void> firebaseResponse =
         await FirebaseRepositoryBase.initialize();

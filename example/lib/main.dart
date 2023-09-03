@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
 List<NavigationData> routes = [
@@ -14,6 +17,10 @@ List<NavigationData> routes = [
 ];
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
   NavigationManager.init(
       mainRouterDelegate: DefaultRouterDelegate(navigationDataRoutes: routes),
       routeInformationParser: DefaultRouteInformationParser());
