@@ -39,6 +39,8 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
 
   @override
   Widget build(BuildContext context) {
+    if (debugLog) debugPrint('NavigationUtils: Build Navigation: $routes');
+
     return Navigator(
       key: navigatorKey,
       pages: [

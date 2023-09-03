@@ -34,7 +34,7 @@ class DefaultRouteInformationParser
   @override
   Future<DefaultRoute> parseRouteInformation(
       RouteInformation routeInformation) {
-    _debugPrintMessage('parseRouteInformation: $routeInformation');
+    _debugPrintMessage('parseRouteInformation: ${routeInformation.uri}');
     // Parse URL into URI.
     routeUri = routeInformation.uri;
     // Save initial URL.
