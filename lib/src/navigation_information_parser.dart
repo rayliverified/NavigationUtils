@@ -16,11 +16,14 @@ class DefaultRouteInformationParser
   DefaultRoute Function(Uri initialRoute)? setInitialRouteFunction;
   String Function(Uri initialRoute)? setInitialRoutePathFunction;
 
+  bool debugLog;
+
   DefaultRouteInformationParser({
     this.defaultRoute,
     this.defaultRoutePath,
     this.setInitialRouteFunction,
     this.setInitialRoutePathFunction,
+    this.debugLog = false,
   }) : assert(
             defaultRoutePath != null
                 ? (defaultRoutePath.isNotEmpty &&
@@ -31,6 +34,7 @@ class DefaultRouteInformationParser
   @override
   Future<DefaultRoute> parseRouteInformation(
       RouteInformation routeInformation) {
+    _debugPrintMessage('parseRouteInformation - $routeInformation');
     // Parse URL into URI.
     routeUri = routeInformation.uri;
     // Save initial URL.
@@ -52,8 +56,13 @@ class DefaultRouteInformationParser
         defaultRouteHolder = DefaultRoute.fromUrl(routeUrl);
       }
 
+      defaultRouteHolder ??= DefaultRoute(path: '/');
+
+      _debugPrintMessage(
+          'parseRouteInformation, defaultRouteHolder - $defaultRouteHolder');
+
       // Save initial route and handle after initialization.
-      return SynchronousFuture(defaultRouteHolder ?? DefaultRoute(path: '/'));
+      return SynchronousFuture(defaultRouteHolder);
     }
 
     return SynchronousFuture(DefaultRoute(
@@ -62,11 +71,18 @@ class DefaultRouteInformationParser
 
   @override
   RouteInformation? restoreRouteInformation(DefaultRoute configuration) {
+    _debugPrintMessage('restoreRouteInformation - $configuration');
     if (configuration.name?.isNotEmpty ?? false) {
       return RouteInformation(
           uri: configuration.uri, state: configuration.arguments);
     }
 
     return null;
+  }
+
+  void _debugPrintMessage(String message) {
+    if (debugLog) {
+      debugPrint('NavigationUtils: $message');
+    }
   }
 }
