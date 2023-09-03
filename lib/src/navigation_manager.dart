@@ -233,4 +233,23 @@ class NavigationManager implements NavigationInterface {
   void clear() {
     routerDelegate.clear();
   }
+
+  void pauseNavigation() {
+    routerDelegate.setOverride(
+      (name) => MaterialPage(
+        name: name,
+        child: const Scaffold(
+          body: SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child: CupertinoActivityIndicator(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void resumeNavigation() {
+    routerDelegate.removeOverride();
+  }
 }
