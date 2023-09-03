@@ -124,6 +124,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   Page Function(String name)? pageOverride;
 
+  Page Function(String name)? pageOverlay;
+
   /// Exposes the [routes] history to the implementation to allow
   /// modifying the navigation stack based on app state.
   SetMainRoutesCallback? setMainRoutes;
@@ -620,6 +622,20 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void removeOverride({bool apply = true}) {
     pageOverride = null;
+    if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
+    if (apply) notifyListeners();
+  }
+
+  @override
+  void setOverlay(Page Function(String name) pageBuilder, {bool apply = true}) {
+    pageOverlay = pageBuilder;
+    if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
+    if (apply) notifyListeners();
+  }
+
+  @override
+  void removeOverlay({bool apply = true}) {
+    pageOverlay = null;
     if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
   }

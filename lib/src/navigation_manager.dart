@@ -215,6 +215,16 @@ class NavigationManager implements NavigationInterface {
   }
 
   @override
+  void setOverlay(Page Function(String name) pageBuilder, {bool apply = true}) {
+    routerDelegate.setOverlay(pageBuilder, apply: apply);
+  }
+
+  @override
+  void removeOverlay({bool apply = true}) {
+    routerDelegate.removeOverlay(apply: apply);
+  }
+
+  @override
   void navigate(BuildContext context, Function function) {
     routerDelegate.navigate(context, function);
   }

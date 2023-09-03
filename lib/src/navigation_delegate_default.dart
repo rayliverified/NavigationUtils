@@ -52,6 +52,8 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
             routes: navigationDataRoutes,
             onUnknownRoute: onUnknownRoute ?? _buildUnknownRoute,
           ).build(context),
+          if (pageOverlay != null)
+            pageOverlay!(currentConfiguration?.name ?? '')
         ],
       ],
       onPopPage: (route, result) {

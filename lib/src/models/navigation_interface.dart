@@ -75,6 +75,10 @@ abstract class NavigationInterface {
 
   void removeOverride({bool apply = true});
 
+  void setOverlay(Page Function(String name) pageBuilder, {bool apply = true});
+
+  void removeOverlay({bool apply = true});
+
   void setQueryParameters(Map<String, String> queryParameters,
       {bool apply = true});
 
