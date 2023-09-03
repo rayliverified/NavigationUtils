@@ -36,6 +36,17 @@ class NavigationManager implements NavigationInterface {
   set setMainRoutes(SetMainRoutesCallback? setMainRoutes) =>
       routerDelegate.setMainRoutes;
 
+  set setInitialRouteFunction(
+      DefaultRoute Function(Uri initialRoute)? setInitialRouteFunction) {
+    routeInformationParser.setInitialRouteFunction = setInitialRouteFunction;
+  }
+
+  set setInitialRoutePathFunction(
+      String Function(Uri initialRoute)? setInitialRoutePathFunction) {
+    routeInformationParser.setInitialRoutePathFunction =
+        setInitialRoutePathFunction;
+  }
+
   @override
   Future<dynamic> push(String name,
       {Map<String, String>? queryParameters,

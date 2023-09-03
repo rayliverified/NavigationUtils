@@ -11,9 +11,22 @@ class DefaultRouteInformationParser
   String initialRoute = '/';
   bool initialized = false;
 
-  DefaultRoute? initialRouteData;
+  DefaultRoute? defaultRoute;
+  String? defaultRoutePath;
+  DefaultRoute Function(Uri initialRoute)? setInitialRouteFunction;
+  String Function(Uri initialRoute)? setInitialRoutePathFunction;
 
-  DefaultRouteInformationParser({this.initialRouteData});
+  DefaultRouteInformationParser({
+    this.defaultRoute,
+    this.defaultRoutePath,
+    this.setInitialRouteFunction,
+    this.setInitialRoutePathFunction,
+  }) : assert(
+            defaultRoutePath != null
+                ? (defaultRoutePath.isNotEmpty &&
+                    defaultRoutePath.startsWith('/'))
+                : true,
+            'Route Path must start with /');
 
   @override
   Future<DefaultRoute> parseRouteInformation(
@@ -24,8 +37,23 @@ class DefaultRouteInformationParser
     if (initialized == false) {
       initialized = true;
       initialRoute = routeInformation.uri.toString();
+
+      DefaultRoute? defaultRouteHolder;
+      if (defaultRoute != null) {
+        defaultRouteHolder = defaultRoute;
+      } else if (defaultRoutePath != null) {
+        defaultRouteHolder = DefaultRoute.fromUrl(defaultRoutePath!);
+      }
+
+      if (setInitialRouteFunction != null) {
+        defaultRouteHolder = setInitialRouteFunction!(routeUri);
+      } else if (setInitialRoutePathFunction != null) {
+        String routeUrl = setInitialRoutePathFunction!(routeUri);
+        defaultRouteHolder = DefaultRoute.fromUrl(routeUrl);
+      }
+
       // Save initial route and handle after initialization.
-      return SynchronousFuture(initialRouteData ?? DefaultRoute(path: '/'));
+      return SynchronousFuture(defaultRouteHolder ?? DefaultRoute(path: '/'));
     }
 
     return SynchronousFuture(DefaultRoute(
