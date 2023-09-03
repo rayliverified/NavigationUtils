@@ -234,21 +234,42 @@ class NavigationManager implements NavigationInterface {
     routerDelegate.clear();
   }
 
-  void pauseNavigation() {
+  /// Pause and defer navigation.
+  ///
+  /// Displays a [CupertinoActivityIndicator] page
+  /// until [resumeNavigation] is called.
+  /// Useful for forcing delayed navigation until
+  /// an async operation completes.
+  /// For example, call this function before `runApp()`
+  /// to wait for authentication and initialization
+  /// variables to load so the app has the info
+  /// needed to decide where to navigate the user to.
+  ///
+  /// This function uses [setOverride] which preserves
+  /// the URL and removes all existing pages.
+  ///
+  /// Pass a [pageBuilder] to display a custom loading page.
+  void pauseNavigation({Page Function(String name)? pageBuilder}) {
     routerDelegate.setOverride(
-      (name) => MaterialPage(
-        name: name,
-        child: const Scaffold(
-          body: SizedBox(
-            width: double.infinity,
-            height: double.infinity,
-            child: CupertinoActivityIndicator(),
-          ),
-        ),
-      ),
+      pageBuilder ??
+          (name) => MaterialPage(
+                name: name,
+                child: const Scaffold(
+                  body: SizedBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: CupertinoActivityIndicator(),
+                  ),
+                ),
+              ),
     );
   }
 
+  /// Resumes navigation and removes page overrides.
+  ///
+  /// Calls [removeOverride] under the hood.
+  /// Has no effect if [pauseNavigation] has not
+  /// been called.
   void resumeNavigation() {
     routerDelegate.removeOverride();
   }
