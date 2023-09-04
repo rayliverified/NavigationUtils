@@ -17,12 +17,13 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
   @override
   OnUnknownRoute? onUnknownRoute;
 
+  NavigationPageBuilder? pageBuilder;
+
   List<NavigatorObserver> observers;
 
   List<DeeplinkDestination> deeplinkDestinations;
 
-  bool? Function(Uri uri, DeeplinkDestination? deeplinkDestination)?
-      customDeeplinkHandler;
+  bool? Function(Uri uri)? customDeeplinkHandler;
 
   bool authenticated;
 
@@ -32,8 +33,10 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
       {required this.navigationDataRoutes,
       this.debugLog = false,
       this.onUnknownRoute,
+      this.pageBuilder,
       this.observers = const [],
       this.deeplinkDestinations = const [],
+      this.customDeeplinkHandler,
       this.authenticated = true,
       this.excludeDeeplinkNavigationPages = const []});
 
@@ -50,7 +53,8 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
           ...NavigationBuilder(
             routeDataList: routes,
             routes: navigationDataRoutes,
-            onUnknownRoute: onUnknownRoute ?? _buildUnknownRoute,
+            pageBuilder: pageBuilder,
+            onUnknownRoute: onUnknownRoute ?? _buildUnknownRouteDefault,
           ).build(context),
           if (pageOverlay != null)
             pageOverlay!(currentConfiguration?.name ?? '')
@@ -71,16 +75,15 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
 
   @override
   Future<void> setNewRoutePath(DefaultRoute configuration) async {
+    bool? openedCustomDeeplink =
+        customDeeplinkHandler?.call(configuration.uri) ?? false;
+    if (openedCustomDeeplink) return;
+
     DeeplinkDestination? deeplinkDestination;
     if (deeplinkDestinations.isNotEmpty) {
       deeplinkDestination = NavigationUtils.getDeeplinkDestinationFromUri(
           deeplinkDestinations, configuration.uri);
     }
-
-    bool? openedCustomDeeplink =
-        customDeeplinkHandler?.call(configuration.uri, deeplinkDestination) ??
-            false;
-    if (openedCustomDeeplink) return;
 
     if (deeplinkDestinations.isNotEmpty && deeplinkDestination != null) {
       NavigationUtils.openDeeplinkDestination(
@@ -97,7 +100,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
     return super.setNewRoutePath(configuration);
   }
 
-  Page<dynamic> _buildUnknownRoute(DefaultRoute route) {
+  Page<dynamic> _buildUnknownRouteDefault(DefaultRoute route) {
     return MaterialPage(
       name: route.name,
       child: Scaffold(
