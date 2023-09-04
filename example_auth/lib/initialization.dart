@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:navigation_utils/navigation_utils.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:get_it/get_it.dart';
+import 'package:navigation_utils/navigation_utils.dart';
 
 import 'main.dart';
 import 'navigation_routes.dart';
@@ -49,7 +49,8 @@ class Initialization {
           onUnknownRoute: (route) =>
               const MaterialPage(name: UnknownPage.name, child: UnknownPage()),
         ),
-        routeInformationParser: DefaultRouteInformationParser());
+        routeInformationParser: DefaultRouteInformationParser(debugLog: true));
+    NavigationManager.instance.pauseNavigation();
 
     // Run post functions.
     await postInitFunction?.call();

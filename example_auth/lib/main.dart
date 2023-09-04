@@ -67,8 +67,6 @@ class AppModel extends AppModelBase {
     // Attach navigation callback that hooks into the app state.
     NavigationManager.instance.setMainRoutes =
         (routes) => setMainRoutes(routes);
-    // Set initialization page.
-    NavigationManager.instance.setOverride(const InitializationPage());
     // Navigate after authentication and user model loads.
     authService.firebaseAuthUserStream
         .asBroadcastStream()
@@ -92,7 +90,7 @@ class AppModel extends AppModelBase {
           NavigationManager.instance.routeInformationParser.initialRoute;
       DebugLogger.instance.printInfo('Initial Route: $initialRoute');
       NavigationManager.instance.set([initialRoute]);
-      NavigationManager.instance.removeOverride();
+      NavigationManager.instance.resumeNavigation();
     }
     // Automatically navigate to auth screen when user is logged out.
     if (AuthService.instance.isAuthenticated == false) {
@@ -103,7 +101,7 @@ class AppModel extends AppModelBase {
   }
 
   List<DefaultRoute> setMainRoutes(List<DefaultRoute> routes) {
-    DebugLogger.instance.printFunction('Set Main Routes Old: $routes');
+    DebugLogger.instance.printFunction('Set Routes Old: $routes');
     List<DefaultRoute> routesHolder = routes;
     // Authenticated route guard.
     if (AuthService.instance.isAuthenticated == false && initialized == true) {
@@ -120,7 +118,7 @@ class AppModel extends AppModelBase {
         routesHolder.add(DefaultRoute(label: HomePage.name, path: '/'));
       }
     }
-    DebugLogger.instance.printFunction('Set Main Routes New: $routes');
+    DebugLogger.instance.printFunction('Set Routes New: $routes');
     return routesHolder;
   }
 }
@@ -267,9 +265,11 @@ class UnknownPage extends StatelessWidget {
             Container(
               height: 15,
             ),
-            MaterialButton(
-              onPressed: () => NavigationManager.instance.pop(),
-              color: Colors.blue,
+            ElevatedButton(
+              onPressed: () =>
+                  NavigationManager.instance.routerDelegate.routes.length > 1
+                      ? NavigationManager.instance.pop()
+                      : NavigationManager.instance.pushReplacement('/'),
               child: const Text('Back',
                   style: TextStyle(color: Colors.white, fontSize: 16)),
             )
