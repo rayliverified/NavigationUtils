@@ -1,3 +1,10 @@
+## 0.3.0
+- Create `pauseNavigation` and `resumeNavigation` methods. Use to defer handling navigation. 
+  - Useful for showing a loading screen while fetching auth or app state during initialization.
+- Create `setOverlay` and `removeOverlay` methods. Display a Page overlay on top of existing routes without changing the URL or navigation structure.
+  - Useful for displaying a passcode or lock screen on top of all pages.
+- Create `main_auth_delay.dart`, `main_initial_route.dart`, and `main_lock_screen.dart` examples.
+
 ## 0.2.1
 - Add a new optional parameter `all` to the `pop` method. Pop `all` overrides the safety check that prevents removing all pages.
 - Update usage of `popUntil` and `pushReplacementRoute` methods to use `all` parameter.
