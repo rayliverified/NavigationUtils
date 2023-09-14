@@ -122,7 +122,7 @@ String canonicalUri(String loc) {
   // remove trailing slash except for when you shouldn't, e.g.
   // /profile/ => /profile
   // / => /
-  // /login?from=/ => login?from=/
+  // /login?from=/ => /login?from=/
   canon = canon.endsWith('/') && canon != '/' && !canon.contains('?')
       ? canon.substring(0, canon.length - 1)
       : canon;

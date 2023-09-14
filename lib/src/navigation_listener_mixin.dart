@@ -52,7 +52,6 @@ mixin NavigationListenerMixin {
 
 mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
   late StreamSubscription navigationListener;
-  bool initialLoad = true;
   bool paused = false;
 
   @override
@@ -85,14 +84,9 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
           oldRouteName: routeName, newRouteName: currentRoute.name ?? '');
     } else if (routeName == currentRoute.name) {
       paused = false;
-      // Resume is called even on initial load. Skip call on initial load.
-      if (initialLoad == false) {
-        // If the route update matches the current route name,
-        // the route has been resumed.
-        onRouteResume();
-      } else {
-        initialLoad = false;
-      }
+      // If the route update matches the current route name,
+      // the route has been resumed.
+      onRouteResume();
     }
   }
 
