@@ -84,18 +84,17 @@ class NavigationBuilder {
                 NavigationUtils.extractPathParametersWithPattern(
                     route.path, navigationData.path));
           }
-          // Inject dynamic data to page builder.
-          Map<String, dynamic> globalData = mainRouterDelegate.globalData;
-          Map<String, dynamic>? globalPageData = {};
-          // Get global data via path.
-          globalPageData = globalData[route.path];
+
           Widget child = navigationData.builder(
               context,
               route.copyWith(pathParameters: pathParameters),
-              globalPageData ?? {});
+              // Inject dynamic data to page builder.
+              // Get global data via path.
+              mainRouterDelegate.globalData[route.path] ?? {});
 
-          Page page = buildPage(navigationData, child,
-              queryParameters: route.queryParameters,
+          Page page = buildPage(
+              name: route.name,
+              child: child,
               arguments: route.arguments,
               pageType: navigationData.pageType ?? PageType.material,
               fullScreenDialog: navigationData.fullScreenDialog,
@@ -119,18 +118,13 @@ class NavigationBuilder {
     return pages;
   }
 
-  Page buildPage(NavigationData navigationData, Widget child,
-      {Map<String, String> queryParameters = const {},
+  Page buildPage(
+      {required String? name,
+      required Widget child,
       Object? arguments,
       PageType pageType = PageType.material,
       bool? fullScreenDialog,
       Color? barrierColor}) {
-    String name =
-        Uri(path: navigationData.path, queryParameters: queryParameters)
-            .toString();
-    if (name.startsWith('/') == false) name = '/$name';
-    name = canonicalUri(name);
-
     switch (pageType) {
       case PageType.material:
         return MaterialPage(
