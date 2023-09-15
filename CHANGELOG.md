@@ -1,3 +1,7 @@
+## 0.3.1
+- Fix `NavigationListenerMixin` to return `onRouteResumed` correctly.
+- Fix set URL as RouteSettings name instead of unformated path template.
+
 ## 0.3.0
 - Create `pauseNavigation` and `resumeNavigation` methods. Use to defer handling navigation. 
   - Useful for showing a loading screen while fetching auth or app state during initialization.
