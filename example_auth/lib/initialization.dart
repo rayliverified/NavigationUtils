@@ -46,8 +46,8 @@ class Initialization {
         mainRouterDelegate: DefaultRouterDelegate(
           navigationDataRoutes: routes,
           debugLog: true,
-          onUnknownRoute: (route) =>
-              const MaterialPage(name: UnknownPage.name, child: UnknownPage()),
+          onUnknownRoute: (route) => const MaterialPage(
+              name: '/${UnknownPage.name}', child: UnknownPage()),
         ),
         routeInformationParser: DefaultRouteInformationParser(debugLog: true));
     NavigationManager.instance.pauseNavigation();

@@ -33,8 +33,8 @@ class NavigationData {
       this.fullScreenDialog,
       this.barrierColor,
       this.metadata = const {}})
-      : assert(
-            url.startsWith('/'), 'Path must be prefixed with / to match URLs.');
+      : assert(url.startsWith('/'),
+            'URLs must be prefixed with /. A NavigationData contains a `url` value that is not prefixed with a /.');
 
   @override
   String toString() =>
