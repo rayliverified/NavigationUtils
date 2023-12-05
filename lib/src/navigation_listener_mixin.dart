@@ -72,14 +72,8 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
   }
 
   void _didUpdateRoute(DefaultRoute currentRoute) {
-    // Do not update if page is being closed.
     if (mounted == false) return;
-    // Get the name of the current page.
-    // The route is returned via the context of the page
-    // the mixin is added to.
     String routeName = ModalRoute.of(context)?.settings.name ?? '';
-    // If the route name changes, the current page is no
-    // longer active and paused.
     if (routeName != currentRoute.name) {
       if (paused) return;
       paused = true;
@@ -87,8 +81,6 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
           oldRouteName: routeName, newRouteName: currentRoute.name ?? '');
     } else if (routeName == currentRoute.name) {
       paused = false;
-      // If the route update matches the current route name,
-      // the route has been resumed.
       onRouteResume();
     }
   }
@@ -120,16 +112,10 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
   }
 
   void _didUpdateRoute(DefaultRoute currentRoute) {
-    // Do not update if page is being closed.
     if (mounted == false) return;
     if (_context.mounted == false) return;
 
-    // Get the name of the current page.
-    // The route is returned via the context of the page
-    // the mixin is added to.
     String routeName = ModalRoute.of(_context)?.settings.name ?? '';
-    // If the route name changes, the current page is no
-    // longer active and paused.
     if (routeName != currentRoute.name) {
       if (paused) return;
       paused = true;
