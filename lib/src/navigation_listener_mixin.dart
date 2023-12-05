@@ -21,6 +21,7 @@ mixin NavigationListenerMixin {
   void _didUpdateRoute(DefaultRoute currentRoute) {
     // Do not update if page is being closed.
     if (mounted == false) return;
+    if (_context.mounted == false) return;
     // Get the name of the current page.
     // The route is returned via the context of the page
     // the mixin is added to.
@@ -28,6 +29,8 @@ mixin NavigationListenerMixin {
     // If the route name changes, the current page is no
     // longer active and paused.
     if (routeName != currentRoute.name) {
+      // Do nothing if already paused since every navigation event
+      // triggers this function.
       if (paused) return;
       paused = true;
       onRoutePause(
@@ -119,6 +122,8 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
   void _didUpdateRoute(DefaultRoute currentRoute) {
     // Do not update if page is being closed.
     if (mounted == false) return;
+    if (_context.mounted == false) return;
+
     // Get the name of the current page.
     // The route is returned via the context of the page
     // the mixin is added to.
