@@ -30,7 +30,8 @@ class PageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Builder(
       builder: (context) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: const TextScaler.linear(1)),
         child: Scaffold(
           backgroundColor: backgroundColor,
           appBar: appBar,
