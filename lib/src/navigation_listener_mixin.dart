@@ -43,6 +43,39 @@ mixin NavigationListenerMixin {
     }
   }
 
+  /// Route paused callback.
+  ///
+  /// [oldRouteName] - paused route.
+  /// [newRouteName] - resumed route.
+  ///
+  /// Example: Page 1 -> Page 2
+  /// When Page 1 is paused, Page 1 receives a callback
+  /// with `oldRouteName` = `Page 1` and
+  /// `newRouteName` = `Page 2`.
+  ///
+  /// Example 2: Page 2 -> Page 1
+  /// When Page 2 is popped and the user navigates
+  /// back to Page 1, Page 2 receives a callback with
+  /// `oldRouteName` = `Page 2` and
+  /// `newRouteName` = `Page 1`.
+  ///
+  /// The `onRoutePause` callback is useful for pausing
+  /// a page's updates and background operations that
+  /// are no longer needed when in the background.
+  /// Because Flutter keeps Page widgets mounted
+  /// and preserves their state, "heavy" page processes
+  /// should be paused in the background.
+  ///
+  /// Note: `onRoutePause` is always called before a
+  /// page is disposed. In the rare instance when it is
+  /// important to differentiate between a pause and
+  /// close event, use the following code to check.
+  /// ```dart
+  ///     String routeName = ModalRoute.of(context)?.settings.name ?? '';
+  ///     bool closed = NavigationManager.instance.routerDelegate.routes
+  ///             .contains(DefaultRoute(path: routeName)) ==
+  ///         false;
+  /// ```
   void onRoutePause(
       {required String oldRouteName, required String newRouteName}) {}
 
@@ -73,6 +106,8 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
 
   void _didUpdateRoute(DefaultRoute currentRoute) {
     if (mounted == false) return;
+    if (context.mounted == false) return;
+
     String routeName = ModalRoute.of(context)?.settings.name ?? '';
     if (routeName != currentRoute.name) {
       if (paused) return;
