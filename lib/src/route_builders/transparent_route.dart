@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 
 class TransparentRoute<T> extends PageRoute<T> {
   TransparentRoute({
+    super.settings,
+    super.fullscreenDialog,
     required this.builder,
-    RouteSettings? settings,
     this.maintainState = true,
-    bool fullscreenDialog = false,
     this.transitionsBuilder = _defaultTransitionsBuilder,
     this.barrierColor = Colors.transparent,
-  }) : super(settings: settings, fullscreenDialog: fullscreenDialog);
+  });
 
   final WidgetBuilder builder;
 
@@ -75,19 +75,15 @@ Widget _defaultTransitionsBuilder(
 class TransparentPage<T> extends Page<T> {
   /// Creates a material page.
   const TransparentPage({
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
     required this.child,
     this.maintainState = true,
     this.fullscreenDialog = false,
     this.barrierColor = Colors.transparent,
-    LocalKey? key,
-    String? name,
-    Object? arguments,
-    String? restorationId,
-  }) : super(
-            key: key,
-            name: name,
-            arguments: arguments,
-            restorationId: restorationId);
+  });
 
   /// The content to be shown in the [Route] created by this page.
   final Widget child;
@@ -184,14 +180,13 @@ mixin FadeUpwardsRouteTransitionMixin<T> on PageRoute<T> {
 
 class FadeUpwardsPageTransition extends StatelessWidget {
   FadeUpwardsPageTransition({
-    Key? key,
+    super.key,
     required Animation<double>
         routeAnimation, // The route's linear 0.0 - 1.0 animation.
     required this.child,
   })  : _positionAnimation =
             routeAnimation.drive(_bottomUpTween.chain(_fastOutSlowInTween)),
-        _opacityAnimation = routeAnimation.drive(_easeInTween),
-        super(key: key);
+        _opacityAnimation = routeAnimation.drive(_easeInTween);
 
   // Fractional offset from 1/4 screen below the top to fully on screen.
   static final Tween<Offset> _bottomUpTween = Tween<Offset>(

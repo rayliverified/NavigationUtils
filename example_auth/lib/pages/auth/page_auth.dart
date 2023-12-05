@@ -16,7 +16,7 @@ enum AuthPageType {
 class AuthPageWrapper extends StatefulWidget {
   final AuthPageType type;
 
-  const AuthPageWrapper({Key? key, required this.type}) : super(key: key);
+  const AuthPageWrapper({super.key, required this.type});
 
   @override
   State<AuthPageWrapper> createState() => _AuthPageWrapperState();

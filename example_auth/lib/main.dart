@@ -149,7 +149,7 @@ class App extends StatelessWidget {
 class HomePage extends StatefulWidget {
   static const String name = 'home';
 
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
