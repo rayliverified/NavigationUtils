@@ -1,3 +1,10 @@
+## 0.3.2
+- Create `LifecycleObserverStateMixin` for StatefulWidgets.
+- Update LifecycleObserverMixin with new `onHidden` lifecycle callback.
+- Fix BuildContext disposed and mounted not checked.
+- Create Lifecycle Callbacks Example.
+- Document onRoutePause.
+
 ## 0.3.1
 - Fix `NavigationListenerMixin` to return `onRouteResumed` correctly.
 - Fix set URL as RouteSettings name instead of unformated path template.
