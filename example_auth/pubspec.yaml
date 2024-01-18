@@ -10,19 +10,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^2.24.0
-  firebase_auth: ^4.15.0
-  google_sign_in: ^6.1.6 # Missing Windows, macOS Support.
-  cloud_firestore: ^4.13.3 # Missing Window Support.
-  firebase_database: ^10.3.6 # Missing Windows Support.
-  firebase_storage: ^11.5.3 # Missing Windows Support.
-  cloud_functions: ^4.5.6 # Missing Windows Support.
-  firebase_analytics: ^10.7.2
-  firebase_dynamic_links: ^5.4.6
-  firebase_crashlytics: ^3.4.6
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.16.0
+  google_sign_in: ^6.2.1 # Missing Windows, macOS Support.
+  cloud_firestore: ^4.14.0 # Missing Window Support.
+  firebase_database: ^10.4.0 # Missing Windows Support.
+  firebase_storage: ^11.6.0 # Missing Windows Support.
+  cloud_functions: ^4.6.0 # Missing Windows Support.
+  firebase_analytics: ^10.8.0
+  firebase_dynamic_links: ^5.4.8
+  firebase_crashlytics: ^3.4.9
   navigation_utils:
     path: ../
-  get_it: ^7.6.4
+  get_it: ^7.6.6
   equatable: ^2.0.5
   simple_gravatar: ^1.1.0
   universal_io: ^2.2.2
@@ -34,7 +34,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^3.0.1
   json_serializable: ^6.7.1
-  build_runner: ^2.4.7
+  build_runner: ^2.4.8
 
 flutter:
   uses-material-design: true
