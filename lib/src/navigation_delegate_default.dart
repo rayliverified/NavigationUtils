@@ -93,7 +93,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
           deeplinkDestination: deeplinkDestination,
           authenticated: authenticated,
           currentRoute: currentConfiguration,
-          excludeDeeplinkNavigationPages: []);
+          excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages);
       return Future.value();
     }
 
