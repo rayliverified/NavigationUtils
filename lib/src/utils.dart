@@ -247,6 +247,7 @@ class NavigationUtils {
       required List<DeeplinkDestination> deeplinkDestinations,
       required BaseRouterDelegate routerDelegate,
       DeeplinkDestination? deeplinkDestination,
+      Map<String, String> pathParameters = const {},
       bool authenticated = true,
       DefaultRoute? currentRoute,
       List<String> excludeDeeplinkNavigationPages = const []}) {
@@ -280,9 +281,10 @@ class NavigationUtils {
     }
 
     // Check deeplink navigation conditional function.
-    bool shouldNavigate =
-        deeplinkDestinationHolder.shouldNavigateDeeplinkFunction?.call() ??
-            true;
+    bool shouldNavigate = deeplinkDestinationHolder
+            .shouldNavigateDeeplinkFunction
+            ?.call(uri, pathParameters, uri.queryParameters) ??
+        true;
     if (shouldNavigate == false) return false;
 
     return true;
@@ -305,11 +307,19 @@ class NavigationUtils {
 
     if (deeplinkDestinationHolder == null) return false;
 
+    Map<String, String> pathParameters = {};
+    if (deeplinkDestinationHolder.deeplinkUrl.contains(':')) {
+      String deeplinkPath = canonicalUri(uri.path);
+      pathParameters = NavigationUtils.extractPathParametersWithPattern(
+          deeplinkPath, deeplinkDestinationHolder.deeplinkUrl);
+    }
+
     if (canOpenDeeplinkDestination(
             uri: uri,
             deeplinkDestinations: deeplinkDestinations,
             routerDelegate: routerDelegate,
             deeplinkDestination: deeplinkDestinationHolder,
+            pathParameters: pathParameters,
             authenticated: authenticated,
             currentRoute: currentRoute,
             excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages) ==
@@ -336,39 +346,32 @@ class NavigationUtils {
 
     // Process deeplink path parameters.
     // Process deeplink query parameters.
-    Map<String, String> pathParameters = {};
     Map<String, String> queryParameters = {};
     Object? arguments;
     Map<String, dynamic> globalData = {};
 
-    Map<String, String> deeplinkPathParameters = {};
-
-    if (deeplinkDestinationHolder.deeplinkUrl.contains(':')) {
-      String deeplinkPath = canonicalUri(uri.path);
-      pathParameters = NavigationUtils.extractPathParametersWithPattern(
-          deeplinkPath, deeplinkDestinationHolder.deeplinkUrl);
-      deeplinkPathParameters.addAll(pathParameters);
-      if (deeplinkDestinationHolder.mapPathParameterFunction != null) {
-        pathParameters = deeplinkDestinationHolder.mapPathParameterFunction!(
-            pathParameters, uri.queryParameters);
-      }
-    }
-
     if (deeplinkDestinationHolder.mapQueryParameterFunction != null) {
       queryParameters = deeplinkDestinationHolder.mapQueryParameterFunction!(
-          uri.queryParameters, deeplinkPathParameters);
+          uri.queryParameters, pathParameters);
     } else {
       queryParameters = uri.queryParameters;
     }
 
     if (deeplinkDestinationHolder.mapArgumentsFunction != null) {
       arguments = deeplinkDestinationHolder.mapArgumentsFunction!(
-          deeplinkPathParameters, uri.queryParameters);
+          pathParameters, uri.queryParameters);
     }
 
     if (deeplinkDestinationHolder.mapGlobalDataFunction != null) {
       globalData = deeplinkDestinationHolder.mapGlobalDataFunction!(
-          deeplinkPathParameters, uri.queryParameters);
+          pathParameters, uri.queryParameters);
+    }
+
+    // Deeplink Path parameter function needs to be placed last so the path parameters
+    // can be passed to above functions without being transformed.
+    if (deeplinkDestinationHolder.mapPathParameterFunction != null) {
+      pathParameters = deeplinkDestinationHolder.mapPathParameterFunction!(
+          pathParameters, uri.queryParameters);
     }
 
     // Set deeplink destination.
