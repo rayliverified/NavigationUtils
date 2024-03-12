@@ -47,6 +47,13 @@ RegExp patternToRegExp(String pattern, List<String> parameters) {
   return RegExp(buffer.toString(), caseSensitive: false);
 }
 
+/// Escapes certain characters in group and returns it as a string.
+///
+/// This method takes a [group] and a [name]. The group is a string which might contain special characters
+/// such as ':', '=', and '!'. These characters are escaped (i.e., prefixed with a backslash) using a `RegExp` replace operation.
+/// The result is then incorporated into a string which includes the [name] parameter.
+///
+/// This function is typically used when creating regular expression groups with named capture groups.
 String _escapeGroup(String group, String name) {
   final String escapedGroup = group.replaceFirstMapped(
       RegExp(r'[:=!]'), (Match match) => '\\${match[0]}');
