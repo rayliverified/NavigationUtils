@@ -709,22 +709,12 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     });
   }
 
-  /// Apply navigation changes by calling `notifyListeners`
-  /// on the NavigationDelegate's ChangeNotifier.
-  ///
-  /// Call apply after modifying the route stack using
-  /// push, set, etc with `apply = false`, once edits are
-  /// finished and ready.
   @override
   void apply() {
     onRouteChanged(_routes.last);
     notifyListeners();
   }
 
-  /// Clears navigation routes.
-  ///
-  /// Warning: Do not call without setting a new route stack
-  /// as navigation requires a page at all times.
   @override
   void clear() {
     _routes.clear();
