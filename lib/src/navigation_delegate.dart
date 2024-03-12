@@ -346,12 +346,18 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   // Pop Until
 
   @override
-  void popUntil(String name, {bool apply = true, bool all = false}) {
+  void popUntil(
+    String name, {
+    bool apply = true,
+    bool all = false,
+    bool inclusive = false,
+  }) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
       if (route.label == name ||
           route.path == name ||
           (all == false && _routes.length == 1)) {
+        if (inclusive) pop(null, false, all);
         break;
       }
       pop(null, false, all);
@@ -363,11 +369,12 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   @override
   void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true, bool all = false}) {
+      {bool apply = true, bool all = false, bool inclusive = false}) {
     DefaultRoute? route = _routes.isNotEmpty ? _routes.last : null;
     while (route != null) {
       if (popUntilRouteFunction(route) ||
           (all == false && _routes.length == 1)) {
+        if (inclusive) pop(null, false, all);
         break;
       }
       pop(null, false, all);
@@ -385,8 +392,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       Object? arguments,
       Map<String, dynamic> data = const {},
       Map<String, String> pathParameters = const {},
+      bool inclusive = false,
       bool apply = true}) async {
-    popUntil(routeUntilName, apply: false, all: true);
+    popUntil(routeUntilName, apply: false, all: true, inclusive: inclusive);
     return await push(name,
         queryParameters: queryParameters,
         arguments: arguments,
@@ -398,8 +406,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   Future<dynamic> pushAndRemoveUntilRoute(
       DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true}) async {
-    popUntilRoute(popUntilRouteFunction, apply: false, all: true);
+      {bool apply = true, bool inclusive = false}) async {
+    popUntilRoute(popUntilRouteFunction,
+        apply: false, all: true, inclusive: inclusive);
     return await pushRoute(route, apply: apply);
   }
 

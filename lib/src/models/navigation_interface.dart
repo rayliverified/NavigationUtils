@@ -14,21 +14,23 @@ abstract class NavigationInterface {
 
   void pop([dynamic result, bool apply = true, bool all = false]);
 
-  void popUntil(String name, {bool apply = true, bool all = false});
+  void popUntil(String name,
+      {bool apply = true, bool all = false, bool inclusive = false});
 
   void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true, bool all = false});
+      {bool apply = true, bool all = false, bool inclusive = false});
 
   Future<dynamic> pushAndRemoveUntil(String name, String routeUntilName,
       {Map<String, String>? queryParameters,
       Object? arguments,
       Map<String, dynamic> data = const {},
       Map<String, String> pathParameters = const {},
-      bool apply = true});
+      bool apply = true,
+      bool inclusive = false});
 
   Future<dynamic> pushAndRemoveUntilRoute(
       DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true});
+      {bool apply = true, bool inclusive = false});
 
   void remove(String name, {bool apply = true});
 

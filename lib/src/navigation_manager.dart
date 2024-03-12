@@ -74,14 +74,16 @@ class NavigationManager implements NavigationInterface {
   }
 
   @override
-  void popUntil(String name, {bool apply = true, bool all = false}) {
-    routerDelegate.popUntil(name, apply: apply, all: all);
+  void popUntil(String name,
+      {bool apply = true, bool all = false, bool inclusive = false}) {
+    routerDelegate.popUntil(name, apply: apply, all: all, inclusive: inclusive);
   }
 
   @override
   void popUntilRoute(PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true, bool all = false}) {
-    routerDelegate.popUntilRoute(popUntilRouteFunction, apply: apply, all: all);
+      {bool apply = true, bool all = false, bool inclusive = false}) {
+    routerDelegate.popUntilRoute(popUntilRouteFunction,
+        apply: apply, all: all, inclusive: inclusive);
   }
 
   @override
@@ -90,21 +92,23 @@ class NavigationManager implements NavigationInterface {
       Object? arguments,
       Map<String, dynamic> data = const {},
       Map<String, String> pathParameters = const {},
-      bool apply = true}) {
+      bool apply = true,
+      bool inclusive = false}) {
     return routerDelegate.pushAndRemoveUntil(name, routeUntilName,
         queryParameters: queryParameters,
         arguments: arguments,
         data: data,
         pathParameters: pathParameters,
+        inclusive: inclusive,
         apply: apply);
   }
 
   @override
   Future<dynamic> pushAndRemoveUntilRoute(
       DefaultRoute route, PopUntilRouteFunction popUntilRouteFunction,
-      {bool apply = true}) {
+      {bool apply = true, bool inclusive = false}) {
     return routerDelegate.pushAndRemoveUntilRoute(route, popUntilRouteFunction,
-        apply: apply);
+        inclusive: inclusive, apply: apply);
   }
 
   @override
