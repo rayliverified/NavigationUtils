@@ -1,3 +1,12 @@
+## 0.4.0
+- Update Flutter v3.16.9.
+- Add documentation for `NavigationManager` functions.
+- Create pop `inclusive`. Support popping the page including itself.
+- Create `removeAbove` function to support removing a page above another page.
+- Create `ShouldNavigateDeeplinkFunction` callback parameters. Adds support for conditional deeplink navigation logic based on the URL and query parameters.
+- Fix missing `excludeDeeplinkNavigationPages`.
+- Update example dependencies.
+
 ## 0.3.2
 - Create `LifecycleObserverStateMixin` for StatefulWidgets.
 - Update LifecycleObserverMixin with new `onHidden` lifecycle callback.
