@@ -4,6 +4,11 @@ import 'navigation_delegate.dart';
 import 'path_utils_go_router.dart';
 
 class NavigationUtils {
+  /// Extracts the corresponding `NavigationData` from a given `uri`.
+  ///
+  /// The method goes through the provided [routes] and attempts to match the [uri]
+  /// with each of the [NavigationData] objects in the [routes]. If a match is found,
+  /// that [NavigationData] is returned.
   static NavigationData? getNavigationDataFromUri(
       {required List<NavigationData> routes,
       required Uri uri,
@@ -20,6 +25,20 @@ class NavigationUtils {
     return navigationData;
   }
 
+  /// A method that retrieves a [NavigationData] object from a given route.
+  ///
+  /// This method takes into account several routing scenarios such as named routing,
+  /// exact URL match routing, exact path match routing, and path pattern matching.
+  ///
+  /// [routes] is a list of available [NavigationData] for your application.
+  /// [route] is the [DefaultRoute] object from which to extract the navigation data.
+  ///
+  /// Usage:
+  /// ```
+  /// var navigationData = getNavigationDataFromRoute(routes: routesList, route: defaultRoute);
+  /// ```
+  ///
+  /// Returns a [NavigationData] object if a match is found, or [null] if no matching route is found.
   static NavigationData? getNavigationDataFromRoute(
       {required List<NavigationData> routes, required DefaultRoute route}) {
     NavigationData? navigationData;
@@ -73,6 +92,20 @@ class NavigationUtils {
     return navigationData;
   }
 
+  /// This function maps a [NavigationData] object to a [DefaultRoute] object.
+  ///
+  /// It requires:
+  ///   [routes] - a list of available [NavigationData] for your application.
+  ///   [route] - the [DefaultRoute] object you want to map navigation data to.
+  ///   [globalData] - a map of dynamic data that can be used in the mapped routes.
+  ///
+  /// The method checks if [navigationData] (obtained from [getNavigationDataFromRoute]) is not null,
+  /// extracts the path parameters if any, and builds a [DefaultRoute].
+  ///
+  /// Usage:
+  /// ```
+  /// var defaultRoute = mapNavigationDataToDefaultRoute(routes: routesList, route: defaultRoute, globalData: myGlobalData);
+  /// ```
   static DefaultRoute? mapNavigationDataToDefaultRoute(
       {required List<NavigationData> routes,
       required DefaultRoute route,
@@ -102,6 +135,20 @@ class NavigationUtils {
     return routeHolder;
   }
 
+  /// Returns the first [NavigationData] that matches with [name].
+  ///
+  /// The method iterates through [routes] to find a [NavigationData] where the [name]
+  /// matches with [NavigationData.label] or [NavigationData.url] or [NavigationData.path].
+  /// It can match with either exact URL or path or with path pattern.
+  ///
+  /// If [name] does not start with '/', the method assumes it's a label and tries to find a match in [routes].
+  ///
+  /// If [name] starts with '/', the method tries exact URL match first. If it doesn't find any, it tries
+  /// exact path match, then it tries path pattern match.
+  ///
+  /// The method canonicalizes the URL path before comparing it with [NavigationData.url] and [NavigationData.path].
+  ///
+  /// Returns the first matching [NavigationData], or null if no match is found.
   static NavigationData? getNavigationDataFromName(
       List<NavigationData> routes, String name) {
     if (name.isEmpty) return null;
@@ -151,6 +198,13 @@ class NavigationUtils {
     return navigationData;
   }
 
+  /// Builds and returns a [DefaultRoute] from the given [name] using a list of [NavigationData].
+  ///
+  /// This method uses [NavigationUtils.getNavigationDataFromName] to search for a matching
+  /// [NavigationData] in [navigationDataRoutes] based on [name].
+  ///
+  /// Returns a [DefaultRoute] constructed from the named route or URL.
+  /// Throws an [Exception] if a named route is not found in [navigationDataRoutes].
   static DefaultRoute buildDefaultRouteFromName(
       List<NavigationData> navigationDataRoutes, String name) {
     NavigationData? navigationData =
@@ -173,6 +227,9 @@ class NavigationUtils {
     }
   }
 
+  /// Extracts and returns path parameters from the given [route] using the [pattern].
+  ///
+  /// Returns a [Map] of parameter names and their corresponding values from the route.
   static Map<String, String> extractPathParametersWithPattern(
       String route, String pattern) {
     Map<String, String> pathParameters = {};
@@ -193,6 +250,13 @@ class NavigationUtils {
     return pathParameters;
   }
 
+  /// Trims all instances of [pattern] from the end of [from].
+  ///
+  /// This function removes [pattern] from the end of [from] repeatedly until [from] no longer ends with [pattern].
+  ///
+  /// Returns [from] if it's empty, if [pattern] is empty, or if [pattern] is longer than [from].
+  ///
+  /// Returns the modified [from] string, without any trailing [pattern].
   static String trimRight(String from, String pattern) {
     if (from.isEmpty || pattern.isEmpty || pattern.length > from.length) {
       return from;
@@ -204,6 +268,7 @@ class NavigationUtils {
     return from;
   }
 
+  /// Gets the `DeeplinkDestination` from an [url].
   static DeeplinkDestination? getDeeplinkDestinationFromUrl(
       List<DeeplinkDestination> deeplinkDestinations, String? url) {
     if (url?.isEmpty ?? true) return null;
@@ -211,6 +276,10 @@ class NavigationUtils {
         deeplinkDestinations, Uri.tryParse(url!));
   }
 
+  /// Gets the `DeeplinkDestination` from an [uri].
+  ///
+  /// The function first attempts to find a direct path match. If no match
+  /// is found, it then attempts to match the path pattern.
   static DeeplinkDestination? getDeeplinkDestinationFromUri(
       List<DeeplinkDestination> deeplinkDestinations, Uri? uri) {
     if (uri?.hasEmptyPath ?? true) return null;
@@ -242,6 +311,29 @@ class NavigationUtils {
     return deeplinkDestination;
   }
 
+  /// Determines whether a [DeeplinkDestination] can be opened.
+  ///
+  /// The method checks various conditions, like whether the URI is null, authentication is needed,
+  /// whether navigation from the current page is allowed, etc., and returns true
+  /// if the [DeeplinkDestination] can be opened.
+  ///
+  /// The [uri] parameter is the URI for the deeplink.
+  ///
+  /// The [deeplinkDestinations] parameter is a list of all available
+  /// `DeeplinkDestination` instances.
+  ///
+  /// The [routerDelegate] parameter is the router delegate currently managing app navigation.
+  ///
+  /// The [deeplinkDestination] parameter is the specific destination to be checked.
+  ///
+  /// The [pathParameters] array contains path parameters for the destination.
+  ///
+  /// The [authenticated] boolean indicates if the user is authenticated or not.
+  ///
+  /// The [currentRoute] is the currently active route.
+  ///
+  /// The [excludeDeeplinkNavigationPages] list contains names of routes from which deeplink
+  /// navigation is not allowed.
   static bool canOpenDeeplinkDestination(
       {required Uri? uri,
       required List<DeeplinkDestination> deeplinkDestinations,
@@ -290,6 +382,27 @@ class NavigationUtils {
     return true;
   }
 
+  /// Opens a deeplink destination if conditions are met.
+  ///
+  /// The function is responsible for determining if a [DeeplinkDestination] can be opened (using the [canOpenDeeplinkDestination] function) and if so, it performs the necessary navigation.
+  ///
+  /// The [uri] parameter contains the URI for the deeplink.
+  ///
+  /// The [deeplinkDestinations] parameter contains a list of all available [DeeplinkDestination] instances.
+  ///
+  /// The [routerDelegate] parameter represents the router delegate currently handling app navigation.
+  ///
+  /// The [deeplinkDestination] parameter is the [DeeplinkDestination] object to be opened.
+  ///
+  /// The [authenticated] parameter specifies if the user is authenticated or not.
+  ///
+  /// The [currentRoute] parameter identifies the currently active route.
+  ///
+  /// The [excludeDeeplinkNavigationPages] parameter holds a list of routes from which deeplink navigation is not permitted.
+  ///
+  /// If [push] is `true`, the destination is pushed onto the navigation stack.
+  ///
+  /// Each deeplink destination may have associated path parameters, query parameters, and navigation rules - the method is responsible for processing all this contextual information to determine the final navigation action.
   static bool openDeeplinkDestination(
       {required Uri? uri,
       required List<DeeplinkDestination> deeplinkDestinations,
