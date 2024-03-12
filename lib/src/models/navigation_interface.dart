@@ -51,6 +51,10 @@ abstract class NavigationInterface {
 
   void removeRouteBelow(DefaultRoute route, {bool apply = true});
 
+  void removeAbove(String name, {bool apply = true});
+
+  void removeRouteAbove(DefaultRoute route, {bool apply = true});
+
   void replace(String oldName,
       {String? newName,
       DefaultRoute? newRoute,

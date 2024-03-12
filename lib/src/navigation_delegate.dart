@@ -482,6 +482,31 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
   }
 
+  // Remove Above
+
+  @override
+  void removeAbove(String name, {bool apply = true}) {
+    DefaultRoute route =
+        NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+
+    int anchorIndex = _routes.indexOf(route);
+    if (anchorIndex < _routes.length - 1) {
+      _routes.removeAt(anchorIndex + 1);
+      if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
+      if (apply) notifyListeners();
+    }
+  }
+
+  @override
+  void removeRouteAbove(DefaultRoute route, {bool apply = true}) {
+    int anchorIndex = _routes.indexOf(route);
+    if (anchorIndex < _routes.length - 1) {
+      _routes.removeAt(anchorIndex + 1);
+      if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
+      if (apply) notifyListeners();
+    }
+  }
+
   // Replace
 
   @override

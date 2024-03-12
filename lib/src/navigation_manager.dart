@@ -155,6 +155,16 @@ class NavigationManager implements NavigationInterface {
   }
 
   @override
+  void removeAbove(String name, {bool apply = true}) {
+    routerDelegate.removeAbove(name, apply: apply);
+  }
+
+  @override
+  void removeRouteAbove(DefaultRoute route, {bool apply = true}) {
+    routerDelegate.removeRouteAbove(route, apply: apply);
+  }
+
+  @override
   void replace(String oldName,
       {String? newName,
       DefaultRoute? newRoute,
