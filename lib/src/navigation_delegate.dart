@@ -274,6 +274,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         metadata: navigationData.metadata,
         arguments: arguments);
 
+    // Save global data to unique path key.
+    globalData[path] = data;
+
     // Check duplicate route to prevent inadvertently
     // adding the same page twice. Duplicate pages are
     // commonly added if a user presses a navigation button twice
@@ -288,9 +291,6 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       if (apply) notifyListeners();
       return _pageCompleters[route]?.future;
     }
-
-    // Save global data to unique path key.
-    globalData[path] = data;
 
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
