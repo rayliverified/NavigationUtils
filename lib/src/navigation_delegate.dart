@@ -31,12 +31,13 @@ class DefaultRoute extends RouteSettings {
                 Uri(path: path, queryParameters: queryParameters).toString()));
 
   factory DefaultRoute.fromUrl(String url,
-      {String label = '', Map<String, dynamic>? metadata}) {
+      {String label = '', String? group, Map<String, dynamic>? metadata}) {
     Uri uri = Uri.parse(url);
     return DefaultRoute(
         path: uri.path,
         queryParameters: uri.queryParameters,
         label: label,
+        group: group,
         metadata: metadata);
   }
 
@@ -63,14 +64,15 @@ class DefaultRoute extends RouteSettings {
   bool operator ==(Object other) =>
       other is DefaultRoute &&
       ((other.label.isNotEmpty && other.label == label) ||
-          (other.path == path && other.path.isNotEmpty && path.isNotEmpty));
+          (other.path == path && other.path.isNotEmpty && path.isNotEmpty) ||
+          (other.group == group));
 
   @override
   int get hashCode => label.hashCode * path.hashCode;
 
   @override
   String toString() =>
-      'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, metadata: $metadata, arguments: $arguments)';
+      'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, metadata: $metadata, group: $group, arguments: $arguments)';
 
   operator [](String key) => queryParameters[key];
 }
@@ -210,10 +212,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     List<DefaultRoute> pathsHolder = [];
     pathsHolder.addAll(routes);
     // Check if new path exists in history.
-    for (DefaultRoute path in routes) {
+    for (DefaultRoute route in routes) {
       // If path exists, remove all paths on top.
-      if (path == newRoute) {
-        int index = routes.indexOf(path);
+      if (route == newRoute) {
+        int index = routes.indexOf(route);
         int count = routes.length;
         for (var i = index; i < count - 1; i++) {
           pathsHolder.removeLast();

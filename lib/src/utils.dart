@@ -129,6 +129,7 @@ class NavigationUtils {
           path: path,
           pathParameters: pathParameters,
           queryParameters: route.queryParameters,
+          group: navigationData.group,
           metadata: navigationData.metadata);
     }
 
@@ -219,10 +220,12 @@ class NavigationUtils {
       return DefaultRoute(
           label: navigationData.label ?? '',
           path: navigationData.path,
+          group: navigationData.group,
           metadata: navigationData.metadata);
     } else {
       return DefaultRoute.fromUrl(name,
           label: navigationData?.label ?? '',
+          group: navigationData?.group,
           metadata: navigationData?.metadata);
     }
   }

@@ -19,6 +19,37 @@ class NavigationData {
   final bool? fullScreenDialog;
   final Color? barrierColor;
   final Map<String, dynamic> metadata;
+
+  /// Different routes can be grouped together by setting
+  /// a common `group` name.
+  ///
+  /// The default Flutter navigation behavior handles
+  /// routes with unique URLs as unique pages.
+  /// Setting a `group` alias overrides that behavior
+  /// and groups routes with different URLs as the
+  /// same page.
+  ///
+  /// Example:
+  /// An app has 3 tabs on the HomePage.
+  /// - Home
+  /// - Games
+  /// - Apps
+  ///
+  /// Each tabs should have a top level URL
+  /// `/`, `/games`, `/apps`. However, they all live in
+  /// the HomePage() widget. To avoid adding new
+  /// HomePage widgets when switching tabs, group
+  /// the pages.
+  ///
+  /// ```dart
+  ///  NavigationData(
+  ///     label: GamesPage.name,
+  ///     url: '/games',
+  ///     builder: (context, routeData, globalData) =>
+  ///         const HomePage(tab: GamesPage.name),
+  ///     group: HomePage.name,
+  ///   ),
+  /// ```
   final String? group;
 
   Uri get uri => Uri.tryParse(url) ?? Uri();
