@@ -19,6 +19,7 @@ class NavigationData {
   final bool? fullScreenDialog;
   final Color? barrierColor;
   final Map<String, dynamic> metadata;
+  final String? group;
 
   Uri get uri => Uri.tryParse(url) ?? Uri();
   String get path => canonicalUri(Uri.tryParse(url)?.path ?? '');
@@ -32,7 +33,8 @@ class NavigationData {
       this.pageType,
       this.fullScreenDialog,
       this.barrierColor,
-      this.metadata = const {}})
+      this.metadata = const {},
+      this.group})
       : assert(url.startsWith('/'),
             'URLs must be prefixed with /. A NavigationData contains a `url` value that is not prefixed with a /.');
 

@@ -14,6 +14,7 @@ class DefaultRoute extends RouteSettings {
   final Map<String, String> queryParameters;
   final Map<String, String> pathParameters;
   final Map<String, dynamic>? metadata;
+  final String? group;
 
   Uri get uri => Uri(path: path, queryParameters: queryParameters);
 
@@ -23,6 +24,7 @@ class DefaultRoute extends RouteSettings {
       this.queryParameters = const {},
       this.pathParameters = const {},
       this.metadata = const {},
+      this.group,
       super.arguments})
       : super(
             name: canonicalUri(
@@ -44,14 +46,15 @@ class DefaultRoute extends RouteSettings {
       Map<String, String>? queryParameters,
       Map<String, String>? pathParameters,
       Map<String, dynamic>? metadata,
-      Object? arguments,
-      String? name}) {
+      String? group,
+      Object? arguments}) {
     return DefaultRoute(
       label: label ?? this.label,
       path: path ?? this.path,
       queryParameters: queryParameters ?? this.queryParameters,
       pathParameters: pathParameters ?? this.pathParameters,
       metadata: metadata ?? this.metadata,
+      group: group ?? this.group,
       arguments: arguments ?? this.arguments,
     );
   }
@@ -272,6 +275,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
           ...navigationData.queryParameters
         },
         metadata: navigationData.metadata,
+        group: navigationData.group,
         arguments: arguments);
 
     // Save global data to unique path key.
@@ -284,7 +288,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     //
     // If the path is different, this is a new page.
     // Else, return the current page.
-    if (routes.isNotEmpty && _routes.last.path == route.path) {
+    if (routes.isNotEmpty &&
+        (_routes.last.path == route.path ||
+            _routes.last.group == route.group)) {
       _routes.remove(route);
       _routes.add(route);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
@@ -311,7 +317,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     //
     // If the path is different, this is a new page.
     // Else, return the current page.
-    if (routes.isNotEmpty && _routes.last.path == route.path) {
+    if (routes.isNotEmpty &&
+        (_routes.last.path == route.path ||
+            _routes.last.group == route.group)) {
       _routes.remove(route);
       _routes.add(route);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
