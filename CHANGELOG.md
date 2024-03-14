@@ -1,3 +1,6 @@
+## 0.4.1 
+- Create NavigationData `group` parameter to support mapping different URLs to a single page.
+
 ## 0.4.0
 - Update Flutter v3.16.9.
 - Add documentation for `NavigationManager` functions.
