@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'model_deeplink.dart';
+import 'models/model_deeplink.dart';
 import 'navigation_builder.dart';
 import 'navigation_delegate.dart';
 import 'utils.dart';

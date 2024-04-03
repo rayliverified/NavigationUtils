@@ -1,4 +1,4 @@
-import 'model_deeplink.dart';
+import 'models/model_deeplink.dart';
 import 'navigation_builder.dart';
 import 'navigation_delegate.dart';
 import 'path_utils_go_router.dart';

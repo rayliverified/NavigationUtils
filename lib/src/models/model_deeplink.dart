@@ -1,5 +1,5 @@
-import 'navigation_delegate.dart';
-import 'path_utils_go_router.dart';
+import '../navigation_delegate.dart';
+import '../path_utils_go_router.dart';
 
 typedef ShouldNavigateDeeplinkFunction = bool Function(Uri deeplink,
     Map<String, String> pathParameters, Map<String, String> queryParameters);
