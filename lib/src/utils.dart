@@ -490,21 +490,59 @@ class NavigationUtils {
           pathParameters, uri.queryParameters);
     }
 
+    navigateFunctionHolder() {
+      if (deeplinkDestinationHolder.destinationLabel.isNotEmpty) {
+        routerDelegate.push(deeplinkDestinationHolder.destinationLabel,
+            pathParameters: pathParameters,
+            queryParameters: queryParameters,
+            data: globalData,
+            arguments: arguments,
+            apply: false);
+      } else if (deeplinkDestinationHolder.destinationUrl.isNotEmpty) {
+        routerDelegate.push(deeplinkDestinationHolder.destinationUrl,
+            pathParameters: pathParameters,
+            queryParameters: queryParameters,
+            data: globalData,
+            arguments: arguments,
+            apply: false);
+      }
+    }
+
     // Set deeplink destination.
-    if (deeplinkDestinationHolder.destinationLabel.isNotEmpty) {
-      routerDelegate.push(deeplinkDestinationHolder.destinationLabel,
-          pathParameters: pathParameters,
-          queryParameters: queryParameters,
-          data: globalData,
-          arguments: arguments,
-          apply: false);
-    } else if (deeplinkDestinationHolder.destinationUrl.isNotEmpty) {
-      routerDelegate.push(deeplinkDestinationHolder.destinationUrl,
-          pathParameters: pathParameters,
-          queryParameters: queryParameters,
-          data: globalData,
-          arguments: arguments,
-          apply: false);
+    if (deeplinkDestinationHolder.redirectFunction != null) {
+      deeplinkDestinationHolder.redirectFunction!
+              (pathParameters, queryParameters, (String? label,
+                  String? url,
+                  Map<String, String>? pathParameters,
+                  Map<String, String>? queryParameters,
+                  Map<String, dynamic> globalData,
+                  Object? arguments) {
+        if (label?.isNotEmpty ?? false) {
+          routerDelegate.push(label!,
+              pathParameters: pathParameters ?? {},
+              queryParameters: queryParameters,
+              data: globalData,
+              arguments: arguments,
+              apply: false);
+        } else if (url?.isNotEmpty ?? false) {
+          routerDelegate.push(url!,
+              pathParameters: pathParameters ?? {},
+              queryParameters: queryParameters,
+              data: globalData,
+              arguments: arguments,
+              apply: false);
+        }
+        routerDelegate.apply();
+      })
+          .then((value) {
+        if (value == false) {
+          navigateFunctionHolder();
+        }
+      });
+
+      return true;
+    } else {
+      navigateFunctionHolder();
     }
 
     routerDelegate.apply();

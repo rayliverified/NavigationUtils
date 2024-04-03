@@ -11,6 +11,17 @@ typedef MapArgumentsFunction = Object? Function(
     Map<String, String> pathParameters, Map<String, String> queryParameters);
 typedef MapGlobalDataFunction = Map<String, dynamic> Function(
     Map<String, String> pathParameters, Map<String, String> queryParameters);
+typedef RedirectFunction = Future<bool> Function(
+    Map<String, String> pathParameters,
+    Map<String, String> queryParameters,
+    Function(
+            String? url,
+            String? label,
+            Map<String, String>? pathParameters,
+            Map<String, String>? queryParameters,
+            Map<String, dynamic> globalData,
+            Object? arguments)
+        redirect);
 
 class DeeplinkDestination {
   final String deeplinkUrl;
@@ -24,6 +35,7 @@ class DeeplinkDestination {
   final MapQueryParameterFunction? mapQueryParameterFunction;
   final MapArgumentsFunction? mapArgumentsFunction;
   final MapGlobalDataFunction? mapGlobalDataFunction;
+  final RedirectFunction? redirectFunction;
   final bool authenticationRequired;
   // TODO: Add platform filter parameter.
 
@@ -42,6 +54,7 @@ class DeeplinkDestination {
       this.mapQueryParameterFunction,
       this.mapArgumentsFunction,
       this.mapGlobalDataFunction,
+      this.redirectFunction,
       this.authenticationRequired = false})
       : assert(deeplinkUrl != '', 'Deeplink URL required.'),
         assert(destinationLabel != '' || destinationUrl != '',
