@@ -1,3 +1,9 @@
+## 0.5.0
+- Create Deeplink Redirect feature.
+  - Support an async redirect function.
+  - Call `redirect(label, url)` to navigate to another page.
+- Fix incorrect null group comparison breaking navigation.
+
 ## 0.4.1 
 - Create NavigationData `group` parameter to support mapping different URLs to a single page.
 
