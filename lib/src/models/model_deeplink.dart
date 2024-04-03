@@ -14,13 +14,13 @@ typedef MapGlobalDataFunction = Map<String, dynamic> Function(
 typedef RedirectFunction = Future<bool> Function(
     Map<String, String> pathParameters,
     Map<String, String> queryParameters,
-    Function(
+    void Function(
+            {String? label,
             String? url,
-            String? label,
             Map<String, String>? pathParameters,
             Map<String, String>? queryParameters,
-            Map<String, dynamic> globalData,
-            Object? arguments)
+            Map<String, dynamic>? globalData,
+            Object? arguments})
         redirect);
 
 class DeeplinkDestination {

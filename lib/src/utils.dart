@@ -511,24 +511,25 @@ class NavigationUtils {
     // Set deeplink destination.
     if (deeplinkDestinationHolder.redirectFunction != null) {
       deeplinkDestinationHolder.redirectFunction!
-              (pathParameters, queryParameters, (String? label,
+              (pathParameters, queryParameters, (
+                  {String? label,
                   String? url,
                   Map<String, String>? pathParameters,
                   Map<String, String>? queryParameters,
-                  Map<String, dynamic> globalData,
-                  Object? arguments) {
+                  Map<String, dynamic>? globalData,
+                  Object? arguments}) {
         if (label?.isNotEmpty ?? false) {
           routerDelegate.push(label!,
               pathParameters: pathParameters ?? {},
               queryParameters: queryParameters,
-              data: globalData,
+              data: globalData ?? {},
               arguments: arguments,
               apply: false);
         } else if (url?.isNotEmpty ?? false) {
           routerDelegate.push(url!,
               pathParameters: pathParameters ?? {},
               queryParameters: queryParameters,
-              data: globalData,
+              data: globalData ?? {},
               arguments: arguments,
               apply: false);
         }
