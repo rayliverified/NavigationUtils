@@ -292,7 +292,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Else, return the current page.
     if (routes.isNotEmpty &&
         (_routes.last.path == route.path ||
-            _routes.last.group == route.group)) {
+            (_routes.last.group != null &&
+                _routes.last.group == route.group))) {
       _routes.remove(route);
       _routes.add(route);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
@@ -321,7 +322,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Else, return the current page.
     if (routes.isNotEmpty &&
         (_routes.last.path == route.path ||
-            _routes.last.group == route.group)) {
+            (_routes.last.group != null &&
+                _routes.last.group == route.group))) {
       _routes.remove(route);
       _routes.add(route);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
