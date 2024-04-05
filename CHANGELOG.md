@@ -1,3 +1,6 @@
+## 0.5.1
+- Fix DefaultRoute incorrect group equality comparator on null.
+
 ## 0.5.0
 - Create Deeplink Redirect feature.
   - Support an async redirect function.
