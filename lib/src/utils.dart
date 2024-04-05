@@ -538,15 +538,15 @@ class NavigationUtils {
           .then((value) {
         if (value == false) {
           navigateFunctionHolder();
+          routerDelegate.apply();
         }
       });
 
       return true;
     } else {
       navigateFunctionHolder();
+      routerDelegate.apply();
     }
-
-    routerDelegate.apply();
 
     return true;
   }

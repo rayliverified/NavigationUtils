@@ -1,3 +1,6 @@
+## 0.5.2
+- Fix Redirect not applying default navigation.
+
 ## 0.5.1
 - Fix DefaultRoute incorrect group equality comparator on null.
 
