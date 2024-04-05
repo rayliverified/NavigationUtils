@@ -65,7 +65,7 @@ class DefaultRoute extends RouteSettings {
       other is DefaultRoute &&
       ((other.label.isNotEmpty && other.label == label) ||
           (other.path == path && other.path.isNotEmpty && path.isNotEmpty) ||
-          (other.group == group));
+          (other.group != null && group != null && other.group == group));
 
   @override
   int get hashCode => label.hashCode * path.hashCode;
