@@ -55,7 +55,7 @@ abstract class AppModelBase with ChangeNotifier {
 }
 
 class AppModel extends AppModelBase {
-  final AuthServiceBase authService = GetIt.instance.get<AuthServiceBase>();
+  final AuthService authService = GetIt.instance.get<AuthService>();
 
   AppModel({super.context}) {
     init();

@@ -25,75 +25,7 @@ class AuthResult {
       AuthResult._(success: false, errorMessage: errorMessage);
 }
 
-abstract class AuthServiceBase implements Disposable {
-  ValueNotifier<UserModel> userModel = ValueNotifier(UserModel.initial());
-  ValueNotifier<User?> user = ValueNotifier(null);
-  late Stream<User?> firebaseAuthUserStream;
-  late StreamSubscription firebaseAuthListener;
-
-  bool get isAuthenticated => user.value != null;
-
-  @override
-  void onDispose() {
-    firebaseAuthListener.cancel();
-    userModel.dispose();
-  }
-
-  void initialize() {}
-
-  /// An awaitable function that AuthService is initialized
-  /// in the proper order on app startup.
-  ///
-  /// Internally, this function calls [fetchAndSetUserModel]
-  /// and returns the [AuthResult].
-  ///
-  /// FirebaseAuth's synchronous getter for auth state
-  /// is not dependable on app initialization and will return
-  /// unauthorized on certain app starts such as hot reload.
-  /// Auth dependent functions should subscribe to
-  /// [firebaseAuthListener].
-  Future<AuthResult> initAuthState() async => throw ('Unimplemented error.');
-
-  // BEGIN: Firebase Auth Methods.
-  Future<ValueResponse<void>> signInWithEmailAndPassword(
-          String email, String password) async =>
-      throw ('Unimplemented error.');
-
-  Future<ValueResponse<void>> registerWithEmailAndPassword(
-          String name, String email, String password) =>
-      throw ('Unimplemented error.');
-
-  Future<void> sendPasswordResetEmail(String email) async {}
-
-  Future<void> signOut() async {}
-
-  Future<AuthResult?> googleSignIn() async {
-    return null;
-  }
-
-  Future<void> resetPassword(String email) async {}
-
-  // END: Firebase Auth Methods.
-
-  // BEGIN: UserModel.
-
-  Future<UserModel?> initUserModel(UserModel user) async =>
-      throw ('Unimplemented error.');
-
-  Future<void> updateUsername(String newUsername) async {}
-
-  Future<void> updateFirestoreUserModel(String id, UserModel user) async {}
-
-  Future<void> setFirestoreUserModel(String id, UserModel user) async {}
-
-  /// fetch user profile from firebase and save in in [userModel]
-  Future<void> fetchAndSetUserModel(String id) async {}
-
-  void resetUserModel() {}
-// END: User Model.
-}
-
-class AuthService extends AuthServiceBase {
+class AuthService implements Disposable {
   static AuthService? _instance;
 
   static AuthService get instance {
@@ -103,6 +35,13 @@ class AuthService extends AuthServiceBase {
     }
     return _instance!;
   }
+
+  ValueNotifier<UserModel> userModel = ValueNotifier(UserModel.initial());
+  ValueNotifier<User?> user = ValueNotifier(null);
+  late Stream<User?> firebaseAuthUserStream;
+  late StreamSubscription firebaseAuthListener;
+
+  bool get isAuthenticated => user.value != null;
 
   factory AuthService() {
     DebugLogger.instance.printFunction('AuthService Initialized');
@@ -147,11 +86,22 @@ class AuthService extends AuthServiceBase {
 
   @override
   void onDispose() {
-    super.onDispose();
+    firebaseAuthListener.cancel();
+    userModel.dispose();
     _instance = AuthService._();
   }
 
-  @override
+  /// An awaitable function that AuthService is initialized
+  /// in the proper order on app startup.
+  ///
+  /// Internally, this function calls [fetchAndSetUserModel]
+  /// and returns the [AuthResult].
+  ///
+  /// FirebaseAuth's synchronous getter for auth state
+  /// is not dependable on app initialization and will return
+  /// unauthorized on certain app starts such as hot reload.
+  /// Auth dependent functions should subscribe to
+  /// [firebaseAuthListener].
   Future<AuthResult> initAuthState() async {
     DebugLogger.instance.printFunction('initAuthState');
     DebugLogger.instance.printInfo(
@@ -166,7 +116,6 @@ class AuthService extends AuthServiceBase {
 
   // BEGIN: Firebase Auth Methods.
   /// Method to handle user sign in using email and password
-  @override
   Future<ValueResponse<void>> signInWithEmailAndPassword(
       String email, String password) async {
     DebugLogger.instance.printFunction('signInWithEmailAndPassword');
@@ -198,7 +147,6 @@ class AuthService extends AuthServiceBase {
   }
 
   /// User registration using email and password
-  @override
   Future<ValueResponse<void>> registerWithEmailAndPassword(
       String name, String email, String password) async {
     DebugLogger.instance.printFunction(
@@ -229,7 +177,6 @@ class AuthService extends AuthServiceBase {
   }
 
   /// Password reset email
-  @override
   Future<void> sendPasswordResetEmail(String email) async {
     DebugLogger.instance.printFunction('sendPasswordResetEmail: $email');
     final ValueResponse<void> response = await FirebaseRepositoryBase.instance
@@ -240,7 +187,6 @@ class AuthService extends AuthServiceBase {
   }
 
   /// Sign out user from Firebase Auth.
-  @override
   Future<void> signOut() async {
     DebugLogger.instance.printFunction('signOut');
 
@@ -262,7 +208,6 @@ class AuthService extends AuthServiceBase {
   }
 
   /// Sign in with Google.
-  @override
   Future<AuthResult> googleSignIn() async {
     DebugLogger.instance.printFunction('googleSignIn');
 
@@ -332,7 +277,6 @@ class AuthService extends AuthServiceBase {
     }
   }
 
-  @override
   Future<void> resetPassword(String email) async {
     DebugLogger.instance.printFunction('resetPassword: $email');
 
@@ -348,7 +292,6 @@ class AuthService extends AuthServiceBase {
   // BEGIN: Server Methods.
 
   /// Update username in Firebase. Re-fetch the UserModel again.
-  @override
   Future<void> updateUsername(String newUsername) async {
     DebugLogger.instance.printFunction('updateUsername: $newUsername');
 
@@ -368,7 +311,6 @@ class AuthService extends AuthServiceBase {
 
   /// Fetches the [UserModel] with the user's [uid] from Firestore by calling
   /// [fetchUserModel], then updates the [userModel] field.
-  @override
   Future<void> fetchAndSetUserModel(String uid) async {
     DebugLogger.instance.printFunction('fetchAndSetUserModel: $uid');
 
@@ -383,7 +325,6 @@ class AuthService extends AuthServiceBase {
 
   /// Creates a [UserModel] from Firebase User and
   /// saves to server.
-  @override
   Future<UserModel?> initUserModel(UserModel user) async {
     DebugLogger.instance.printFunction('initUserModel: $user');
 
@@ -412,7 +353,6 @@ class AuthService extends AuthServiceBase {
     return newUser;
   }
 
-  @override
   Future<ValueResponse<void>> setFirestoreUserModel(
       String id, UserModel user) async {
     DebugLogger.instance.printFunction('setFirestoreUserModel: $id, $user');
@@ -421,56 +361,12 @@ class AuthService extends AuthServiceBase {
         .setDocument(collection: 'users', document: id, data: user.toJson());
   }
 
-  @override
   void resetUserModel() {
     DebugLogger.instance.printFunction('resetUserModel');
 
     userModel.value = UserModel.empty();
     user.value = null;
   }
-
-// END: User Model.
-
-//handles updating the user when updating profile
-// Future<bool> updateUser(
-//     UserModel user, String oldEmail, String password) async {
-//   bool _result = false;
-//   await _auth
-//       .signInWithEmailAndPassword(email: oldEmail, password: password)
-//       .then((_firebaseUser) {
-//     _firebaseUser.user.updateEmail(user.email);
-//     _updateUserFirestore(user, _firebaseUser.user);
-//     _result = true;
-//   });
-//   return _result;
-// }
-
-// Future<bool> isAdmin() async {
-//   bool _isAdmin = false;
-//   DocumentSnapshot adminRef =
-//       await _db.collection('admin').doc(getUser?.uid).get();
-//   if (adminRef.exists) {
-//     _isAdmin = true;
-//   }
-//   return _isAdmin;
-// }
-
-  /// Check if the use has created an account with the [email].
-  /// User has an account if their email is found in `user_emails/{email}`.
-// Future<bool> hasAccount(String email) async {
-//   DocumentSnapshot documentSnapshot =
-//       await _db.collection('user_emails').doc(email).get();
-//   if (documentSnapshot.exists) {
-//     return true;
-//   }
-//   return false;
-// }
-
-// void updateUserModel(UserModel user) {
-//   if (getUser != null) {
-//     _db.doc('users/${getUser.uid}').update(user.toJson());
-//   }
-// }
 }
 
 /* Not currently used functions for managing
@@ -520,3 +416,44 @@ final GoogleSignIn _googleSignIn = GoogleSignIn();
   }
 
  */
+
+//handles updating the user when updating profile
+// Future<bool> updateUser(
+//     UserModel user, String oldEmail, String password) async {
+//   bool _result = false;
+//   await _auth
+//       .signInWithEmailAndPassword(email: oldEmail, password: password)
+//       .then((_firebaseUser) {
+//     _firebaseUser.user.updateEmail(user.email);
+//     _updateUserFirestore(user, _firebaseUser.user);
+//     _result = true;
+//   });
+//   return _result;
+// }
+
+// Future<bool> isAdmin() async {
+//   bool _isAdmin = false;
+//   DocumentSnapshot adminRef =
+//       await _db.collection('admin').doc(getUser?.uid).get();
+//   if (adminRef.exists) {
+//     _isAdmin = true;
+//   }
+//   return _isAdmin;
+// }
+
+/// Check if the use has created an account with the [email].
+/// User has an account if their email is found in `user_emails/{email}`.
+// Future<bool> hasAccount(String email) async {
+//   DocumentSnapshot documentSnapshot =
+//       await _db.collection('user_emails').doc(email).get();
+//   if (documentSnapshot.exists) {
+//     return true;
+//   }
+//   return false;
+// }
+
+// void updateUserModel(UserModel user) {
+//   if (getUser != null) {
+//     _db.doc('users/${getUser.uid}').update(user.toJson());
+//   }
+// }

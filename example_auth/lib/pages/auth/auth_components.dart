@@ -65,7 +65,7 @@ class _SignUpFormState extends State<SignUpForm> {
     setState(() {});
 
     final ValueResponse response = await GetIt.instance
-        .get<AuthServiceBase>()
+        .get<AuthService>()
         .registerWithEmailAndPassword(
             '', _emailController.text, _passwordController.text);
 
@@ -75,12 +75,11 @@ class _SignUpFormState extends State<SignUpForm> {
     if (!response.isSuccess &&
         (response.error.message.contains('EMAIL_EXISTS') ||
             response.error.code.contains('email-already-in-use'))) {
-      final ValueResponse<void> loginResult = await GetIt.instance
-          .get<AuthServiceBase>()
-          .signInWithEmailAndPassword(
-            _emailController.text,
-            _passwordController.text,
-          );
+      final ValueResponse<void> loginResult =
+          await GetIt.instance.get<AuthService>().signInWithEmailAndPassword(
+                _emailController.text,
+                _passwordController.text,
+              );
       // If login was successful, finish loading.
       // Otherwise, return EMAIL_EXISTS error.
       isLoading = false;
@@ -109,7 +108,7 @@ class _SignUpFormState extends State<SignUpForm> {
     googleErrorMessage = null;
     setState(() {});
     final AuthResult result = await (GetIt.instance
-        .get<AuthServiceBase>()
+        .get<AuthService>()
         .googleSignIn() as FutureOr<AuthResult>);
 
     isGoogleLoading = false;
@@ -275,7 +274,7 @@ class _LoginFormState extends State<LoginForm> {
     setState(() {});
 
     final ValueResponse<void> result = await GetIt.instance
-        .get<AuthServiceBase>()
+        .get<AuthService>()
         .signInWithEmailAndPassword(
             _emailController.text, _passwordController.text);
 
@@ -296,7 +295,7 @@ class _LoginFormState extends State<LoginForm> {
     googleErrorMessage = null;
     setState(() {});
     final AuthResult result = await (GetIt.instance
-        .get<AuthServiceBase>()
+        .get<AuthService>()
         .googleSignIn() as FutureOr<AuthResult>);
 
     isGoogleLoading = false;
@@ -464,7 +463,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
     setState(() {});
 
     await GetIt.instance
-        .get<AuthServiceBase>()
+        .get<AuthService>()
         .resetPassword(_emailController.text);
 
     isLoading = false;

@@ -40,7 +40,7 @@ class Initialization {
       throw firebaseResponse.error;
     }
 
-    GetIt.instance.registerSingleton<AuthServiceBase>(AuthService());
+    GetIt.instance.registerSingleton<AuthService>(AuthService());
 
     NavigationManager.init(
         mainRouterDelegate: DefaultRouterDelegate(
