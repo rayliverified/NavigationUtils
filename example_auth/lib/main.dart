@@ -9,6 +9,7 @@ import 'package:navigation_utils/navigation_utils.dart';
 import 'package:provider/provider.dart';
 
 import 'initialization.dart';
+import 'navigation_routes.dart' as navigation_routes;
 import 'services/debug_logger.dart';
 import 'ui/ui_page_wrapper.dart';
 
@@ -104,7 +105,8 @@ class AppModel with ChangeNotifier {
       routesHolder
           .removeWhere((element) => element.metadata?['type'] == 'auth');
       if (routesHolder.isEmpty) {
-        routesHolder.add(DefaultRoute(label: HomePage.name, path: '/'));
+        routesHolder.add(NavigationUtils.buildDefaultRouteFromName(
+            navigation_routes.routes, '/'));
       }
     }
     DebugLogger.instance.printFunction('Set Routes New: $routes');
