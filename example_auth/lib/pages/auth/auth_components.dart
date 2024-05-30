@@ -202,9 +202,10 @@ class _SignUpFormState extends State<SignUpForm> {
                     ),
                     TextSpan(
                       text: 'Login',
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge!
+                          .copyWith(decoration: TextDecoration.underline),
                       recognizer: TapGestureRecognizer()
                         ..onTap = widget.onLoginTapped as void Function()?,
                     ),
@@ -389,9 +390,10 @@ class _LoginFormState extends State<LoginForm> {
                     ),
                     TextSpan(
                       text: 'Register',
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge!
+                          .copyWith(decoration: TextDecoration.underline),
                       recognizer: TapGestureRecognizer()
                         ..onTap = widget.onSignupTapped as void Function()?,
                     ),
@@ -403,8 +405,10 @@ class _LoginFormState extends State<LoginForm> {
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   text: 'Forgot your password?',
-                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                      color: Colors.blue, decoration: TextDecoration.underline),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge!
+                      .copyWith(decoration: TextDecoration.underline),
                   recognizer: TapGestureRecognizer()
                     ..onTap = widget.onResetPasswordTapped as void Function()?,
                 ),
@@ -494,8 +498,10 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
               textAlign: TextAlign.center,
               text: TextSpan(
                 text: 'Go back',
-                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Colors.blue, decoration: TextDecoration.underline),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyLarge!
+                    .copyWith(decoration: TextDecoration.underline),
                 recognizer: TapGestureRecognizer()
                   ..onTap = widget.onBackPressed as void Function()?,
               ),
@@ -769,8 +775,10 @@ class TermsAndConditionsText extends StatelessWidget {
         children: [
           TextSpan(
               text: 'Terms and Conditions',
-              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: Colors.blue, decoration: TextDecoration.underline),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium!
+                  .copyWith(decoration: TextDecoration.underline),
               recognizer: TapGestureRecognizer()..onTap = () {})
         ],
       ),

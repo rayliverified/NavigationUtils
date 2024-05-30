@@ -43,6 +43,7 @@ class Initialization {
           debugLog: true,
           onUnknownRoute: (route) => const MaterialPage(
               name: '/${UnknownPage.name}', child: UnknownPage()),
+          authenticated: AuthService.instance.isAuthenticated,
         ),
         routeInformationParser: DefaultRouteInformationParser(debugLog: true));
     NavigationManager.instance.pauseNavigation();

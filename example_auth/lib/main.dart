@@ -29,7 +29,7 @@ class AppWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AppModelBase>(
+    return ChangeNotifierProvider<AppModel>(
       create: (context) => AppModel(context: context),
       lazy:
           false, // IMPORTANT: By default, models are created only when called. AppModel needs to be initialized before layout.
@@ -38,7 +38,7 @@ class AppWrapper extends StatelessWidget {
   }
 }
 
-abstract class AppModelBase with ChangeNotifier {
+class AppModel with ChangeNotifier {
   BuildContext? context;
 
   /// First time initialization flag.
@@ -48,17 +48,10 @@ abstract class AppModelBase with ChangeNotifier {
 
   String? errorMessage;
 
-  AppModelBase({this.context});
-
-  Future<void> init();
-}
-
-class AppModel extends AppModelBase {
-  AppModel({super.context}) {
+  AppModel({this.context}) {
     init();
   }
 
-  @override
   Future<void> init() async {
     DebugLogger.instance.printFunction('Init App');
     // Attach navigation callback that hooks into the app state.
@@ -207,8 +200,7 @@ class InitializationErrorPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppModelBase model =
-        Provider.of<AppModelBase>(context, listen: false);
+    final AppModel model = Provider.of<AppModel>(context, listen: false);
 
     return PageWrapper(
       child: SizedBox(
