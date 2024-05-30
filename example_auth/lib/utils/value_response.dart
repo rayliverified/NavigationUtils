@@ -6,6 +6,7 @@ class ValueResponse<T> {
   final T? _data;
   final ExceptionWrapper? _error;
   final ValueResponseStatus status;
+  final Exception? _exception;
 
   T get data => _data!;
 
@@ -21,25 +22,35 @@ class ValueResponse<T> {
   ValueResponse.empty()
       : status = ValueResponseStatus.empty,
         _data = null,
-        _error = null;
+        _error = null,
+        _exception = null;
 
   /// Use when the operation succeeds and data needs to be sent.
   ValueResponse.success([T? data])
       : status = ValueResponseStatus.success,
         _data = data,
-        _error = null;
+        _error = null,
+        _exception = null;
 
   /// Use when the operation fails and error message needs to be sent.
   ValueResponse.error(String message, [Object? baseException])
       : status = ValueResponseStatus.error,
         _data = null,
-        _error = ExceptionWrapper(message, baseException: baseException);
+        _error = ExceptionWrapper(message, baseException: baseException),
+        _exception = null;
 
   /// Use when the operation fails due to some exception.
   ValueResponse.exception(ExceptionWrapper error)
       : status = ValueResponseStatus.error,
         _data = null,
-        _error = error;
+        _error = error,
+        _exception = null;
+
+  ValueResponse.exceptionRaw(Exception exception)
+      : status = ValueResponseStatus.error,
+        _data = null,
+        _error = null,
+        _exception = exception;
 }
 
 /// Custom exception that can be thrown/passed anywhere in the project.
