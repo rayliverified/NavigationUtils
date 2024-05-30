@@ -132,7 +132,7 @@ NavigationUtils supports path, name, and Route object-based routing. You can dir
 Path-based routing can be considered "absolute" routing as each URL path is unique. The path is also the URL shown in the address bar on Web.
 
 ```dart
-NavigationManager.instance.routerDelegate.push('/projects');
+NavigationManager.instance.push('/projects');
 ```
 
 ### Named
@@ -140,7 +140,7 @@ NavigationManager.instance.routerDelegate.push('/projects');
 Navigator 1's named route navigation. The name of the route is often defined in the respective page or component and used as a reference for navigation.
 
 ```dart
-NavigationManager.instance.routerDelegate.push(ProjectsPage.name);
+NavigationManager.instance.push(ProjectsPage.name);
 ```
 
 ### Route Object
@@ -148,7 +148,7 @@ NavigationManager.instance.routerDelegate.push(ProjectsPage.name);
 Navigation can also use the raw Route object. Here, a DefaultRoute object is created with the specified path, which is then passed to the navigation. This method is primarily used internally and for supporting partial migrations to this library.
 
 ```dart
-NavigationManager.instance.routerDelegate.pushRoute(DefaultRoute(path: '/projects'));
+NavigationManager.instance.pushRoute(DefaultRoute(path: '/projects'));
 ```
 
 ## Routing Parameters
@@ -320,7 +320,7 @@ class DefaultRouteParser {
       uri: uri,
       authenticated: AuthService.instance.isAuthenticated,
       currentRoute:
-          NavigationManager.instance.routerDelegate.currentConfiguration,
+          NavigationManager.instance.currentRoute,
       excludeDeeplinkNavigationPages: doNotNavigateDeeplinkPages,
     );
   }
@@ -423,7 +423,7 @@ NavigationUtils supports the common "Authenticated" route guard through the `aut
 When the user is on certain pages, such as the onboarding page, you may often want to disable deeplinks. NavigationUtils supports this behavior with `excludeDeeplinkNavigationPages`. 
 
 1. Define the list of pages to exclude in `excludeDeeplinkNavigationPages`. This list accepts named routes and path routes.
-2. Pass the current page to `currentRoute` like `currentRoute: NavigationManager.instance.routerDelegate.currentConfiguration`.
+2. Pass the current page to `currentRoute` like `currentRoute: NavigationManager.instance.currentRoute`.
 
 #### Custom Route Guards
 
