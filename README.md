@@ -341,7 +341,73 @@ class DefaultRouteParser {
 
 - `excludeDeeplinkNavigationPages`: A list of strings that represent the labels or paths of the routes that should be excluded from deeplink navigation. If the current route's label or path is in this list, the method will not perform the navigation.
 
+- `redirectFunction`: Redirect to another route.
+
 This method tries to find the matching `DeeplinkDestination` for the given `uri` and performs various checks before navigating to the destination. These checks include checking whether the user is authenticated (if required), whether the current route is in the excluded list, and whether a custom navigation function allows the navigation. After these checks, the method navigates to the destination and processes any path parameters, query parameters, arguments, and global data as defined by the `DeeplinkDestination`. Finally, the method updates the route stack using the `routerDelegate` and applies the changes. The method returns `true` if the navigation was successful, and `false` otherwise.
+
+### Deeplink Redirect
+
+Deeplinks can be redirected based on custom logic using the `redirectFunction`. The `redirectFunction` is used to handle deeplink redirections based on custom logic. It takes the current path and query parameters, applies the redirect logic, and determines whether to navigate to the original destination or to a different one.
+
+#### Usage
+Define the redirectFunction to specify the custom logic for redirections. The function is invoked with the current path and query parameters, along with a redirect callback to navigate to the new destination.
+
+```dart
+redirectFunction: (pathParameters, queryParameters, redirect) {
+  if (pathParameters.containsKey('id') && queryParameters.containsKey('action')) {
+    redirect(
+      label: 'newDestination',
+      pathParameters: {'id': pathParameters['id']!},
+      queryParameters: {'action': queryParameters['action']!},
+      globalData: {'additionalData': 'example'}
+    );
+    return Future.value(true);
+  }
+  return Future.value(false);
+}
+```
+
+- `pathParameters`: A `Map<String, String>` containing the current path parameters.
+- `queryParameters`: A `Map<String, String>` containing the current query parameters.
+- `redirect`: The callback function to navigate to the new destination.
+
+#### Return Value
+
+The `redirectFunction` returns a `Future<bool>`. If the function returns `true`, the redirection is considered successful, and the navigation proceeds to the new destination. If it returns `false`, the navigation proceeds to the original destination.
+
+### URL Aliases
+
+For single page apps, sometimes different URLs should map to the same Route. The fundamentally goes against Flutter's 1 to 1 URL to Route mapping. To solve this problem, the `group` parameter in the `NavigationData` class allows different URLs to map to the same page.
+
+#### Usage
+
+Define the `group` parameter in the `NavigationData` instances to group multiple routes under the same logical destination. The `group` parameter should be assigned the same value for all routes that belong to the same destination.
+
+```dart
+NavigationData(
+  label: HomePage.name,
+  url: '/',
+  builder: (context, routeData, globalData) =>
+      HomePage(tab: routeData.queryParameters['tab'] ?? CommunityPage.name),
+  group: HomePage.name,
+),
+NavigationData(
+  label: CommunityPage.name,
+  url: '/community',
+  builder: (context, routeData, globalData) =>
+      HomePage(tab: CommunityPage.name),
+  group: HomePage.name,
+),
+NavigationData(
+  label: NewsPage.name,
+  url: '/news',
+  builder: (context, routeData, globalData) =>
+      HomePage(tab: NewsPage.name),
+  group: HomePage.name,
+),
+```
+
+In this example, three different URLs (`'/'`, `'/community'`, and `'/news'`) are mapped to the same `HomePage`. This feature is particularly useful when you want multiple routes to lead to the same page while maintaining state and animations.
 
 ## Route Guards
 

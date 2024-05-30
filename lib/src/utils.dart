@@ -490,6 +490,7 @@ class NavigationUtils {
           pathParameters, uri.queryParameters);
     }
 
+    // Default set deeplink navigation function. Skipped if redirect is provided.
     navigateFunctionHolder() {
       if (deeplinkDestinationHolder.destinationLabel.isNotEmpty) {
         routerDelegate.push(deeplinkDestinationHolder.destinationLabel,
