@@ -9,7 +9,6 @@ import 'package:navigation_utils/navigation_utils.dart';
 import 'package:provider/provider.dart';
 
 import 'initialization.dart';
-import 'models/model_user.dart';
 import 'services/debug_logger.dart';
 import 'ui/ui_page_wrapper.dart';
 
@@ -68,7 +67,7 @@ class AppModel extends AppModelBase {
     // Navigate after authentication and user model loads.
     AuthService.instance.firebaseAuthUserStream
         .asBroadcastStream()
-        .listen(_userModelListener);
+        .listen(_firebaseAuthUserListener);
   }
 
   @override
@@ -77,9 +76,8 @@ class AppModel extends AppModelBase {
     super.dispose();
   }
 
-  Future<void> _userModelListener(User? user) async {
-    UserModel userModel = AuthService.instance.userModel.value;
-    DebugLogger.instance.printInfo('User Model Stream: $userModel');
+  Future<void> _firebaseAuthUserListener(User? user) async {
+    DebugLogger.instance.printInfo('firebaseAuthUserListener: $user');
     // Attempt to load the initial route URI.
     if (loadInitialRoute) {
       loadInitialRoute = false;
