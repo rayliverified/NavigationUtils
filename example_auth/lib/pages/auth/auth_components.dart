@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 import 'package:universal_io/io.dart';
 
@@ -75,10 +74,10 @@ class _SignUpFormState extends State<SignUpForm> {
         (response.error.message.contains('EMAIL_EXISTS') ||
             response.error.code.contains('email-already-in-use'))) {
       final ValueResponse<void> loginResult =
-          await GetIt.instance.get<AuthService>().signInWithEmailAndPassword(
-                _emailController.text,
-                _passwordController.text,
-              );
+          await AuthService.instance.signInWithEmailAndPassword(
+        _emailController.text,
+        _passwordController.text,
+      );
       // If login was successful, finish loading.
       // Otherwise, return EMAIL_EXISTS error.
       isLoading = false;
@@ -106,9 +105,7 @@ class _SignUpFormState extends State<SignUpForm> {
     isGoogleLoading = true;
     googleErrorMessage = null;
     setState(() {});
-    final AuthResult result = await (GetIt.instance
-        .get<AuthService>()
-        .googleSignIn() as FutureOr<AuthResult>);
+    final AuthResult result = await AuthService.instance.googleSignIn();
 
     isGoogleLoading = false;
 
@@ -272,8 +269,7 @@ class _LoginFormState extends State<LoginForm> {
     errorMessage = null;
     setState(() {});
 
-    final ValueResponse<void> result = await GetIt.instance
-        .get<AuthService>()
+    final ValueResponse<void> result = await AuthService.instance
         .signInWithEmailAndPassword(
             _emailController.text, _passwordController.text);
 
@@ -293,9 +289,7 @@ class _LoginFormState extends State<LoginForm> {
     isGoogleLoading = true;
     googleErrorMessage = null;
     setState(() {});
-    final AuthResult result = await (GetIt.instance
-        .get<AuthService>()
-        .googleSignIn() as FutureOr<AuthResult>);
+    final AuthResult result = await AuthService.instance.googleSignIn();
 
     isGoogleLoading = false;
 

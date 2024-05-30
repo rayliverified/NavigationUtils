@@ -55,8 +55,6 @@ abstract class AppModelBase with ChangeNotifier {
 }
 
 class AppModel extends AppModelBase {
-  final AuthService authService = GetIt.instance.get<AuthService>();
-
   AppModel({super.context}) {
     init();
   }
@@ -68,7 +66,7 @@ class AppModel extends AppModelBase {
     NavigationManager.instance.setMainRoutes =
         (routes) => setMainRoutes(routes);
     // Navigate after authentication and user model loads.
-    authService.firebaseAuthUserStream
+    AuthService.instance.firebaseAuthUserStream
         .asBroadcastStream()
         .listen(_userModelListener);
   }
@@ -80,7 +78,7 @@ class AppModel extends AppModelBase {
   }
 
   Future<void> _userModelListener(User? user) async {
-    UserModel userModel = authService.userModel.value;
+    UserModel userModel = AuthService.instance.userModel.value;
     DebugLogger.instance.printInfo('User Model Stream: $userModel');
     // Attempt to load the initial route URI.
     if (loadInitialRoute) {
