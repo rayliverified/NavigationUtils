@@ -29,7 +29,7 @@ class UserManager implements Disposable {
   @override
   FutureOr onDispose() {
     userSubscription?.cancel();
-    user.dispose();
+    user.value = UserModel.initial();
   }
 
   Future<void> startUserStreamSubscription(String uid) async {
