@@ -345,7 +345,7 @@ class DefaultRouteParser {
 
 This method tries to find the matching `DeeplinkDestination` for the given `uri` and performs various checks before navigating to the destination. These checks include checking whether the user is authenticated (if required), whether the current route is in the excluded list, and whether a custom navigation function allows the navigation. After these checks, the method navigates to the destination and processes any path parameters, query parameters, arguments, and global data as defined by the `DeeplinkDestination`. Finally, the method updates the route stack using the `routerDelegate` and applies the changes. The method returns `true` if the navigation was successful, and `false` otherwise.
 
-### Deeplink Redirect
+## Deeplink Redirect
 
 Deeplinks can be redirected based on custom logic using the `redirectFunction`. The `redirectFunction` is used to handle deeplink redirections based on custom logic. It takes the current path and query parameters, applies the redirect logic, and determines whether to navigate to the original destination or to a different one.
 
@@ -375,13 +375,13 @@ redirectFunction: (pathParameters, queryParameters, redirect) {
 
 The `redirectFunction` returns a `Future<bool>`. If the function returns `true`, the redirection is considered successful, and the navigation proceeds to the new destination. If it returns `false`, the navigation proceeds to the original destination.
 
-### URL Aliases
+## URL Aliases
 
-For single page apps, sometimes different URLs should map to the same Route. The fundamentally goes against Flutter's 1 to 1 URL to Route mapping. To solve this problem, the `group` parameter in the `NavigationData` class allows different URLs to map to the same page.
+For single page apps, sometimes different URLs should map to the same Route. This fundamentally goes against Flutter's 1 to 1 URL to Route mapping. To solve this problem, the `group` parameter in the `NavigationData` class allows different URLs to map to the same page.
 
 #### Usage
 
-Define the `group` parameter in the `NavigationData` instances to group multiple routes under the same logical destination. The `group` parameter should be assigned the same value for all routes that belong to the same destination.
+Define the `group` parameter in `NavigationData` to group multiple routes under the same destination.
 
 ```dart
 NavigationData(
