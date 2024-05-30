@@ -30,10 +30,16 @@ class AuthService implements Disposable {
 
   static AuthService get instance {
     if (_instance == null) {
-      throw Exception('AuthService has not been initialized yet! Please call '
-          'AuthService.initialize() first!');
+      DebugLogger.instance.printFunction('AuthService Initialized');
+      // An instance persists the AuthService.
+      _instance ??= AuthService._();
+      return _instance!;
     }
     return _instance!;
+  }
+
+  AuthService initialize() {
+    return this;
   }
 
   ValueNotifier<UserModel> userModel = ValueNotifier(UserModel.initial());
@@ -45,13 +51,6 @@ class AuthService implements Disposable {
 
   Function(String uid)? onUserAuthenticatedCallback;
   Function? onUserUnauthenticatedCallback;
-
-  AuthService initialize() {
-    DebugLogger.instance.printFunction('AuthService Initialized');
-    // An instance persists the AuthService.
-    _instance ??= AuthService._();
-    return _instance!;
-  }
 
   AuthService._() {
     firebaseAuthUserStream =

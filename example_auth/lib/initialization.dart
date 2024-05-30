@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
+import 'firebase_options.dart';
 import 'main.dart';
 import 'navigation_routes.dart';
 import 'services/auth_service.dart';
@@ -31,6 +33,8 @@ class Initialization {
       usePathUrlStrategy();
     }
 
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
     AuthService.instance.initialize();
 
     NavigationManager.init(
