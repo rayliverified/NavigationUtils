@@ -34,8 +34,9 @@ class NavigationManager implements NavigationInterface {
 
   Stream<DefaultRoute> get getCurrentRoute => routerDelegate.getCurrentRoute;
   DefaultRoute? get currentRoute => routerDelegate.currentConfiguration;
-  set setMainRoutes(SetMainRoutesCallback? setMainRoutes) =>
-      routerDelegate.setMainRoutes;
+  set setMainRoutes(SetMainRoutesCallback? setMainRoutes) {
+    routerDelegate.setMainRoutes = setMainRoutes;
+  }
 
   set setInitialRouteFunction(
       DefaultRoute Function(Uri initialRoute)? setInitialRouteFunction) {
