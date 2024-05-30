@@ -64,8 +64,7 @@ class _SignUpFormState extends State<SignUpForm> {
     errorMessage = null;
     setState(() {});
 
-    final ValueResponse response = await GetIt.instance
-        .get<AuthService>()
+    final ValueResponse response = await AuthService.instance
         .registerWithEmailAndPassword(
             '', _emailController.text, _passwordController.text);
 
@@ -462,9 +461,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
     isLoading = true;
     setState(() {});
 
-    await GetIt.instance
-        .get<AuthService>()
-        .resetPassword(_emailController.text);
+    await AuthService.instance.sendPasswordResetEmail(_emailController.text);
 
     isLoading = false;
     if (mounted) {

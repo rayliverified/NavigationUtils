@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -8,7 +9,6 @@ import 'package:simple_gravatar/simple_gravatar.dart';
 import 'package:universal_io/io.dart';
 
 import '../models/model_user.dart';
-import '../repositories/firebase_repository_base.dart';
 import '../utils/auth_exceptions.dart';
 import '../utils/value_response.dart';
 import 'debug_logger.dart';
@@ -43,14 +43,10 @@ class AuthService implements Disposable {
 
   bool get isAuthenticated => user.value != null;
 
-  factory AuthService() {
-    DebugLogger.instance.printFunction('AuthService Initialized');
-    // An instance persists the AuthService.
-    _instance ??= AuthService._();
-    return _instance!;
-  }
+  Function(String uid)? onUserAuthenticatedCallback;
+  Function? onUserUnauthenticatedCallback;
 
-  factory AuthService.initialize() {
+  AuthService initialize() {
     DebugLogger.instance.printFunction('AuthService Initialized');
     // An instance persists the AuthService.
     _instance ??= AuthService._();
@@ -59,29 +55,26 @@ class AuthService implements Disposable {
 
   AuthService._() {
     firebaseAuthUserStream =
-        FirebaseRepositoryBase.instance.authStateChanges().asBroadcastStream();
-    firebaseAuthListener =
-        FirebaseRepositoryBase.instance.authStateChanges().listen((user) {
+        FirebaseAuth.instance.authStateChanges().asBroadcastStream();
+    firebaseAuthListener = FirebaseAuth.instance
+        .authStateChanges()
+        .asBroadcastStream()
+        .listen((user) {
       DebugLogger.instance.printFunction('authStateChanges: $user');
       this.user.value = user;
       if (user != null) {
         fetchAndSetUserModel(user.uid);
         if (userModel.value.id.isEmpty) {
-          onUserAuthenticated(user.uid);
+          DebugLogger.instance.printFunction('onUserAuthenticated ${user.uid}');
+          onUserAuthenticatedCallback?.call(user.uid);
         }
       } else {
+        DebugLogger.instance.printFunction('onUserUnauthenticated');
         resetUserModel();
-        onUserUnauthenticated();
+
+        onUserUnauthenticatedCallback?.call();
       }
     });
-  }
-
-  void onUserAuthenticated(String uid) {
-    DebugLogger.instance.printFunction('onUserAuthenticated $uid');
-  }
-
-  void onUserUnauthenticated() {
-    DebugLogger.instance.printFunction('onUserUnauthenticated');
   }
 
   @override
@@ -104,9 +97,9 @@ class AuthService implements Disposable {
   /// [firebaseAuthListener].
   Future<AuthResult> initAuthState() async {
     DebugLogger.instance.printFunction('initAuthState');
-    DebugLogger.instance.printInfo(
-        'Current User: ${FirebaseRepositoryBase.instance.getUserId()}');
-    String? uid = FirebaseRepositoryBase.instance.getUserId();
+    DebugLogger.instance
+        .printInfo('Current User: ${FirebaseAuth.instance.currentUser?.uid}');
+    String? uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       await fetchAndSetUserModel(uid);
       return AuthResult.success();
@@ -119,28 +112,33 @@ class AuthService implements Disposable {
   Future<ValueResponse<void>> signInWithEmailAndPassword(
       String email, String password) async {
     DebugLogger.instance.printFunction('signInWithEmailAndPassword');
-    final ValueResponse<String> response = await FirebaseRepositoryBase.instance
-        .signInWithEmailAndPassword(email: email, password: password);
+    try {
+      final UserCredential credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
-    if (response.isError) return ValueResponse.exception(response.error);
-
-    final String uid = response.data;
-    final ValueResponse<UserModel> result =
-        await FirebaseRepositoryBase.instance.fetchUserModel(uid);
-    if (result.isError) {
-      // Initialize user model safety check for edge cases where
-      // user model is not initialized on account registration.
-      final UserModel firebaseUser = UserModel(
-        email: email,
-        id: uid,
-      );
-      UserModel? userModelHolder = await initUserModel(firebaseUser);
-      if (userModelHolder == null) {
-        return ValueResponse.error('Error: unable to create user.');
+      if (credential.user == null) {
+        return ValueResponse.error('User not found');
       }
-      userModel.value = userModelHolder;
-    } else {
-      userModel.value = result.data;
+
+      final String uid = credential.user!.uid;
+      final ValueResponse<UserModel> result = await fetchUserModel(uid);
+      if (result.isError) {
+        // Initialize user model safety check for edge cases where
+        // user model is not initialized on account registration.
+        final UserModel firebaseUser = UserModel(
+          email: email,
+          id: uid,
+        );
+        UserModel? userModelHolder = await initUserModel(firebaseUser);
+        if (userModelHolder == null) {
+          return ValueResponse.error('Error: unable to create user.');
+        }
+        userModel.value = userModelHolder;
+      } else {
+        userModel.value = result.data;
+      }
+    } on FirebaseAuthException catch (e) {
+      return ValueResponse.exception(e.toException());
     }
 
     return ValueResponse.success();
@@ -152,13 +150,14 @@ class AuthService implements Disposable {
     DebugLogger.instance.printFunction(
         'registerWithEmailAndPassword: $name, $email, $password');
     try {
-      final ValueResponse<UserModel> response = await FirebaseRepositoryBase
-          .instance
+      final UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-      if (response.isError) {
-        return response;
-      }
-      final UserModel firebaseUser = response.data;
+      final UserModel firebaseUser = UserModel(
+        email: userCredential.user?.email ?? email,
+        id: userCredential.user?.uid ?? '',
+        photoUrl: userCredential.user?.photoURL ?? '',
+        name: userCredential.user?.displayName ?? '',
+      );
       debugPrint('Firebase User: $firebaseUser');
       UserModel? userModelHolder = await initUserModel(firebaseUser);
       if (userModelHolder == null) {
@@ -177,31 +176,21 @@ class AuthService implements Disposable {
   }
 
   /// Password reset email
-  Future<void> sendPasswordResetEmail(String email) async {
+  Future<ValueResponse<void>> sendPasswordResetEmail(String email) async {
     DebugLogger.instance.printFunction('sendPasswordResetEmail: $email');
-    final ValueResponse<void> response = await FirebaseRepositoryBase.instance
-        .sendPasswordResetEmail(email: email);
-    if (response.isError) {
-      // TODO [ERROR_HANDLING]: handle error.
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      return ValueResponse.exception(e.toException());
     }
+
+    return ValueResponse.success();
   }
 
   /// Sign out user from Firebase Auth.
   Future<void> signOut() async {
     DebugLogger.instance.printFunction('signOut');
-
-    // Get userID.
-    String? userID = FirebaseRepositoryBase.instance.getUserId();
-    if (userID != null) {
-      // Mark user offline.
-      // PresenceRepositoryBase.instance.markUserOffline(userID);
-    }
-    // UserModel should be reset by listener.
-    final ValueResponse<void> response =
-        await FirebaseRepositoryBase.instance.signOut();
-    if (response.isError) {
-      // TODO [ERROR_HANDLING]: handle error.
-    }
+    await FirebaseAuth.instance.signOut();
 
     /// Clear user data.
     resetUserModel();
@@ -216,12 +205,17 @@ class AuthService implements Disposable {
       // Firebase Auth now manages auth internally with `signInWithPopup`.
       // Web auth no longer requires the `google_signin` plugin.
       if (kIsWeb) {
-        final ValueResponse<UserModel> response =
-            await FirebaseRepositoryBase.instance.signInWithGoogleWeb();
-        if (response.isError) {
-          return AuthResult.failure(response.error.message);
-        }
-        user = response.data;
+        GoogleAuthProvider googleProvider = GoogleAuthProvider();
+
+        final UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithPopup(googleProvider);
+
+        user = UserModel(
+          id: userCredential.user!.uid,
+          email: userCredential.user?.email ?? '',
+          name: userCredential.user?.displayName ?? '',
+          photoUrl: userCredential.user?.photoURL ?? '',
+        );
       } else {
         if (Platform.isWindows) {
           // Default is a MissingPluginException error.
@@ -239,22 +233,22 @@ class AuthService implements Disposable {
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
-        final ValueResponse<UserModel> response = await FirebaseRepositoryBase
-            .instance
-            .signInWithGoogleNative(credential: credential);
+        final UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithCredential(credential);
 
-        if (response.isError) {
-          return AuthResult.failure(response.error.message);
-        }
-        user = response.data;
+        user = UserModel(
+          id: userCredential.user!.uid,
+          email: userCredential.user?.email ?? '',
+          name: userCredential.user?.displayName ?? '',
+          photoUrl: userCredential.user?.photoURL ?? '',
+        );
       }
       // When auth returns a null user, an AuthException is thrown.
       // This failure return is just for a null check.
       if (user.id.isEmpty) return AuthResult.failure('Unable to sign in.');
       // Google auth does not differentiate between
       // login and signup. Check to see if user is already created.
-      final ValueResponse<UserModel> response =
-          await FirebaseRepositoryBase.instance.fetchUserModel(user.id);
+      final ValueResponse<UserModel> response = await fetchUserModel(user.id);
       final UserModel model;
       if (response.isError) {
         // User is not created
@@ -276,17 +270,6 @@ class AuthService implements Disposable {
       return AuthResult.failure(e.toString());
     }
   }
-
-  Future<void> resetPassword(String email) async {
-    DebugLogger.instance.printFunction('resetPassword: $email');
-
-    final ValueResponse<void> response = await FirebaseRepositoryBase.instance
-        .sendPasswordResetEmail(email: email);
-    if (response.isError) {
-      // TODO [ERROR_HANDLING]: handle error.
-    }
-  }
-
   // END: Firebase Auth Methods.
 
   // BEGIN: Server Methods.
@@ -297,13 +280,10 @@ class AuthService implements Disposable {
 
     if (userModel.value.id.isEmpty) return;
 
-    final ValueResponse<void> response = await FirebaseRepositoryBase.instance
-        .updateFirestoreUserModel(
-            userModel.value.id, userModel.value.copyWith(name: newUsername));
-    if (response.isError) {
-      // TODO [ERROR_HANDLING]: handle error.
-      return;
-    }
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userModel.value.id)
+        .update(userModel.value.copyWith(name: newUsername).toJson());
     await fetchAndSetUserModel(userModel.value.id);
   }
 
@@ -314,8 +294,7 @@ class AuthService implements Disposable {
   Future<void> fetchAndSetUserModel(String uid) async {
     DebugLogger.instance.printFunction('fetchAndSetUserModel: $uid');
 
-    final ValueResponse<UserModel> response =
-        await FirebaseRepositoryBase.instance.fetchUserModel(uid);
+    final ValueResponse<UserModel> response = await fetchUserModel(uid);
     if (response.isError) {
       // TODO [ERROR_HANDLING]: handle error.
       return;
@@ -353,12 +332,26 @@ class AuthService implements Disposable {
     return newUser;
   }
 
+  Future<ValueResponse<UserModel>> fetchUserModel(String uid) async {
+    final DocumentSnapshot<Map<String, dynamic>> snapshot =
+        await FirebaseFirestore.instance.doc('users/$uid').get();
+    if (!snapshot.exists) {
+      return ValueResponse.error('User does not exist!');
+    }
+    if (snapshot.data() == null) {
+      return ValueResponse.error('User data is empty!');
+    }
+    return ValueResponse.success(UserModel.fromJson(snapshot.data()!));
+  }
+
   Future<ValueResponse<void>> setFirestoreUserModel(
       String id, UserModel user) async {
     DebugLogger.instance.printFunction('setFirestoreUserModel: $id, $user');
-
-    return await FirebaseRepositoryBase.instance
-        .setDocument(collection: 'users', document: id, data: user.toJson());
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(id)
+        .set(user.toJson());
+    return ValueResponse.success();
   }
 
   void resetUserModel() {

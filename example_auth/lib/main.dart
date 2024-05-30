@@ -168,9 +168,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               const Text('Home Page'),
               MaterialButton(
-                onPressed: () {
-                  AuthService.instance.signOut();
-                },
+                onPressed: AuthService.instance.signOut,
                 color: Colors.blue,
                 child:
                     const Text('Logout', style: TextStyle(color: Colors.white)),

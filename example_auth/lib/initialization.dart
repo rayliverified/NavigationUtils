@@ -4,14 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:get_it/get_it.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
 import 'main.dart';
 import 'navigation_routes.dart';
-import 'repositories/firebase_repository_base.dart';
 import 'services/auth_service.dart';
-import 'utils/value_response.dart';
 
 class Initialization {
   /// Initialization wrapper for consolidating main setup code.
@@ -34,13 +31,7 @@ class Initialization {
       usePathUrlStrategy();
     }
 
-    ValueResponse<void> firebaseResponse =
-        await FirebaseRepositoryBase.initialize();
-    if (firebaseResponse.isError) {
-      throw firebaseResponse.error;
-    }
-
-    GetIt.instance.registerSingleton<AuthService>(AuthService());
+    AuthService.instance.initialize();
 
     NavigationManager.init(
         mainRouterDelegate: DefaultRouterDelegate(
