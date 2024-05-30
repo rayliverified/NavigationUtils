@@ -1,3 +1,9 @@
+## 0.6.0
+- Flutter v3.22.0 support.
+- Add URL alias `group` and Deeplink `redirectFunction` documentation.
+- Fix `setMainRoutes` not set correctly.
+- Simplify Auth Example authentication code.
+
 ## 0.5.2
 - Fix Redirect not applying default navigation.
 
