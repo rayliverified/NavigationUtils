@@ -81,6 +81,8 @@ class AppModel with ChangeNotifier {
       DebugLogger.instance.printInfo('Initial Route: $initialRoute');
       NavigationManager.instance.set([initialRoute]);
       NavigationManager.instance.resumeNavigation();
+    } else if (AuthService.instance.isAuthenticated) {
+      NavigationManager.instance.set([HomePage.name]);
     }
     // Automatically navigate to auth screen when user is logged out.
     if (AuthService.instance.isAuthenticated == false) {
