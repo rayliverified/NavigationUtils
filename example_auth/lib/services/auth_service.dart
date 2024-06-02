@@ -37,7 +37,7 @@ class AuthService implements Disposable {
     return _instance!;
   }
 
-  AuthService initialize() {
+  AuthService init() {
     return this;
   }
 

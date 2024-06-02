@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:example_auth/services/shared_preferences_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -33,9 +34,12 @@ class Initialization {
       usePathUrlStrategy();
     }
 
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
-    AuthService.instance.initialize();
+    await Future.wait([
+      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+      SharedPreferencesHelper.init(),
+    ]);
+
+    AuthService.instance.init();
 
     NavigationManager.init(
         mainRouterDelegate: DefaultRouterDelegate(
