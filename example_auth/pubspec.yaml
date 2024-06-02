@@ -10,31 +10,40 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.16.0
-  google_sign_in: ^6.2.1 # Missing Windows, macOS Support.
-  cloud_firestore: ^4.14.0 # Missing Window Support.
-  firebase_database: ^10.4.0 # Missing Windows Support.
-  firebase_storage: ^11.6.0 # Missing Windows Support.
-  cloud_functions: ^4.6.0 # Missing Windows Support.
-  firebase_analytics: ^10.8.0
-  firebase_dynamic_links: ^5.4.8
-  firebase_crashlytics: ^3.4.9
+  # Firebase
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.20.0
+  cloud_firestore: ^4.17.5
+  google_sign_in: 6.2.1 # Missing Windows Support.
+  firebase_database: ^10.5.7 # Missing Windows Support.
+  firebase_storage: ^11.7.7
+  cloud_functions: ^4.7.6 # Missing Windows Support.
+  firebase_analytics: ^10.10.7 # Missing Windows Support.
+  firebase_crashlytics: ^3.5.7
+  firebase_ui_firestore: ^1.6.3
+  google_fonts: ^6.2.1
+  simple_gravatar: ^1.1.0 # Provides Auth default images.
+
+  # Core Flutter
+  universal_io: ^2.2.2
+  json_annotation: ^4.9.0
+  shared_preferences: ^2.2.3
+
+  # 1st Party Core Framework
   navigation_utils:
     path: ../
-  get_it: ^7.6.6
+  codelessly_sdk: ^1.9.0
+
+  # 3rd Party Core Framework
+  get_it: ^7.7.0
   equatable: ^2.0.5
-  simple_gravatar: ^1.1.0
-  universal_io: ^2.2.2
-  json_annotation: ^4.8.1
-  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
-  json_serializable: ^6.7.1
-  build_runner: ^2.4.8
+  flutter_lints: ^4.0.0
+  json_serializable: ^6.8.0
+  build_runner: ^2.4.10
 
 flutter:
   uses-material-design: true
