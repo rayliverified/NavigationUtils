@@ -9,8 +9,8 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
 import 'firebase_options.dart';
-import 'main.dart';
 import 'navigation_routes.dart';
+import 'pages/page_initializaton.dart';
 import 'services/auth_service.dart';
 
 class Initialization {
