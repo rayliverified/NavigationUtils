@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:example_auth/services/shared_preferences_helper.dart';
 import 'package:example_auth/services/user_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -37,20 +39,13 @@ class AuthService implements Disposable {
     return _instance!;
   }
 
-  AuthService init() {
-    return this;
-  }
-
-  ValueNotifier<User?> user = ValueNotifier(null);
-  late Stream<User?> firebaseAuthUserStream;
-  late StreamSubscription firebaseAuthListener;
-
-  bool get isAuthenticated => user.value != null;
-
-  Function(String uid)? onUserAuthenticatedCallback;
-  Function? onUserUnauthenticatedCallback;
-
-  AuthService._() {
+  Future<AuthService> init() async {
+    String? userModelData = SharedPreferencesHelper.instance.getString('user');
+    if (userModelData != null) {
+      UserManager.instance.user.value =
+          UserModel.fromJson(jsonDecode(userModelData));
+      isAuthenticated.value = true;
+    }
     firebaseAuthUserStream =
         FirebaseAuth.instance.authStateChanges().asBroadcastStream();
     firebaseAuthListener = FirebaseAuth.instance
@@ -58,7 +53,7 @@ class AuthService implements Disposable {
         .asBroadcastStream()
         .listen((user) {
       DebugLogger.instance.printFunction('authStateChanges: $user');
-      this.user.value = user;
+      isAuthenticated.value = (user != null);
       if (user != null) {
         UserManager.instance.startUserStreamSubscription(user.uid);
         DebugLogger.instance.printFunction('onUserAuthenticated ${user.uid}');
@@ -68,7 +63,18 @@ class AuthService implements Disposable {
         onUserUnauthenticatedCallback?.call();
       }
     });
+    return this;
   }
+
+  late Stream<User?> firebaseAuthUserStream;
+  late StreamSubscription firebaseAuthListener;
+
+  ValueNotifier<bool> isAuthenticated = ValueNotifier(false);
+
+  Function(String uid)? onUserAuthenticatedCallback;
+  Function? onUserUnauthenticatedCallback;
+
+  AuthService._();
 
   @override
   void onDispose() {

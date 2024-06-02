@@ -78,11 +78,11 @@ class _AppState extends State<App> {
       DebugLogger.instance.printInfo('Initial Route: $initialRoute');
       NavigationManager.instance.set([initialRoute]);
       NavigationManager.instance.resumeNavigation();
-    } else if (AuthService.instance.isAuthenticated) {
+    } else if (AuthService.instance.isAuthenticated.value) {
       NavigationManager.instance.set([HomePage.name]);
     }
     // Automatically navigate to auth screen when user is logged out.
-    if (AuthService.instance.isAuthenticated == false) {
+    if (AuthService.instance.isAuthenticated.value == false) {
       if (NavigationManager.instance.currentRoute?.metadata?['auth'] == true) {
         NavigationManager.instance.set([SignUpForm.name]);
       }
@@ -93,14 +93,15 @@ class _AppState extends State<App> {
     DebugLogger.instance.printFunction('Set Routes Old: $routes');
     List<DefaultRoute> routesHolder = routes;
     // Authenticated route guard.
-    if (AuthService.instance.isAuthenticated == false && initialized == true) {
+    if (AuthService.instance.isAuthenticated.value == false &&
+        initialized == true) {
       routesHolder.removeWhere((element) => element.metadata?['auth'] == true);
       if (routesHolder.isEmpty) {
         routesHolder.add(DefaultRoute(label: SignUpForm.name, path: '/signup'));
       }
     }
     // Remove login and signup page guard.
-    if (AuthService.instance.isAuthenticated) {
+    if (AuthService.instance.isAuthenticated.value) {
       routesHolder
           .removeWhere((element) => element.metadata?['type'] == 'auth');
       if (routesHolder.isEmpty) {

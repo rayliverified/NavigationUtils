@@ -34,12 +34,13 @@ class Initialization {
       usePathUrlStrategy();
     }
 
-    await Future.wait([
-      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
-      SharedPreferencesHelper.init(),
-    ]);
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    await SharedPreferencesHelper.init();
 
-    AuthService.instance.init();
+    await Future.wait([
+      AuthService.instance.init(),
+    ]);
 
     NavigationManager.init(
         mainRouterDelegate: DefaultRouterDelegate(
@@ -47,7 +48,7 @@ class Initialization {
           debugLog: true,
           onUnknownRoute: (route) => const MaterialPage(
               name: '/${UnknownPage.name}', child: UnknownPage()),
-          authenticated: AuthService.instance.isAuthenticated,
+          authenticated: AuthService.instance.isAuthenticated.value,
         ),
         routeInformationParser: DefaultRouteInformationParser(debugLog: true));
     NavigationManager.instance.pauseNavigation();

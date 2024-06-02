@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example_auth/services/shared_preferences_helper.dart';
@@ -46,10 +47,9 @@ class UserManager implements Disposable {
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
-        debugPrint('Load Data');
         user.value = snapshot.data()!;
         SharedPreferencesHelper.instance
-            .setString('user', snapshot.data.toString());
+            .setString('user', jsonEncode(snapshot.data()!.toJson()));
       } else {
         user.value = UserModel.empty();
       }
