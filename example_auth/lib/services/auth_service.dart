@@ -60,12 +60,11 @@ class AuthService implements Disposable {
       DebugLogger.instance.printFunction('authStateChanges: $user');
       this.user.value = user;
       if (user != null) {
-        UserManager.instance.fetchAndSetUserModel(user.uid);
+        UserManager.instance.loadUserModel(user.uid);
         DebugLogger.instance.printFunction('onUserAuthenticated ${user.uid}');
         onUserAuthenticatedCallback?.call(user.uid);
       } else {
         DebugLogger.instance.printFunction('onUserUnauthenticated');
-        UserManager.instance.resetUserModel();
         onUserUnauthenticatedCallback?.call();
       }
     });
@@ -80,7 +79,7 @@ class AuthService implements Disposable {
   /// An awaitable function that AuthService is initialized
   /// in the proper order on app startup.
   ///
-  /// Internally, this function calls [fetchAndSetUserModel]
+  /// Internally, this function calls [loadUserModel]
   /// and returns the [AuthResult].
   ///
   /// FirebaseAuth's synchronous getter for auth state
@@ -137,7 +136,7 @@ class AuthService implements Disposable {
         name: userCredential.user?.displayName ?? '',
       );
       UserModel? userModelHolder =
-          await UserManager.instance.initUserModel(firebaseUser);
+          await UserManager.instance.createUserModel(firebaseUser);
       if (userModelHolder == null) {
         return ValueResponse.error('Error: unable to create user.');
       }
@@ -227,7 +226,7 @@ class AuthService implements Disposable {
           await UserManager.instance.fetchUserModel(user.id);
       if (response.isError) {
         // User is not created
-        UserModel? userModel = await UserManager.instance.initUserModel(user);
+        UserModel? userModel = await UserManager.instance.createUserModel(user);
         if (userModel == null) {
           return AuthResult.failure('Error: unable to create user.');
         }

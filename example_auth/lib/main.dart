@@ -1,5 +1,6 @@
 import 'package:example_auth/pages/auth/auth_components.dart';
 import 'package:example_auth/services/auth_service.dart';
+import 'package:example_auth/services/shared_preferences_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import 'initialization.dart';
 import 'navigation_routes.dart' as navigation_routes;
 import 'services/debug_logger.dart';
 import 'ui/ui_page_wrapper.dart';
+import 'utils/value_response.dart';
 
 Future<void> main() async =>
     Initialization.main(const App(), preInitFunction: () {
@@ -20,6 +22,12 @@ Future<void> main() async =>
           printFunctions: true,
           printInProduction: true,
           printInfo: true);
+    }, postInitFunction: () async {
+      ValueResponse signInResponse = await AuthService.instance
+          .signInWithEmailAndPassword('test@testuser.com', '12345678');
+      if (signInResponse.isError) {
+        debugPrint('Sign In Error: ${signInResponse.error.toString()}');
+      }
     });
 
 class App extends StatefulWidget {
@@ -38,11 +46,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    init();
-  }
-
-  Future<void> init() async {
-    DebugLogger.instance.printFunction('Init App');
+    DebugLogger.instance.printFunction('initState');
     // Attach navigation callback that hooks into the app state.
     NavigationManager.instance.setMainRoutes =
         (routes) => setMainRoutes(routes);
@@ -50,6 +54,11 @@ class _AppState extends State<App> {
     AuthService.instance.firebaseAuthUserStream
         .asBroadcastStream()
         .listen(_firebaseAuthUserListener);
+    init();
+  }
+
+  Future<void> init() async {
+    SharedPreferencesHelper.instance.get('user');
   }
 
   @override

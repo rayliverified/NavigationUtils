@@ -24,7 +24,7 @@ class UserManager implements Disposable {
   StreamSubscription<DocumentSnapshot>? userSubscription;
   final ValueNotifier<UserModel> user = ValueNotifier(UserModel.initial());
 
-  UserManager._() {}
+  UserManager._();
 
   @override
   FutureOr onDispose() {
@@ -39,10 +39,14 @@ class UserManager implements Disposable {
     userSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
+        .withConverter<UserModel>(
+            fromFirestore: (snapshot, options) =>
+                UserModel.fromJson(snapshot.data()!),
+            toFirestore: (value, options) => value.toJson())
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
-        user.value = UserModel.fromJson(snapshot.data()!);
+        user.value = snapshot.data()!;
       } else {
         user.value = UserModel.empty();
       }
@@ -59,26 +63,26 @@ class UserManager implements Disposable {
         .collection('users')
         .doc(user.value.id)
         .update(user.value.copyWith(name: newUsername).toJson());
-    await fetchAndSetUserModel(user.value.id);
+    await loadUserModel(user.value.id);
   }
 
   /// Fetches the [UserModel] with the user's [uid] from Firestore by calling
   /// [fetchUserModel], then updates the [user] field.
-  Future<void> fetchAndSetUserModel(String uid) async {
-    DebugLogger.instance.printFunction('fetchAndSetUserModel: $uid');
+  Future<void> loadUserModel(String uid) async {
+    DebugLogger.instance.printFunction('loadUserModel: $uid');
 
     final ValueResponse<UserModel> response = await fetchUserModel(uid);
     if (response.isError) {
       // TODO [ERROR_HANDLING]: handle error.
-      return;
+      throw response.error;
     }
     user.value = response.data;
   }
 
   /// Creates a [UserModel] from Firebase User and
   /// saves to server.
-  Future<UserModel?> initUserModel(UserModel user) async {
-    DebugLogger.instance.printFunction('initUserModel: $user');
+  Future<UserModel?> createUserModel(UserModel user) async {
+    DebugLogger.instance.printFunction('createUserModel: $user');
 
     // Get photo url from Firebase.
     // Otherwise, get a photo from Gravatar.
@@ -97,24 +101,26 @@ class UserManager implements Disposable {
     // Create the new UserModel.
     UserModel newUser = user.copyWith(photoUrl: photoUrl);
     // Update the user in Firestore.
-    final ValueResponse<void> response =
-        await setFirestoreUserModel(user.id, newUser);
-    if (response.isError) {
-      return null;
-    }
+    await setFirestoreUserModel(user.id, newUser);
     return newUser;
   }
 
   Future<ValueResponse<UserModel>> fetchUserModel(String uid) async {
-    final DocumentSnapshot<Map<String, dynamic>> snapshot =
-        await FirebaseFirestore.instance.doc('users/$uid').get();
+    final DocumentSnapshot<UserModel> snapshot = await FirebaseFirestore
+        .instance
+        .doc('users/$uid')
+        .withConverter<UserModel>(
+            fromFirestore: (snapshot, options) =>
+                UserModel.fromJson(snapshot.data()!),
+            toFirestore: (value, options) => value.toJson())
+        .get();
     if (!snapshot.exists) {
       return ValueResponse.error('User does not exist!');
     }
     if (snapshot.data() == null) {
       return ValueResponse.error('User data is empty!');
     }
-    return ValueResponse.success(UserModel.fromJson(snapshot.data()!));
+    return ValueResponse.success(snapshot.data());
   }
 
   Future<ValueResponse<void>> setFirestoreUserModel(
@@ -123,7 +129,11 @@ class UserManager implements Disposable {
     await FirebaseFirestore.instance
         .collection('users')
         .doc(id)
-        .set(user.toJson());
+        .withConverter<UserModel>(
+            fromFirestore: (snapshot, options) =>
+                UserModel.fromJson(snapshot.data()!),
+            toFirestore: (value, options) => value.toJson())
+        .set(user);
     return ValueResponse.success();
   }
 
