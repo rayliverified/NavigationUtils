@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:example_auth/services/shared_preferences_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:simple_gravatar/simple_gravatar.dart';
@@ -35,7 +36,6 @@ class UserManager implements Disposable {
   Future<void> startUserStreamSubscription(String uid) async {
     DebugLogger.instance.printFunction('startUserStreamSubscription: $uid');
 
-    userSubscription?.cancel();
     userSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -46,24 +46,14 @@ class UserManager implements Disposable {
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
+        debugPrint('Load Data');
         user.value = snapshot.data()!;
+        SharedPreferencesHelper.instance
+            .setString('user', snapshot.data.toString());
       } else {
         user.value = UserModel.empty();
       }
     });
-  }
-
-  /// Update username in Firebase. Re-fetch the UserModel again.
-  Future<void> updateUsername(String newUsername) async {
-    DebugLogger.instance.printFunction('updateUsername: $newUsername');
-
-    if (user.value.id.isEmpty) return;
-
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.value.id)
-        .update(user.value.copyWith(name: newUsername).toJson());
-    await loadUserModel(user.value.id);
   }
 
   /// Fetches the [UserModel] with the user's [uid] from Firestore by calling
@@ -77,6 +67,8 @@ class UserManager implements Disposable {
       throw response.error;
     }
     user.value = response.data;
+    SharedPreferencesHelper.instance
+        .setString('user', response.data.toString());
   }
 
   /// Creates a [UserModel] from Firebase User and
@@ -141,6 +133,18 @@ class UserManager implements Disposable {
     DebugLogger.instance.printFunction('resetUserModel');
 
     user.value = UserModel.empty();
+  }
+
+  /// Update username in Firebase. Re-fetch the UserModel again.
+  Future<void> updateUsername(String newUsername) async {
+    DebugLogger.instance.printFunction('updateUsername: $newUsername');
+
+    if (user.value.id.isEmpty) return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.value.id)
+        .update(user.value.copyWith(name: newUsername).toJson());
   }
 }
 

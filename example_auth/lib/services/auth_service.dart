@@ -60,7 +60,7 @@ class AuthService implements Disposable {
       DebugLogger.instance.printFunction('authStateChanges: $user');
       this.user.value = user;
       if (user != null) {
-        UserManager.instance.loadUserModel(user.uid);
+        UserManager.instance.startUserStreamSubscription(user.uid);
         DebugLogger.instance.printFunction('onUserAuthenticated ${user.uid}');
         onUserAuthenticatedCallback?.call(user.uid);
       } else {
