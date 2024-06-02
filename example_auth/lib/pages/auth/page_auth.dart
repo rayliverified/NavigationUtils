@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:example_auth/ui/ui_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:navigation_utils/navigation_utils.dart';
-import 'package:provider/provider.dart';
 
 import 'auth_components.dart';
 
@@ -13,117 +12,61 @@ enum AuthPageType {
   resetPassword,
 }
 
-class AuthPageWrapper extends StatefulWidget {
+class AuthPage extends StatefulWidget {
   final AuthPageType type;
 
-  const AuthPageWrapper({super.key, required this.type});
+  const AuthPage({super.key, required this.type});
 
   @override
-  State<AuthPageWrapper> createState() => _AuthPageWrapperState();
+  State<AuthPage> createState() => AuthPageState();
 }
 
-class _AuthPageWrapperState extends State<AuthPageWrapper> {
-  late AuthPageModelBase authPageModelBase;
+class AuthPageState extends State<AuthPage> {
+  bool get isLoginPage => widget.type == AuthPageType.login;
 
-  @override
-  void initState() {
-    super.initState();
-    authPageModelBase = AuthPageModel(context, widget.type);
-  }
+  bool get isSignupPage => widget.type == AuthPageType.signup;
 
-  @override
-  void dispose() {
-    authPageModelBase.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(AuthPageWrapper oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    authPageModelBase.setAuthPageType(widget.type);
-  }
+  bool get isForgotPasswordPage => widget.type == AuthPageType.resetPassword;
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AuthPageModelBase>.value(
-        value: authPageModelBase, child: const AuthPage());
-  }
-}
-
-abstract class AuthPageModelBase with ChangeNotifier {
-  BuildContext context;
-  AuthPageType type;
-
-  AuthPageModelBase(this.context, this.type);
-
-  bool get isLoginPage => type == AuthPageType.login;
-
-  bool get isSignupPage => type == AuthPageType.signup;
-
-  bool get isForgotPasswordPage => type == AuthPageType.resetPassword;
-
-  void setAuthPageType(AuthPageType type) =>
-      throw UnimplementedError('Use Implementation');
-}
-
-class AuthPageModel extends AuthPageModelBase {
-  AuthPageModel(super.context, super.type);
-
-  @override
-  void setAuthPageType(AuthPageType type) {
-    if (type == this.type) {
-      return;
-    }
-
-    this.type = type;
-    notifyListeners();
-  }
-}
-
-class AuthPage extends StatelessWidget {
-  const AuthPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<AuthPageModelBase>(builder: (context, model, child) {
-      return Scaffold(
-        body: SafeArea(
-          child: SizedBox(
-            width: double.infinity,
-            child: SingleChildScrollView(
-              primary: false,
-              child: Column(
-                children: [
-                  const Padding(padding: EdgeInsets.only(bottom: 48)),
-                  Text(
-                    getPageTitle(model),
-                    style: Theme.of(context).textTheme.displayMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  LayoutBuilder(builder: (context, constraints) {
-                    double width = min(420, constraints.maxWidth);
-                    return Container(
-                      width: width,
-                      decoration: defaultShadow,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 32),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 24),
-                      child: getPage(model),
-                    );
-                  }),
-                ],
-              ),
+    return Scaffold(
+      body: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          child: SingleChildScrollView(
+            primary: false,
+            child: Column(
+              children: [
+                const Padding(padding: EdgeInsets.only(bottom: 48)),
+                Text(
+                  getPageTitle(widget.type),
+                  style: Theme.of(context).textTheme.displayMedium,
+                  textAlign: TextAlign.center,
+                ),
+                LayoutBuilder(builder: (context, constraints) {
+                  double width = min(420, constraints.maxWidth);
+                  return Container(
+                    width: width,
+                    decoration: defaultShadow,
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 32),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 24),
+                    child: getPage(widget.type),
+                  );
+                }),
+              ],
             ),
           ),
         ),
-      );
-    });
+      ),
+    );
   }
 
   // ignore: missing_return
-  Widget getPage(AuthPageModelBase model) {
-    switch (model.type) {
+  Widget getPage(AuthPageType type) {
+    switch (type) {
       case AuthPageType.login:
         return LoginForm(
           onSignupTapped: () => NavigationManager.instance.routerDelegate
@@ -143,8 +86,8 @@ class AuthPage extends StatelessWidget {
   }
 
   // ignore: missing_return
-  String getPageTitle(AuthPageModelBase model) {
-    switch (model.type) {
+  String getPageTitle(AuthPageType type) {
+    switch (type) {
       case AuthPageType.login:
         return 'Login';
       case AuthPageType.signup:
