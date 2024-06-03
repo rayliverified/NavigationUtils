@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:example_auth/services/shared_preferences_helper.dart';
 import 'package:example_auth/services/user_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -39,33 +37,6 @@ class AuthService implements Disposable {
     return _instance!;
   }
 
-  Future<AuthService> init() async {
-    String? userModelData = SharedPreferencesHelper.instance.getString('user');
-    if (userModelData != null) {
-      UserManager.instance.user.value =
-          UserModel.fromJson(jsonDecode(userModelData));
-      isAuthenticated.value = true;
-    }
-    firebaseAuthUserStream =
-        FirebaseAuth.instance.authStateChanges().asBroadcastStream();
-    firebaseAuthListener = FirebaseAuth.instance
-        .authStateChanges()
-        .asBroadcastStream()
-        .listen((user) {
-      DebugLogger.instance.printFunction('authStateChanges: $user');
-      isAuthenticated.value = (user != null);
-      if (user != null) {
-        UserManager.instance.startUserStreamSubscription(user.uid);
-        DebugLogger.instance.printFunction('onUserAuthenticated ${user.uid}');
-        onUserAuthenticatedCallback?.call(user.uid);
-      } else {
-        DebugLogger.instance.printFunction('onUserUnauthenticated');
-        onUserUnauthenticatedCallback?.call();
-      }
-    });
-    return this;
-  }
-
   late Stream<User?> firebaseAuthUserStream;
   late StreamSubscription firebaseAuthListener;
 
@@ -76,8 +47,37 @@ class AuthService implements Disposable {
 
   AuthService._();
 
+  Future<AuthService> init() async {
+    DebugLogger.instance.printFunction('AuthService init');
+    UserModel? userModel = await UserManager.instance.loadUserModelLocal();
+    isAuthenticated.value = (userModel != null);
+    // Cancel the existing listener if it exists
+    await firebaseAuthListener.cancel();
+    firebaseAuthUserStream =
+        FirebaseAuth.instance.authStateChanges().asBroadcastStream();
+    firebaseAuthListener = FirebaseAuth.instance
+        .authStateChanges()
+        .asBroadcastStream()
+        .listen((user) {
+      DebugLogger.instance.printFunction('authStateChanges: $user');
+      if (user != null) {
+        DebugLogger.instance.printFunction('onUserAuthenticated ${user.uid}');
+        isAuthenticated.value = true;
+        UserManager.instance.startUserStreamSubscription(user.uid);
+        onUserAuthenticatedCallback?.call(user.uid);
+      } else if (UserManager.instance.user.value.id.isNotEmpty) {
+        // If UserModel exists, app is authenticated. Firebase Auth will return authenticated in a bit.
+      } else {
+        DebugLogger.instance.printFunction('onUserUnauthenticated');
+        isAuthenticated.value = false;
+        onUserUnauthenticatedCallback?.call();
+      }
+    });
+    return this;
+  }
+
   @override
-  void onDispose() {
+  FutureOr onDispose() {
     firebaseAuthListener.cancel();
     _instance = AuthService._();
   }
@@ -174,11 +174,11 @@ class AuthService implements Disposable {
   /// Sign out user from Firebase Auth.
   Future<void> signOut() async {
     DebugLogger.instance.printFunction('signOut');
-    await FirebaseAuth.instance.signOut();
 
     /// Clear user data.
-    UserManager.instance.resetUserModel();
-    UserManager.instance.onDispose();
+    await UserManager.instance.resetUserModel();
+    await UserManager.instance.onDispose();
+    await FirebaseAuth.instance.signOut();
   }
 
   /// Sign in with Google.

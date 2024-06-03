@@ -11,7 +11,10 @@ import 'initialization.dart';
 import 'navigation_routes.dart' as navigation_routes;
 import 'services/debug_logger.dart';
 import 'ui/ui_page_wrapper.dart';
-import 'utils/value_response.dart';
+
+/// Test Credentials
+/// test@testuser.com
+/// 12345678
 
 Future<void> main() async =>
     Initialization.main(const App(), preInitFunction: () {
@@ -22,13 +25,7 @@ Future<void> main() async =>
           printFunctions: true,
           printInProduction: true,
           printInfo: true);
-    }, postInitFunction: () async {
-      ValueResponse signInResponse = await AuthService.instance
-          .signInWithEmailAndPassword('test@testuser.com', '12345678');
-      if (signInResponse.isError) {
-        debugPrint('Sign In Error: ${signInResponse.error.toString()}');
-      }
-    });
+    }, postInitFunction: () async {});
 
 class App extends StatefulWidget {
   const App({super.key});

@@ -24,14 +24,14 @@ class UserManager implements Disposable {
   }
 
   StreamSubscription<DocumentSnapshot>? userSubscription;
-  final ValueNotifier<UserModel> user = ValueNotifier(UserModel.initial());
+  final ValueNotifier<UserModel> user = ValueNotifier(UserModel.empty());
 
   UserManager._();
 
   @override
   FutureOr onDispose() {
     userSubscription?.cancel();
-    user.value = UserModel.initial();
+    user.value = UserModel.empty();
   }
 
   Future<void> startUserStreamSubscription(String uid) async {
@@ -58,17 +58,30 @@ class UserManager implements Disposable {
 
   /// Fetches the [UserModel] with the user's [uid] from Firestore by calling
   /// [fetchUserModel], then updates the [user] field.
-  Future<void> loadUserModel(String uid) async {
+  Future<UserModel?> loadUserModel(String uid) async {
     DebugLogger.instance.printFunction('loadUserModel: $uid');
 
     final ValueResponse<UserModel> response = await fetchUserModel(uid);
     if (response.isError) {
-      // TODO [ERROR_HANDLING]: handle error.
-      throw response.error;
+      return null;
     }
     user.value = response.data;
     SharedPreferencesHelper.instance
         .setString('user', response.data.toString());
+    return response.data;
+  }
+
+  /// Loads the [user] model from local storage.
+  Future<UserModel?> loadUserModelLocal() async {
+    String? userModelData = SharedPreferencesHelper.instance.getString('user');
+    if (userModelData != null) {
+      UserModel userModel = UserModel.fromJson(jsonDecode(userModelData));
+      user.value = userModel;
+      return userModel;
+    } else {
+      user.value = UserModel.empty();
+    }
+    return null;
   }
 
   /// Creates a [UserModel] from Firebase User and
@@ -129,10 +142,11 @@ class UserManager implements Disposable {
     return ValueResponse.success();
   }
 
-  void resetUserModel() {
+  Future<void> resetUserModel() async {
     DebugLogger.instance.printFunction('resetUserModel');
 
     user.value = UserModel.empty();
+    await SharedPreferencesHelper.instance.remove('user');
   }
 
   /// Update username in Firebase. Re-fetch the UserModel again.
