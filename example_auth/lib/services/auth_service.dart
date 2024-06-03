@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:example_auth/services/user_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -11,6 +10,7 @@ import '../models/model_user.dart';
 import '../utils/auth_exceptions.dart';
 import '../utils/value_response.dart';
 import 'debug_logger.dart';
+import 'user_manager.dart';
 
 class AuthResult {
   final bool success;

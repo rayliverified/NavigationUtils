@@ -1,13 +1,15 @@
-import 'package:example_auth/pages/auth/auth_components.dart';
-import 'package:example_auth/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
 import 'initialization.dart';
 import 'navigation_routes.dart' as navigation_routes;
+import 'pages/auth/auth_components.dart';
+import 'services/auth_service.dart';
 import 'services/debug_logger.dart';
 import 'ui/ui_page_wrapper.dart';
 
@@ -18,7 +20,14 @@ import 'ui/ui_page_wrapper.dart';
 Future<void> main() async =>
     Initialization.main(const App(), preInitFunction: () {
       /// Set log controls for debugging.
-      // DebugLogger.instance.config.setHighlight(name: AuthService.name);
+      Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+      Logger.root.onRecord.listen((record) {
+        // ignore: avoid_print
+        print(record.message);
+      });
+      if (kDebugMode) {
+        // DebugLogger.instance.config.setHighlight(name: AuthService.name);
+      }
     }, postInitFunction: () async {});
 
 class App extends StatefulWidget {

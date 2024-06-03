@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:example_auth/services/shared_preferences_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:simple_gravatar/simple_gravatar.dart';
@@ -10,6 +9,7 @@ import 'package:simple_gravatar/simple_gravatar.dart';
 import '../models/model_user.dart';
 import '../utils/value_response.dart';
 import 'debug_logger.dart';
+import 'shared_preferences_helper.dart';
 
 class UserManager implements Disposable {
   static const String name = 'UserManager';

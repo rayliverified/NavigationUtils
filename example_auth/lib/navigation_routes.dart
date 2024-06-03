@@ -1,7 +1,8 @@
-import 'package:example_auth/main.dart';
-import 'package:example_auth/pages/auth/auth_components.dart';
-import 'package:example_auth/pages/auth/page_auth.dart';
 import 'package:navigation_utils/navigation_utils.dart';
+
+import 'main.dart';
+import 'pages/auth/auth_components.dart';
+import 'pages/auth/page_auth.dart';
 
 List<NavigationData> routes = [
   NavigationData(

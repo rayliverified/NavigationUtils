@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:example_auth/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 import 'package:universal_io/io.dart';
 
+import '../../main.dart';
 import '../../services/auth_service.dart';
 import '../../ui/buttons.dart';
 import '../../ui/ui_constants.dart';

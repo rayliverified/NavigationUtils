@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import 'package:example_auth/ui/ui_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:navigation_utils/navigation_utils.dart';
 
+import '../../ui/ui_constants.dart';
 import 'auth_components.dart';
 
 enum AuthPageType {

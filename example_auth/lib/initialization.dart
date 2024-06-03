@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:example_auth/services/shared_preferences_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'firebase_options.dart';
 import 'navigation_routes.dart';
 import 'pages/page_initializaton.dart';
 import 'services/auth_service.dart';
+import 'services/shared_preferences_helper.dart';
 
 class Initialization {
   /// Initialization wrapper for consolidating main setup code.
