@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'value_response.dart';
+import '../utils/value_response.dart';
 
 class AuthException implements Exception {
   final String body;
