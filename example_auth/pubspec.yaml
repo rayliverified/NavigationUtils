@@ -28,6 +28,7 @@ dependencies:
   universal_io: ^2.2.2
   json_annotation: ^4.9.0
   shared_preferences: ^2.2.3
+  logging: ^1.2.0
 
   # 1st Party Core Framework
   navigation_utils:

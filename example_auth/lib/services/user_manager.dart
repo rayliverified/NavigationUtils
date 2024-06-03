@@ -12,11 +12,13 @@ import '../utils/value_response.dart';
 import 'debug_logger.dart';
 
 class UserManager implements Disposable {
+  static const String name = 'UserManager';
+
   static UserManager? _instance;
 
   static UserManager get instance {
     if (_instance == null) {
-      DebugLogger.instance.printFunction('UserManager Initialized');
+      DebugLogger.instance.printFunction('UserManager Initialized', name: name);
       _instance ??= UserManager._();
       return _instance!;
     }
@@ -35,7 +37,8 @@ class UserManager implements Disposable {
   }
 
   Future<void> startUserStreamSubscription(String uid) async {
-    DebugLogger.instance.printFunction('startUserStreamSubscription: $uid');
+    DebugLogger.instance
+        .printFunction('startUserStreamSubscription: $uid', name: name);
 
     userSubscription = FirebaseFirestore.instance
         .collection('users')
@@ -59,7 +62,7 @@ class UserManager implements Disposable {
   /// Fetches the [UserModel] with the user's [uid] from Firestore by calling
   /// [fetchUserModel], then updates the [user] field.
   Future<UserModel?> loadUserModel(String uid) async {
-    DebugLogger.instance.printFunction('loadUserModel: $uid');
+    DebugLogger.instance.printFunction('loadUserModel: $uid', name: name);
 
     final ValueResponse<UserModel> response = await fetchUserModel(uid);
     if (response.isError) {
@@ -87,7 +90,7 @@ class UserManager implements Disposable {
   /// Creates a [UserModel] from Firebase User and
   /// saves to server.
   Future<UserModel?> createUserModel(UserModel user) async {
-    DebugLogger.instance.printFunction('createUserModel: $user');
+    DebugLogger.instance.printFunction('createUserModel: $user', name: name);
 
     // Get photo url from Firebase.
     // Otherwise, get a photo from Gravatar.
@@ -130,7 +133,8 @@ class UserManager implements Disposable {
 
   Future<ValueResponse<void>> setFirestoreUserModel(
       String id, UserModel user) async {
-    DebugLogger.instance.printFunction('setFirestoreUserModel: $id, $user');
+    DebugLogger.instance
+        .printFunction('setFirestoreUserModel: $id, $user', name: name);
     await FirebaseFirestore.instance
         .collection('users')
         .doc(id)
@@ -143,7 +147,7 @@ class UserManager implements Disposable {
   }
 
   Future<void> resetUserModel() async {
-    DebugLogger.instance.printFunction('resetUserModel');
+    DebugLogger.instance.printFunction('resetUserModel', name: name);
 
     user.value = UserModel.empty();
     await SharedPreferencesHelper.instance.remove('user');
@@ -151,7 +155,8 @@ class UserManager implements Disposable {
 
   /// Update username in Firebase. Re-fetch the UserModel again.
   Future<void> updateUsername(String newUsername) async {
-    DebugLogger.instance.printFunction('updateUsername: $newUsername');
+    DebugLogger.instance
+        .printFunction('updateUsername: $newUsername', name: name);
 
     if (user.value.id.isEmpty) return;
 

@@ -1,6 +1,5 @@
 import 'package:example_auth/pages/auth/auth_components.dart';
 import 'package:example_auth/services/auth_service.dart';
-import 'package:example_auth/services/shared_preferences_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,22 +18,19 @@ import 'ui/ui_page_wrapper.dart';
 Future<void> main() async =>
     Initialization.main(const App(), preInitFunction: () {
       /// Set log controls for debugging.
-      DebugLogger.config = DebugLoggerConfig(
-          printRebuilds: true,
-          printActions: true,
-          printFunctions: true,
-          printInProduction: true,
-          printInfo: true);
+      // DebugLogger.instance.config.setHighlight(name: AuthService.name);
     }, postInitFunction: () async {});
 
 class App extends StatefulWidget {
+  static const String name = 'app';
+
   const App({super.key});
 
   @override
-  State<App> createState() => _AppState();
+  State<App> createState() => AppState();
 }
 
-class _AppState extends State<App> {
+class AppState extends State<App> {
   /// First time initialization flag.
   bool initialized = false;
   bool loadInitialRoute = true;
@@ -43,7 +39,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    DebugLogger.instance.printFunction('initState');
+    DebugLogger.instance.printFunction('initState', name: App.name);
     // Attach navigation callback that hooks into the app state.
     NavigationManager.instance.setMainRoutes =
         (routes) => setMainRoutes(routes);
@@ -55,7 +51,7 @@ class _AppState extends State<App> {
   }
 
   Future<void> init() async {
-    SharedPreferencesHelper.instance.get('user');
+    // Initialize app cycle dependent initialization here.
   }
 
   @override
@@ -87,7 +83,8 @@ class _AppState extends State<App> {
   }
 
   List<DefaultRoute> setMainRoutes(List<DefaultRoute> routes) {
-    DebugLogger.instance.printFunction('Set Routes Old: $routes');
+    DebugLogger.instance
+        .printFunction('setMainRoutes: $routes', name: App.name);
     List<DefaultRoute> routesHolder = routes;
     // Authenticated route guard.
     if (AuthService.instance.isAuthenticated.value == false &&
@@ -106,7 +103,8 @@ class _AppState extends State<App> {
             navigation_routes.routes, '/'));
       }
     }
-    DebugLogger.instance.printFunction('Set Routes New: $routes');
+    DebugLogger.instance
+        .printFunction('Set Routes New: $routes', name: App.name);
     return routesHolder;
   }
 

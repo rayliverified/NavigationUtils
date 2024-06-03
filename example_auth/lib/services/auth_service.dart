@@ -25,11 +25,13 @@ class AuthResult {
 }
 
 class AuthService implements Disposable {
+  static const String name = 'AuthService';
+
   static AuthService? _instance;
 
   static AuthService get instance {
     if (_instance == null) {
-      DebugLogger.instance.printFunction('AuthService Initialized');
+      DebugLogger.instance.printFunction('AuthService Initialized', name: name);
       // An instance persists the AuthService.
       _instance ??= AuthService._();
       return _instance!;
@@ -54,16 +56,17 @@ class AuthService implements Disposable {
         .authStateChanges()
         .asBroadcastStream()
         .listen((user) {
-      DebugLogger.instance.printFunction('authStateChanges: $user');
+      DebugLogger.instance.printFunction('authStateChanges: $user', name: name);
       if (user != null) {
-        DebugLogger.instance.printFunction('onUserAuthenticated ${user.uid}');
+        DebugLogger.instance
+            .printFunction('onUserAuthenticated ${user.uid}', name: name);
         isAuthenticated.value = true;
         UserManager.instance.startUserStreamSubscription(user.uid);
         onUserAuthenticatedCallback?.call(user.uid);
       } else if (UserManager.instance.user.value.id.isNotEmpty) {
         // If UserModel exists, app is authenticated. Firebase Auth will return authenticated in a bit.
       } else {
-        DebugLogger.instance.printFunction('onUserUnauthenticated');
+        DebugLogger.instance.printFunction('onUserUnauthenticated', name: name);
         isAuthenticated.value = false;
         onUserUnauthenticatedCallback?.call();
       }
@@ -71,7 +74,7 @@ class AuthService implements Disposable {
   }
 
   Future<AuthService> init() async {
-    DebugLogger.instance.printFunction('AuthService init');
+    DebugLogger.instance.printFunction('AuthService init', name: name);
     UserModel? userModel = await UserManager.instance.loadUserModelLocal();
     isAuthenticated.value = (userModel != null);
     return this;
@@ -95,7 +98,7 @@ class AuthService implements Disposable {
   /// Auth dependent functions should subscribe to
   /// [firebaseAuthListener].
   Future<AuthResult> initAuthState() async {
-    DebugLogger.instance.printFunction('initAuthState');
+    DebugLogger.instance.printFunction('initAuthState', name: name);
     DebugLogger.instance
         .printInfo('Current User: ${FirebaseAuth.instance.currentUser?.uid}');
     String? uid = FirebaseAuth.instance.currentUser?.uid;
@@ -110,7 +113,8 @@ class AuthService implements Disposable {
   /// Method to handle user sign in using email and password
   Future<ValueResponse<void>> signInWithEmailAndPassword(
       String email, String password) async {
-    DebugLogger.instance.printFunction('signInWithEmailAndPassword');
+    DebugLogger.instance
+        .printFunction('signInWithEmailAndPassword', name: name);
     try {
       final UserCredential credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
@@ -132,7 +136,8 @@ class AuthService implements Disposable {
   Future<ValueResponse<void>> registerWithEmailAndPassword(
       String name, String email, String password) async {
     DebugLogger.instance.printFunction(
-        'registerWithEmailAndPassword: $name, $email, $password');
+        'registerWithEmailAndPassword: $name, $email, $password',
+        name: name);
     try {
       final UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -162,7 +167,8 @@ class AuthService implements Disposable {
 
   /// Password reset email
   Future<ValueResponse<void>> sendPasswordResetEmail(String email) async {
-    DebugLogger.instance.printFunction('sendPasswordResetEmail: $email');
+    DebugLogger.instance
+        .printFunction('sendPasswordResetEmail: $email', name: name);
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
@@ -174,7 +180,7 @@ class AuthService implements Disposable {
 
   /// Sign out user from Firebase Auth.
   Future<void> signOut() async {
-    DebugLogger.instance.printFunction('signOut');
+    DebugLogger.instance.printFunction('signOut', name: name);
 
     /// Clear user data.
     await UserManager.instance.resetUserModel();
@@ -184,7 +190,7 @@ class AuthService implements Disposable {
 
   /// Sign in with Google.
   Future<AuthResult> googleSignIn() async {
-    DebugLogger.instance.printFunction('googleSignIn');
+    DebugLogger.instance.printFunction('googleSignIn', name: name);
 
     try {
       UserCredential? userCredential;
