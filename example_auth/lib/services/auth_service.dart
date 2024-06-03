@@ -45,14 +45,9 @@ class AuthService implements Disposable {
   Function(String uid)? onUserAuthenticatedCallback;
   Function? onUserUnauthenticatedCallback;
 
-  AuthService._();
-
-  Future<AuthService> init() async {
-    DebugLogger.instance.printFunction('AuthService init');
-    UserModel? userModel = await UserManager.instance.loadUserModelLocal();
-    isAuthenticated.value = (userModel != null);
-    // Cancel the existing listener if it exists
-    await firebaseAuthListener.cancel();
+  AuthService._() {
+    // Note: Listeners  are put in the initialization call to avoid the Hot Restart stream duplication bug.
+    // If any listener code is changed, a clean start is required.
     firebaseAuthUserStream =
         FirebaseAuth.instance.authStateChanges().asBroadcastStream();
     firebaseAuthListener = FirebaseAuth.instance
@@ -73,6 +68,12 @@ class AuthService implements Disposable {
         onUserUnauthenticatedCallback?.call();
       }
     });
+  }
+
+  Future<AuthService> init() async {
+    DebugLogger.instance.printFunction('AuthService init');
+    UserModel? userModel = await UserManager.instance.loadUserModelLocal();
+    isAuthenticated.value = (userModel != null);
     return this;
   }
 
