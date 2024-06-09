@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:navigation_utils/src/models/navigation_interface.dart';
 
 class NavigationManager implements NavigationInterface {
-  static const String instanceName = 'NavigationManager';
+  static const String name = 'NavigationManager';
 
   static NavigationManager? _instance;
 
