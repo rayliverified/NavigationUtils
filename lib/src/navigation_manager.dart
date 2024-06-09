@@ -2,7 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:navigation_utils/src/models/navigation_interface.dart';
+
+import 'models/navigation_interface.dart';
+import 'navigation_builder.dart';
+import 'navigation_delegate.dart';
+import 'navigation_information_parser.dart';
 
 class NavigationManager implements NavigationInterface {
   static const String name = 'NavigationManager';
