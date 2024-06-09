@@ -84,30 +84,38 @@ enum PageType {
 }
 
 class NavigationBuilder {
-  final List<Object> routeDataList;
-  final List<NavigationData> routes;
-  final OnUnknownRoute? onUnknownRoute;
-  final NavigationPageBuilder? pageBuilder;
+  NavigationBuilder();
 
-  NavigationBuilder(
-      {required this.routeDataList,
-      this.routes = const [],
-      this.onUnknownRoute,
-      this.pageBuilder});
-
-  List<Page> build(BuildContext context) {
+  static List<Page> build(
+      {required BuildContext context,
+      required List<Object> routeDataList,
+      required List<NavigationData> routes,
+      OnUnknownRoute? onUnknownRoute,
+      NavigationPageBuilder? pageBuilder,
+      String? group}) {
     BaseRouterDelegate? mainRouterDelegate =
         (Router.of(context).routerDelegate as BaseRouterDelegate);
     List<Page> pages = [];
-    for (Object route in routeDataList) {
+
+    for (int i = 0; i < routeDataList.length; i++) {
+      Object route = routeDataList[i];
       if (route is DefaultRoute) {
         NavigationData? navigationData =
             NavigationUtils.getNavigationDataFromRoute(
                 routes: routes, route: route);
 
         // TODO: Add wildcard support.
+        if (navigationData != null &&
+            (group == null || navigationData.group == group)) {
+          // Skip building duplicated groups.
+          if (group == null &&
+              navigationData.group != null &&
+              i < routeDataList.length - 1 &&
+              (routeDataList[i + 1] as DefaultRoute).group ==
+                  navigationData.group) {
+            continue;
+          }
 
-        if (navigationData != null) {
           Map<String, String> pathParameters = {};
           pathParameters.addAll(route.pathParameters);
           if (navigationData.path.contains(':')) {
@@ -142,14 +150,16 @@ class NavigationBuilder {
       }
 
       if (onUnknownRoute != null) {
-        pages.add(onUnknownRoute!.call(route as DefaultRoute));
+        pages.add(onUnknownRoute.call(route as DefaultRoute));
       }
     }
+
+    debugPrint('Built Pages: $pages');
 
     return pages;
   }
 
-  Page buildPage(
+  static Page buildPage(
       {required String? name,
       required Widget child,
       Object? arguments,
@@ -177,6 +187,41 @@ class NavigationBuilder {
             fullscreenDialog: fullScreenDialog ?? false,
             child: child);
     }
+  }
+
+  static List<Widget> buildWidgets(
+      {required BuildContext context,
+      required List<Object> routeDataList,
+      required List<NavigationData> routes,
+      String? group}) {
+    List<Widget> widgets = [];
+
+    for (Object route in routeDataList) {
+      if (route is DefaultRoute) {
+        NavigationData? navigationData =
+            NavigationUtils.getNavigationDataFromRoute(
+                routes: routes, route: route);
+
+        if (navigationData != null &&
+            (group == null || navigationData.group == group)) {
+          Map<String, String> pathParameters = {};
+          pathParameters.addAll(route.pathParameters);
+          if (navigationData.path.contains(':')) {
+            pathParameters.addAll(
+                NavigationUtils.extractPathParametersWithPattern(
+                    route.path, navigationData.path));
+          }
+
+          Widget child = navigationData.builder(
+              context, route.copyWith(pathParameters: pathParameters), {});
+          widgets.add(child);
+        }
+      }
+    }
+
+    debugPrint('Built Widgets: $widgets');
+
+    return widgets;
   }
 
   // Trim character functions.

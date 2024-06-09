@@ -50,12 +50,13 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
         if (pageOverride != null)
           pageOverride!(currentConfiguration?.name ?? '')
         else ...[
-          ...NavigationBuilder(
+          ...NavigationBuilder.build(
+            context: context,
             routeDataList: routes,
             routes: navigationDataRoutes,
             pageBuilder: pageBuilder,
             onUnknownRoute: onUnknownRoute ?? _buildUnknownRouteDefault,
-          ).build(context),
+          ),
           if (pageOverlay != null)
             pageOverlay!(currentConfiguration?.name ?? '')
         ],
