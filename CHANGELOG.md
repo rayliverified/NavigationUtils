@@ -1,3 +1,9 @@
+## 0.7.0
+- Nested Navigation support. Welcome to the easiest nested navigation ever!
+  - Build nested routes with `NavigationManager.instance.nested()`.
+  - Assign the same `group` parameter to each `NavigationData` to define a nested route.
+  - Support 100% customizable page transitions.
+
 ## 0.6.0
 - Flutter v3.22.0 support.
 - Add URL alias `group` and Deeplink `redirectFunction` documentation.

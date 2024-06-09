@@ -296,6 +296,64 @@ class NavigationManager implements NavigationInterface {
     routerDelegate.removeOverride();
   }
 
+  /// Returns a list of widgets for building nested navigation.
+  /// Build tabbed navigation and nested page navigation flows.
+  ///
+  /// To setup nested navigation, first declare all
+  /// nested routes globally with the same `group` label.
+  /// Nested navigation routes must be labeled
+  /// with the same NavigationData `group` label.
+  ///
+  /// Nested routes should all point to the same
+  /// Widget to avoid rebuilding the parent route.
+  /// ```dart
+  /// List<NavigationData> routes = [
+  ///     NavigationData(
+  ///       url: '/onboarding',
+  ///       builder: (context, routeData, globalData) => OnboardingPage(),
+  ///       group: 'onboarding',
+  ///     ),
+  ///     NavigationData(
+  ///       url: '/onboarding/step1',
+  ///       builder: (context, routeData, globalData) => OnboardingPage(),
+  ///       group: 'onboarding',
+  ///     ),
+  ///     NavigationData(
+  ///       url: '/onboarding/step2',
+  ///       builder: (context, routeData, globalData) => OnboardingPage(),
+  ///       group: 'onboarding',
+  ///     ),
+  ///   ],
+  /// );
+  /// ```
+  ///
+  /// Note: List the parent route first.
+  /// Ordering is important as the first route
+  /// is assumed to be the parent route.
+  ///
+  /// Once the nested routes are registered globally,
+  /// specify the nested routes to scope and build.
+  /// Point each nested route to the nested widget.
+  ///
+  /// ```dart
+  /// List<Widget> nestedWidgets = nested(
+  ///   context: context,
+  ///   routes: [
+  ///     NavigationData(
+  ///       url: '/onboarding',
+  ///       builder: (context, routeData, globalData) => OnboardingHome(),
+  ///     ),
+  ///     NavigationData(
+  ///       url: '/onboarding/step1',
+  ///       builder: (context, routeData, globalData) => OnboardingPage1(),
+  ///     ),
+  ///     NavigationData(
+  ///       url: '/onboarding/step2',
+  ///       builder: (context, routeData, globalData) => OnboardingPage2(),
+  ///     ),
+  ///   ],
+  /// );
+  /// ```
   List<Widget> nested({
     required BuildContext context,
     required List<NavigationData> routes,
