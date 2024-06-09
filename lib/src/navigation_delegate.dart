@@ -64,8 +64,7 @@ class DefaultRoute extends RouteSettings {
   bool operator ==(Object other) =>
       other is DefaultRoute &&
       ((other.label.isNotEmpty && other.label == label) ||
-          (other.path == path && other.path.isNotEmpty && path.isNotEmpty) ||
-          (other.group != null && group != null && other.group == group));
+          (other.path == path && other.path.isNotEmpty && path.isNotEmpty));
 
   @override
   int get hashCode => label.hashCode * path.hashCode;
@@ -292,8 +291,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Else, return the current page.
     if (routes.isNotEmpty &&
         (_routes.last.path == route.path ||
-            (_routes.last.group != null &&
-                _routes.last.group == route.group))) {
+            (route.group != null && _routes.contains(route)))) {
       _routes.remove(route);
       _routes.add(route);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
@@ -322,8 +320,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Else, return the current page.
     if (routes.isNotEmpty &&
         (_routes.last.path == route.path ||
-            (_routes.last.group != null &&
-                _routes.last.group == route.group))) {
+            (route.group != null && _routes.contains(route)))) {
       _routes.remove(route);
       _routes.add(route);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);

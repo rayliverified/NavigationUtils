@@ -4,9 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:navigation_utils/src/models/navigation_interface.dart';
 
-import 'navigation_delegate.dart';
-import 'navigation_information_parser.dart';
-
 class NavigationManager implements NavigationInterface {
   static const String instanceName = 'NavigationManager';
 
@@ -297,5 +294,13 @@ class NavigationManager implements NavigationInterface {
   /// been called.
   void resumeNavigation() {
     routerDelegate.removeOverride();
+  }
+
+  List<Widget> nested({
+    required BuildContext context,
+    required List<NavigationData> routes,
+  }) {
+    return NavigationBuilder.buildWidgets(
+        context: context, routeDataList: routerDelegate.routes, routes: routes);
   }
 }

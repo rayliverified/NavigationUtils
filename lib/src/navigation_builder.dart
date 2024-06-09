@@ -154,8 +154,6 @@ class NavigationBuilder {
       }
     }
 
-    debugPrint('Built Pages: $pages');
-
     return pages;
   }
 
@@ -218,8 +216,6 @@ class NavigationBuilder {
         }
       }
     }
-
-    debugPrint('Built Widgets: $widgets');
 
     return widgets;
   }
