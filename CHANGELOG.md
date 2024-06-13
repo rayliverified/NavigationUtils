@@ -1,3 +1,9 @@
+## 0.7.1
+- New AnimatedStack widget makes it easy to build nested navigation!
+  - Add custom page transition animations. Use any of Flutter's built in transitions like `FadeTransition`, `ScaleTransition`, etc.
+  - Or, use the included `SharedAxisAnimation` and `FadeThroughAnimation` effects.
+- Optimized performance! AnimatedStack is optimized to prevent page rebuilds.
+
 ## 0.7.0
 - Nested Navigation support. Welcome to the easiest nested navigation ever!
   - Build nested routes with `NavigationManager.instance.nested()`.
