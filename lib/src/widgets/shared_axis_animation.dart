@@ -12,7 +12,7 @@ enum SharedAxisAnimationType {
   scaled,
 }
 
-/// A copy of Flutter animations package's private EnterTransition.
+/// Copied from Flutter animation's private EnterTransition widget.
 class SharedAxisAnimation extends StatelessWidget {
   const SharedAxisAnimation({
     super.key,

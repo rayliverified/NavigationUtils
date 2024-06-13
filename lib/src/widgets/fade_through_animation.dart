@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// A copy of Flutter animations package's private ZoomedFadeInFadeOut.
+/// Copied from Flutter animation's private ZoomedFadeInFadeOut widget.
 class FadeThroughAnimation extends StatelessWidget {
   const FadeThroughAnimation({super.key, required this.animation, this.child});
 
