@@ -1,3 +1,7 @@
+## 0.7.2
+- Simplify Nested Navigation `NavigationManager.nested` usage by bundling `_removeDuplicateWidgets` functionality by default.
+- Add Nested Tabs example.
+
 ## 0.7.1
 - New AnimatedStack widget makes it easy to build nested navigation!
   - Add custom page transition animations. Use any of Flutter's built in transitions like `FadeTransition`, `ScaleTransition`, etc.
