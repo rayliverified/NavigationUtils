@@ -10,8 +10,8 @@ List<NavigationData> routes = [
       url: '/',
       builder: (context, routeData, globalData) => const MyHomePage()),
   NavigationData(
-      url: '/project/:id',
       label: ProjectPage.name,
+      url: '/project/:id',
       builder: (context, routeData, globalData) => ProjectPage(
           id: int.tryParse(routeData.pathParameters['id'] ?? '') ?? 0)),
 ];
