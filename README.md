@@ -445,3 +445,9 @@ NavigationUtils supports route guards through the `shouldNavigateDeeplinkFunctio
 ### Async Navigation
 
 NavigationUtils supports asynchronous navigation, allowing you to perform asynchronous tasks such as data fetching or authentication checks before navigating to a deeplink destination. This is facilitated by the fact that the `shouldNavigateDeeplinkFunction` can be an asynchronous function, meaning it can return a `Future<bool>` instead of a simple `bool`. This lets you perform any necessary async operations and delay navigation until those operations complete.
+
+## Nested Navigation (BETA)
+
+#### Nested Tabs
+
+[Example](https://github.com/rayliverified/NavigationUtils/blob/master/example/lib/main_nested_tabs.dart)

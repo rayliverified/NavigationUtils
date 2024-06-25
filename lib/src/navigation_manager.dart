@@ -387,7 +387,6 @@ class NavigationManager implements NavigationInterface {
       }
     }
 
-    debugPrint(uniqueWidgets.keys.toList().toString());
     return uniqueWidgets.values.toList();
   }
 }

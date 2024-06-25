@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       body: Row(
-        children: <Widget>[
+        children: [
           NavigationRail(
             selectedIndex: selectedIndex,
             onDestinationSelected: (int index) {
