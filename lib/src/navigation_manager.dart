@@ -361,8 +361,33 @@ class NavigationManager implements NavigationInterface {
   List<Widget> nested({
     required BuildContext context,
     required List<NavigationData> routes,
+    bool removeDuplicates = true,
   }) {
+    if (removeDuplicates) {
+      return _removeDuplicateWidgets(NavigationBuilder.buildWidgets(
+          context: context,
+          routeDataList: routerDelegate.routes,
+          routes: routes));
+    }
+
     return NavigationBuilder.buildWidgets(
         context: context, routeDataList: routerDelegate.routes, routes: routes);
+  }
+
+  List<Widget> _removeDuplicateWidgets(List<Widget> originalList) {
+    var uniqueWidgets = <Key, Widget>{};
+
+    for (var widget in originalList) {
+      // Assuming each widget has a unique key; otherwise, skip or handle widgets without keys.
+      if (widget.key != null) {
+        if (uniqueWidgets.containsKey(widget.key)) {
+          uniqueWidgets.remove(widget.key);
+        }
+        uniqueWidgets[widget.key!] = widget;
+      }
+    }
+
+    debugPrint(uniqueWidgets.keys.toList().toString());
+    return uniqueWidgets.values.toList();
   }
 }
