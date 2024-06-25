@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
@@ -6,11 +8,6 @@ import 'package:navigation_utils/navigation_utils.dart';
 
 List<NavigationData> routes = [
   NavigationData(
-      label: MyHomePage.name,
-      url: '/',
-      builder: (context, routeData, globalData) => const MyHomePage(),
-      group: MyHomePage.name),
-  NavigationData(
       label: FirstPage.name,
       url: '/',
       builder: (context, routeData, globalData) => const MyHomePage(),
@@ -18,11 +15,6 @@ List<NavigationData> routes = [
   NavigationData(
       label: SecondPage.name,
       url: '/second',
-      builder: (context, routeData, globalData) => const MyHomePage(),
-      group: MyHomePage.name),
-  NavigationData(
-      label: NestedFirstPage.name,
-      url: '/second/1',
       builder: (context, routeData, globalData) => const MyHomePage(),
       group: MyHomePage.name),
   NavigationData(
@@ -82,18 +74,38 @@ class _MyHomePageState extends State<MyHomePage> {
           const SecondPage(key: ValueKey(SecondPage.name)),
     ),
     NavigationData(
-      label: NestedFirstPage.name,
-      url: '/second/1',
-      builder: (context, routeData, globalData) =>
-          const SecondPage(key: ValueKey(SecondPage.name)),
-    ),
-    NavigationData(
       label: NestedSecondPage.name,
       url: '/second/2',
       builder: (context, routeData, globalData) =>
           const SecondPage(key: ValueKey(SecondPage.name)),
     ),
   ];
+
+  late StreamSubscription navigationListener;
+
+  @override
+  void initState() {
+    super.initState();
+    setTab(NavigationManager.instance.currentRoute?.label);
+    navigationListener = NavigationManager.instance.getCurrentRoute
+        .listen((route) => setTab(route.label));
+  }
+
+  @override
+  void dispose() {
+    navigationListener.cancel();
+    super.dispose();
+  }
+
+  void setTab(String? tab) {
+    if (tab == null) return;
+
+    int tabIndex = pages.indexWhere((element) => element.label == tab);
+    if (tabIndex > -1 && tabIndex <= 1) {
+      selectedIndex = tabIndex;
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,8 +130,8 @@ class _MyHomePageState extends State<MyHomePage> {
             labelType: NavigationRailLabelType.all,
             destinations: const [
               NavigationRailDestination(
-                icon: Icon(Icons.looks_one_rounded),
-                selectedIcon: Icon(Icons.looks_one_outlined),
+                icon: Icon(Icons.looks_one_outlined),
+                selectedIcon: Icon(Icons.looks_one_rounded),
                 label: Text('First'),
               ),
               NavigationRailDestination(
@@ -166,11 +178,6 @@ class FirstPage extends StatefulWidget {
 
 class _FirstPageState extends State<FirstPage> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.amber,
@@ -192,10 +199,64 @@ class SecondPage extends StatefulWidget {
   State<SecondPage> createState() => _SecondPageState();
 }
 
-class _SecondPageState extends State<SecondPage> {
+class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
+  List<NavigationData> pages = [
+    NavigationData(
+      label: SecondPage.name,
+      url: '/second',
+      builder: (context, routeData, globalData) =>
+          const NestedFirstPage(key: ValueKey(NestedFirstPage.name)),
+    ),
+    NavigationData(
+        label: NestedSecondPage.name,
+        url: '/second/2',
+        builder: (context, routeData, globalData) =>
+            const NestedSecondPage(key: ValueKey(NestedSecondPage.name))),
+  ];
+  List<Tab> tabs = const [
+    Tab(text: 'Nested First'),
+    Tab(text: 'Nested Second'),
+  ];
+
+  late TabController tabController;
+  late StreamSubscription navigationListener;
+
   @override
   void initState() {
     super.initState();
+    int initialIndex = pages.indexWhere((element) =>
+        element.path == NavigationManager.instance.currentRoute?.path);
+    tabController = TabController(
+      initialIndex: initialIndex,
+      length: tabs.length,
+      vsync: this,
+      // animationDuration: Duration.zero,
+    );
+    tabController.addListener(tabControllerListener);
+    navigationListener = NavigationManager.instance.getCurrentRoute
+        .listen((route) => setTab(route.label));
+  }
+
+  @override
+  void dispose() {
+    tabController.dispose();
+    navigationListener.cancel();
+    super.dispose();
+  }
+
+  void setTab(String? tab) {
+    if (tab == null) return;
+
+    int tabIndex = pages.indexWhere((element) => element.label == tab);
+    if (tabIndex > -1) {
+      tabController.index = tabIndex;
+      setState(() {});
+    }
+  }
+
+  void tabControllerListener() {
+    NavigationManager.instance.routerDelegate
+        .push(pages[tabController.index].label!);
   }
 
   @override
@@ -203,16 +264,37 @@ class _SecondPageState extends State<SecondPage> {
     return Container(
       color: Colors.blueAccent,
       alignment: Alignment.center,
-      child: const Text(
-        'Second Page',
-        style: TextStyle(color: Colors.white),
+      child: Column(
+        children: [
+          const Text(
+            'Second Page',
+            style: TextStyle(color: Colors.white),
+          ),
+          TabBar(
+            controller: tabController,
+            tabs: tabs,
+          ),
+          Expanded(
+            child: AnimatedStack(
+              duration: const Duration(milliseconds: 500),
+              crossFadePosition: 0,
+              animation: (child, animation) {
+                return FadeThroughAnimation(
+                    key: child.key, animation: animation, child: child);
+              },
+              alignment: Alignment.topLeft,
+              children: NavigationManager.instance
+                  .nested(context: context, routes: pages),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class NestedFirstPage extends StatefulWidget {
-  static const String name = 'second';
+  static const String name = 'nested_first';
 
   const NestedFirstPage({super.key});
 
@@ -221,11 +303,6 @@ class NestedFirstPage extends StatefulWidget {
 }
 
 class _NestedFirstPageState extends State<NestedFirstPage> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -240,7 +317,7 @@ class _NestedFirstPageState extends State<NestedFirstPage> {
 }
 
 class NestedSecondPage extends StatefulWidget {
-  static const String name = 'second';
+  static const String name = 'nested_second';
 
   const NestedSecondPage({super.key});
 
@@ -249,11 +326,6 @@ class NestedSecondPage extends StatefulWidget {
 }
 
 class _NestedSecondPageState extends State<NestedSecondPage> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
