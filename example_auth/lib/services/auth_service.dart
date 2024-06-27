@@ -86,29 +86,6 @@ class AuthService implements Disposable {
     _instance = AuthService._();
   }
 
-  /// An awaitable function that AuthService is initialized
-  /// in the proper order on app startup.
-  ///
-  /// Internally, this function calls [loadUserModel]
-  /// and returns the [AuthResult].
-  ///
-  /// FirebaseAuth's synchronous getter for auth state
-  /// is not dependable on app initialization and will return
-  /// unauthorized on certain app starts such as hot reload.
-  /// Auth dependent functions should subscribe to
-  /// [firebaseAuthListener].
-  Future<AuthResult> initAuthState() async {
-    DebugLogger.instance.printFunction('initAuthState', name: name);
-    DebugLogger.instance
-        .printInfo('Current User: ${FirebaseAuth.instance.currentUser?.uid}');
-    String? uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      // await fetchAndSetUserModel(uid);
-      return AuthResult.success();
-    }
-    return AuthResult.failure();
-  }
-
   // BEGIN: Firebase Auth Methods.
   /// Method to handle user sign in using email and password
   Future<ValueResponse<void>> signInWithEmailAndPassword(
