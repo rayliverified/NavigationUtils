@@ -11,15 +11,15 @@ dependencies:
   flutter:
     sdk: flutter
   # Firebase
-  firebase_core: ^3.1.0
-  firebase_auth: ^5.1.0
-  cloud_firestore: ^5.0.1
+  firebase_core: ^3.1.1
+  firebase_auth: ^5.1.1
+  cloud_firestore: ^5.0.2
   google_sign_in: 6.2.1 # Missing Windows Support.
-  firebase_database: ^11.0.1 # Missing Windows Support.
-  firebase_storage: ^12.0.1
-  cloud_functions: ^5.0.1 # Missing Windows Support.
-  firebase_analytics: ^11.0.1 # Missing Windows Support.
-  firebase_crashlytics: ^4.0.1
+  firebase_database: ^11.0.2 # Missing Windows Support.
+  firebase_storage: ^12.1.0
+  cloud_functions: ^5.0.2 # Missing Windows Support.
+  firebase_analytics: ^11.1.0 # Missing Windows Support.
+  firebase_crashlytics: ^4.0.2
   firebase_ui_firestore: ^1.6.4
   google_fonts: ^6.2.1
   simple_gravatar: ^1.1.0 # Provides Auth default images.
@@ -33,7 +33,7 @@ dependencies:
   # 1st Party Core Framework
   navigation_utils:
     path: ../
-#  codelessly_sdk: ^1.9.0
+  codelessly_sdk: ^2.0.1
 
   # 3rd Party Core Framework
   get_it: ^7.7.0
