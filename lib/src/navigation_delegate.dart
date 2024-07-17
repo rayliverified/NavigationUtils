@@ -515,6 +515,33 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
   }
 
+  @override
+  void removeGroup(String name, {bool apply = true, bool all = false}) {
+    for (int i = _routes.length - 1; i >= 0; i--) {
+      var route = _routes[i];
+
+      if (route.group == name) {
+        if (!canPop || (all == false && _routes.length <= 1)) {
+          continue;
+        }
+
+        if (_pageCompleters.containsKey(route)) {
+          _pageCompleters[route]!.complete(null);
+          _pageCompleters.remove(route);
+        }
+
+        // Remove the route at the current index
+        _routes.removeAt(i);
+      }
+    }
+    if (_routes.isNotEmpty && apply) {
+      onRouteChanged(_routes.last);
+    }
+    if (apply) {
+      notifyListeners();
+    }
+  }
+
   // Replace
 
   @override

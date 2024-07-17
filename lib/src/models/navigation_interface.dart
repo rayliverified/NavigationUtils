@@ -70,6 +70,15 @@ abstract class NavigationInterface {
   /// Removes all routes above a specific [route].
   void removeRouteAbove(DefaultRoute route, {bool apply = true});
 
+  /// Remove all routes with the group [name].
+  /// All routes tagged with the group name will be removed.
+  ///
+  /// This method works for most of the common group usage scenarios.
+  /// For complex scenarios with multiple separated groups
+  /// with the same name, handle navigation manually
+  /// by processing the route list and using [set].
+  void removeGroup(String name, {bool apply = true, bool all = false});
+
   /// Replaces an [oldName] route with a new route, with [newName] or [newRoute].
   void replace(String oldName,
       {String? newName,

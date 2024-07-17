@@ -167,6 +167,11 @@ class NavigationManager implements NavigationInterface {
   }
 
   @override
+  void removeGroup(String name, {bool apply = true, bool all = false}) {
+    routerDelegate.removeGroup(name, apply: apply, all: all);
+  }
+
+  @override
   void replace(String oldName,
       {String? newName,
       DefaultRoute? newRoute,

@@ -42,7 +42,10 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
 
   @override
   Widget build(BuildContext context) {
-    if (debugLog) debugPrint('NavigationUtils: Build Navigation: $routes');
+    if (debugLog) {
+      debugPrint(
+          'NavigationUtils Build: Current Route: ${routes.last} Routes: $routes');
+    }
 
     return Navigator(
       key: navigatorKey,
