@@ -62,12 +62,11 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
         ],
       ],
       onPopPage: (route, result) {
-        if (!route.didPop(result)) {
+        // If the route handled pop internally, return false.
+        if (route.didPop(result) == false) {
           return false;
         }
-        if (canPop) {
-          pop(result);
-        }
+        pop(result);
         return true;
       },
       observers: observers,

@@ -340,16 +340,15 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   @override
   void pop([dynamic result, bool apply = true, bool all = false]) {
-    if (canPop) {
-      if (all == false && _routes.length <= 1) return;
-      if (_pageCompleters.containsKey(routes.last)) {
-        _pageCompleters[routes.last]!.complete(result);
-        _pageCompleters.remove(routes.last);
-      }
-      _routes.removeLast();
-      if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
-      if (apply) notifyListeners();
+    if (canPop == false) return;
+    if (all == false && _routes.length <= 1) return;
+    if (_pageCompleters.containsKey(routes.last)) {
+      _pageCompleters[routes.last]!.complete(result);
+      _pageCompleters.remove(routes.last);
     }
+    _routes.removeLast();
+    if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
+    if (apply) notifyListeners();
   }
 
   // Pop Until

@@ -108,7 +108,12 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
     if (mounted == false) return;
     if (context.mounted == false) return;
 
-    String routeName = ModalRoute.of(context)?.settings.name ?? '';
+    late String routeName;
+    try {
+      routeName = ModalRoute.of(context)?.settings.name ?? '';
+    } catch (e) {
+      return;
+    }
     if (routeName != currentRoute.name) {
       if (paused) return;
       paused = true;
