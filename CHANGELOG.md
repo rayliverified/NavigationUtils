@@ -1,3 +1,8 @@
+## 0.7.3
+- Create `removeGroup` function for removing Nested Navigation groups.
+- Add option to set the NavigationListenerMixin's route name.
+  - Set and override the `routeName` of the current page.
+
 ## 0.7.2
 - Simplify Nested Navigation `NavigationManager.nested` usage by bundling `_removeDuplicateWidgets` functionality by default.
 - Add Nested Tabs example.
