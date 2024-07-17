@@ -25,7 +25,12 @@ mixin NavigationListenerMixin {
     // Get the name of the current page.
     // The route is returned via the context of the page
     // the mixin is added to.
-    String routeName = ModalRoute.of(_context)?.settings.name ?? '';
+    late String routeName;
+    try {
+      routeName = ModalRoute.of(_context)?.settings.name ?? '';
+    } catch (e) {
+      return;
+    }
     // If the route name changes, the current page is no
     // longer active and paused.
     if (routeName != currentRoute.name) {
@@ -155,7 +160,12 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
     if (mounted == false) return;
     if (_context.mounted == false) return;
 
-    String routeName = ModalRoute.of(_context)?.settings.name ?? '';
+    late String routeName;
+    try {
+      routeName = ModalRoute.of(_context)?.settings.name ?? '';
+    } catch (e) {
+      return;
+    }
     if (routeName != currentRoute.name) {
       if (paused) return;
       paused = true;
