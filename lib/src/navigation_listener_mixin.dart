@@ -8,11 +8,13 @@ import 'navigation_manager.dart';
 mixin NavigationListenerMixin {
   late BuildContext _context;
   late StreamSubscription navigationListener;
+  String? _routeName;
   bool mounted = true;
   bool paused = false;
 
-  void initNavigationListener(BuildContext context) {
+  void initNavigationListener(BuildContext context, {String? routeName}) {
     _context = context;
+    _routeName = routeName;
     navigationListener = NavigationManager
         .instance.routerDelegate.getCurrentRoute
         .listen(_didUpdateRoute);
@@ -27,7 +29,7 @@ mixin NavigationListenerMixin {
     // the mixin is added to.
     late String routeName;
     try {
-      routeName = ModalRoute.of(_context)?.settings.name ?? '';
+      routeName = _routeName ?? ModalRoute.of(_context)?.settings.name ?? '';
     } catch (e) {
       return;
     }
@@ -93,6 +95,7 @@ mixin NavigationListenerMixin {
 
 mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
   late StreamSubscription navigationListener;
+  String? _routeName;
   bool paused = false;
 
   @override
@@ -115,7 +118,7 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
 
     late String routeName;
     try {
-      routeName = ModalRoute.of(context)?.settings.name ?? '';
+      routeName = _routeName ?? ModalRoute.of(context)?.settings.name ?? '';
     } catch (e) {
       return;
     }
@@ -134,16 +137,22 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
       {required String oldRouteName, required String newRouteName}) {}
 
   void onRouteResume() {}
+
+  void setRouteName(String routeName) {
+    _routeName = routeName;
+  }
 }
 
 mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
   late BuildContext _context;
   late StreamSubscription navigationListener;
+  String? _routeName;
   bool mounted = true;
   bool paused = false;
 
-  void initNavigationListener(BuildContext context) {
+  void initNavigationListener(BuildContext context, {String? routeName}) {
     _context = context;
+    _routeName = routeName;
     navigationListener = NavigationManager
         .instance.routerDelegate.getCurrentRoute
         .listen(_didUpdateRoute);
@@ -162,7 +171,7 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
 
     late String routeName;
     try {
-      routeName = ModalRoute.of(_context)?.settings.name ?? '';
+      routeName = _routeName ?? ModalRoute.of(_context)?.settings.name ?? '';
     } catch (e) {
       return;
     }
