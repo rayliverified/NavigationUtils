@@ -1,3 +1,7 @@
+## 0.7.4
+- Add `NavigationManager.instance.routes` convenience method for accessing the list of active routes.
+- Add `onPopPage` callback to `DefaultRouterDelegate` for overriding global back navigation.
+
 ## 0.7.3
 - Create `removeGroup` function for removing Nested Navigation groups.
 - Add option to set the NavigationListenerMixin's route name.
