@@ -50,6 +50,8 @@ class NavigationManager implements NavigationInterface {
         setInitialRoutePathFunction;
   }
 
+  List<DefaultRoute> get routes => routerDelegate.routes;
+
   @override
   Future<dynamic> push(String name,
       {Map<String, String>? queryParameters,
