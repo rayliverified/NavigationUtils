@@ -29,16 +29,20 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
 
   List<String> excludeDeeplinkNavigationPages;
 
-  DefaultRouterDelegate(
-      {required this.navigationDataRoutes,
-      this.debugLog = false,
-      this.onUnknownRoute,
-      this.pageBuilder,
-      this.observers = const [],
-      this.deeplinkDestinations = const [],
-      this.customDeeplinkHandler,
-      this.authenticated = true,
-      this.excludeDeeplinkNavigationPages = const []});
+  PopPageCallback? onPopPage;
+
+  DefaultRouterDelegate({
+    required this.navigationDataRoutes,
+    this.debugLog = false,
+    this.onUnknownRoute,
+    this.pageBuilder,
+    this.observers = const [],
+    this.deeplinkDestinations = const [],
+    this.customDeeplinkHandler,
+    this.authenticated = true,
+    this.excludeDeeplinkNavigationPages = const [],
+    this.onPopPage,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +69,9 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
         ],
       ],
       onPopPage: (route, result) {
+        if (onPopPage?.call(route, result) == false) {
+          return false;
+        }
         // If the route handled pop internally, return false.
         if (route.didPop(result) == false) {
           return false;
