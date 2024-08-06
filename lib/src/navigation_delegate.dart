@@ -88,10 +88,8 @@ typedef SetMainRoutesCallback = List<DefaultRoute> Function(
 /// It listens to the RouteInformation Parser and the app state and builds the Navigator with
 /// the current list of pages (immutable object used to set navigator's history stack).
 abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
-    with
-        ChangeNotifier,
-        PopNavigatorRouterDelegateMixin<DefaultRoute>,
-        NavigationInterface {
+    with ChangeNotifier, PopNavigatorRouterDelegateMixin<DefaultRoute>
+    implements NavigationInterface {
   // Persist the navigator with a global key.
   @override
   GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

@@ -11,8 +11,8 @@ false_secrets:
   - /example_auth/lib/firebase_options.dart
 
 environment:
-  sdk: ">=2.17.1 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
 
 dependencies:
   flutter:
