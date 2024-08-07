@@ -1,6 +1,6 @@
 {
-    "name": "example_auth",
-    "short_name": "example_auth",
+    "name": "auth",
+    "short_name": "auth",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
