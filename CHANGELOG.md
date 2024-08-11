@@ -1,4 +1,4 @@
-## 0.7.6
+## 0.7.7
 - Loosen Flutter constraints to prepare for Predictive Back Navigation breaking change.
 
 ## 0.7.5

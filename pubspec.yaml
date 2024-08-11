@@ -1,6 +1,6 @@
 name: navigation_utils
 description: The missing navigation library for Navigator 2. NavigationUtils is the simplest way to add Flutter's Navigator 2 into your applications.
-version: 0.7.6
+version: 0.7.7
 homepage: https://codelessly.com
 repository: https://github.com/rayliverified/NavigationUtils
 false_secrets:
@@ -11,8 +11,8 @@ false_secrets:
   - /example_auth/lib/firebase_options.dart
 
 environment:
-  sdk: ">=3.5.0 <4.0.0"
-  flutter: ">=3.24.0"
+  sdk: ">=2.17.1 <4.0.0"
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:
