@@ -1,3 +1,6 @@
+## 0.7.6
+- Loosen Flutter constraints to prepare for Predictive Back Navigation breaking change.
+
 ## 0.7.5
 - Fix `initialRoute` incorrectly parsing query parameters as path.
 - Update examples to Flutter v3.24.0.
