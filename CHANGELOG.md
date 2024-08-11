@@ -1,3 +1,7 @@
+## 0.7.5
+- Fix `initialRoute` incorrectly parsing query parameters as path.
+- Update examples to Flutter v3.24.0.
+
 ## 0.7.4
 - Add `NavigationManager.instance.routes` convenience method for accessing the list of active routes.
 - Add `onPopPage` callback to `DefaultRouterDelegate` for overriding global back navigation.
