@@ -41,6 +41,16 @@ class DefaultRoute extends RouteSettings {
         metadata: metadata);
   }
 
+  factory DefaultRoute.fromUri(Uri uri,
+      {String label = '', String? group, Map<String, dynamic>? metadata}) {
+    return DefaultRoute(
+        path: uri.path,
+        queryParameters: uri.queryParameters,
+        label: label,
+        group: group,
+        metadata: metadata);
+  }
+
   DefaultRoute copyWith(
       {String? label,
       String? path,
