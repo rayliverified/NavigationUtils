@@ -17,12 +17,6 @@ class AuthException implements Exception {
   String toString() => 'AuthException: $errorCode';
 }
 
-class SignedOutException implements Exception {
-  @override
-  String toString() =>
-      'SignedOutException: Attempted to call a protected resource while signed out';
-}
-
 /// Allows to quickly convert any firebase exception to [ExceptionWrapper].
 extension FirebaseExceptionExtension on FirebaseException {
   ExceptionWrapper toException([StackTrace? trace]) =>
