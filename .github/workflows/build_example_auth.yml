@@ -27,7 +27,7 @@ jobs:
       - name: Build
         run: |
           cd example_auth
-          flutter build web --release --base-href /flutterwebsites/auth/ --wasm
+          flutter build web --release --base-href /flutterwebsites/auth/ --wasm --web-resources-cdn
           mv build/web/* ../clone_dir/flutterwebsites/auth
       - name: Get current date
         id: date
