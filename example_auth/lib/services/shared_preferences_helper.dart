@@ -43,15 +43,15 @@ class SharedPreferencesHelper implements SharedPreferences {
     List<Future<void>> restoreTasks = [];
     _sharedPreferencesHolder.forEach((key, value) {
       switch (value.runtimeType) {
-        case String:
+        case const (String):
           restoreTasks.add(_sharedPreferences.setString(key, value as String));
-        case bool:
+        case const (bool):
           restoreTasks.add(_sharedPreferences.setBool(key, value as bool));
-        case int:
+        case const (int):
           restoreTasks.add(_sharedPreferences.setInt(key, value as int));
-        case double:
+        case const (double):
           restoreTasks.add(_sharedPreferences.setDouble(key, value as double));
-        case List:
+        case const (List):
           restoreTasks.add(
               _sharedPreferences.setStringList(key, value as List<String>));
       }

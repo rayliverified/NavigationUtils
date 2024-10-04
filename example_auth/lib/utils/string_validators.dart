@@ -1,4 +1,4 @@
-library string_validators;
+library;
 
 import 'package:flutter/services.dart';
 
