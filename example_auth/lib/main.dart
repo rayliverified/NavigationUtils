@@ -1,4 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+
+import 'package:example_auth/models/model_user.dart';
+import 'package:example_auth/services/signout_helper.dart';
+import 'package:example_auth/services/user_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -45,32 +49,51 @@ class AppState extends State<App> {
   bool loadInitialRoute = true;
   String? errorMessage;
 
+  late StreamSubscription navigationListener;
+  late StreamSubscription<String?> firebaseAuthUserListener;
+  late StreamSubscription<UserModel> userCreatedListener;
+
   @override
   void initState() {
     super.initState();
-    DebugLogger.instance.printFunction('initState', name: App.name);
-    // Attach navigation callback that hooks into the app state.
-    NavigationManager.instance.setMainRoutes =
-        (routes) => setMainRoutes(routes);
-    // Navigate after authentication and user model loads.
-    AuthService.instance.firebaseAuthUserStream
-        .asBroadcastStream()
-        .listen(_firebaseAuthUserListener);
     init();
   }
 
   Future<void> init() async {
-    // Initialize app cycle dependent initialization here.
+    DebugLogger.instance.printFunction('init', name: App.name);
+    // Attach navigation callback that hooks into the app state.
+    NavigationManager.instance.setMainRoutes =
+        (routes) => setMainRoutes(routes);
+
+    firebaseAuthUserListener = AuthService.instance.firebaseAuthUserStream
+        .listen((uid) =>
+            uid != null ? onUserAuthenticated(uid) : onUserUnauthenticated());
+    userCreatedListener =
+        AuthService.instance.userCreatedStream.listen((userModel) {});
+
+    // Set initialization page.
+    if (AuthService.instance.isAuthenticated.value) {
+      onUserAuthenticated(UserManager.instance.user.value.id);
+    } else {
+      if (UserManager.instance.user.value.empty == false) {
+        // Wait for FirebaseAuth to initialize. FirebaseAuth MUST initialize otherwise Firestore calls fail.
+        NavigationManager.instance.pauseNavigation();
+      } else {
+        NavigationManager.instance.set([SignUpForm.name]);
+      }
+    }
   }
 
   @override
   void dispose() {
+    firebaseAuthUserListener.cancel();
+    userCreatedListener.cancel();
+    navigationListener.cancel();
     GetIt.instance.reset();
     super.dispose();
   }
 
-  Future<void> _firebaseAuthUserListener(User? user) async {
-    DebugLogger.instance.printInfo('firebaseAuthUserListener: $user');
+  Future<void> onUserAuthenticated(String uid) async {
     // Attempt to load the initial route URI.
     if (loadInitialRoute) {
       loadInitialRoute = false;
@@ -79,28 +102,38 @@ class AppState extends State<App> {
           NavigationManager.instance.routeInformationParser.initialRoute;
       DebugLogger.instance.printInfo('Initial Route: $initialRoute');
       NavigationManager.instance.set([initialRoute]);
-      NavigationManager.instance.resumeNavigation();
-    } else if (AuthService.instance.isAuthenticated.value) {
+    } else {
       NavigationManager.instance.set([HomePage.name]);
     }
+
+    DebugLogger.instance.printInfo('Resume Navigation');
+
+    NavigationManager.instance.resumeNavigation();
+  }
+
+  Future<void> onUserUnauthenticated() async {
     // Automatically navigate to auth screen when user is logged out.
-    if (AuthService.instance.isAuthenticated.value == false) {
-      if (NavigationManager.instance.currentRoute?.metadata?['auth'] == true) {
-        NavigationManager.instance.set([SignUpForm.name]);
-      }
+    if (NavigationManager.instance.currentRoute?.metadata?['auth'] == true) {
+      NavigationManager.instance.set([SignUpForm.name]);
     }
+    NavigationManager.instance.resumeNavigation();
+    // This function can be called multiple times by the Auth library so it is not safe to rely on for signout.
+    // Instead, call the signout function. This calls this signout function duplicate times so the signout
+    // function must handle correctly.
+    SignoutHelper.signOut();
   }
 
   List<DefaultRoute> setMainRoutes(List<DefaultRoute> routes) {
-    DebugLogger.instance
-        .printFunction('setMainRoutes: $routes', name: App.name);
+    DebugLogger.instance.printFunction('setMainRoutes(routes: $routes)',
+        name: NavigationManager.name);
     List<DefaultRoute> routesHolder = routes;
     // Authenticated route guard.
-    if (AuthService.instance.isAuthenticated.value == false &&
-        initialized == true) {
+    if (AuthService.instance.isAuthenticated.value == false) {
       routesHolder.removeWhere((element) => element.metadata?['auth'] == true);
       if (routesHolder.isEmpty) {
         routesHolder.add(DefaultRoute(label: SignUpForm.name, path: '/signup'));
+        // Handle edge case where UserModel is cached but FirebaseAuth has logged out.
+        NavigationManager.instance.resumeNavigation();
       }
     }
     // Remove login and signup page guard.
@@ -112,8 +145,8 @@ class AppState extends State<App> {
             navigation_routes.routes, '/'));
       }
     }
-    DebugLogger.instance
-        .printFunction('Set Routes New: $routes', name: App.name);
+    DebugLogger.instance.printFunction('setMainRoutesNew(routes: $routes)',
+        name: NavigationManager.name);
     return routesHolder;
   }
 
@@ -158,7 +191,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               const Text('Home Page'),
               MaterialButton(
-                onPressed: AuthService.instance.signOut,
+                onPressed: SignoutHelper.signOut,
                 color: Colors.blue,
                 child:
                     const Text('Logout', style: TextStyle(color: Colors.white)),

@@ -34,9 +34,10 @@ class Initialization {
       usePathUrlStrategy();
     }
 
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
-    await SharedPreferencesHelper.init();
+    await Future.wait([
+      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+      SharedPreferencesHelper.init(),
+    ]);
 
     await Future.wait([
       AuthService.instance.init(),
@@ -51,7 +52,6 @@ class Initialization {
           authenticated: AuthService.instance.isAuthenticated.value,
         ),
         routeInformationParser: DefaultRouteInformationParser(debugLog: true));
-    NavigationManager.instance.pauseNavigation();
 
     // Run post functions.
     await postInitFunction?.call();

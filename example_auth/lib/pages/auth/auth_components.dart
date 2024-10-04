@@ -65,7 +65,7 @@ class _SignUpFormState extends State<SignUpForm> {
 
     final ValueResponse response = await AuthService.instance
         .registerWithEmailAndPassword(
-            '', _emailController.text, _passwordController.text);
+            email: _emailController.text, password: _passwordController.text);
 
     // The login and signup forms look very similar.
     // It is common to try to login through the signup form.

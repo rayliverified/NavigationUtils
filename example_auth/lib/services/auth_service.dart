@@ -1,30 +1,31 @@
 import 'dart:async';
 
+import 'package:example_auth/models/model_user.dart';
+import 'package:example_auth/services/auth_exceptions.dart';
+import 'package:example_auth/services/debug_logger.dart';
+import 'package:example_auth/utils/value_response.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:universal_io/io.dart';
 
-import '../models/model_user.dart';
-import '../utils/value_response.dart';
-import 'auth_exceptions.dart';
-import 'debug_logger.dart';
 import 'user_manager.dart';
 
 class AuthResult {
   final bool success;
   final String? errorMessage;
+  final UserModel? userModel;
 
-  AuthResult._({required this.success, this.errorMessage});
+  AuthResult._({required this.success, this.errorMessage, this.userModel});
 
-  factory AuthResult.success() => AuthResult._(success: true);
+  factory AuthResult.success({UserModel? userModel}) =>
+      AuthResult._(success: true, userModel: userModel);
 
   factory AuthResult.failure([String errorMessage = '']) =>
       AuthResult._(success: false, errorMessage: errorMessage);
 }
 
-class AuthService implements Disposable {
+class AuthService {
   static const String name = 'AuthService';
 
   static AuthService? _instance;
@@ -32,61 +33,74 @@ class AuthService implements Disposable {
   static AuthService get instance {
     if (_instance == null) {
       DebugLogger.instance.printFunction('AuthService Initialized', name: name);
-      // An instance persists the AuthService.
       _instance ??= AuthService._();
       return _instance!;
     }
     return _instance!;
   }
 
-  late Stream<User?> firebaseAuthUserStream;
-  late StreamSubscription firebaseAuthListener;
+  late StreamSubscription _firebaseAuthListener;
 
+  /// Returns `onUserAuthenticated` and `onUserUnauthenticated` callbacks.
+  ///
+  /// If the returned `uid` is not null, the user is authenticated.
+  /// If the returned `uid` is null, the user is unauthenticated.
+  ///
+  /// Important platform differences:
+  /// On Windows, this stream emits twice. The first emission
+  /// is always unauthenticated.
+  Stream<String?> get firebaseAuthUserStream =>
+      firebaseAuthUserStreamController.stream;
+  late StreamController<String?> firebaseAuthUserStreamController;
+  Stream<UserModel> get userCreatedStream => userCreatedStreamController.stream;
+  late StreamController<UserModel> userCreatedStreamController;
+
+  bool firebaseAuthInitialized = false;
   ValueNotifier<bool> isAuthenticated = ValueNotifier(false);
-
-  Function(String uid)? onUserAuthenticatedCallback;
-  Function? onUserUnauthenticatedCallback;
 
   AuthService._() {
     // Note: Listeners  are put in the initialization call to avoid the Hot Restart stream duplication bug.
     // If any listener code is changed, a clean start is required.
-    firebaseAuthUserStream =
-        FirebaseAuth.instance.authStateChanges().asBroadcastStream();
-    firebaseAuthListener = FirebaseAuth.instance
+    firebaseAuthUserStreamController = StreamController<String?>.broadcast();
+    userCreatedStreamController = StreamController<UserModel>.broadcast();
+    _firebaseAuthListener = FirebaseAuth.instance
         .authStateChanges()
         .asBroadcastStream()
-        .listen((user) {
+        .listen((user) async {
       DebugLogger.instance.printFunction('authStateChanges: $user', name: name);
+      firebaseAuthInitialized = true;
       if (user != null) {
         DebugLogger.instance
             .printFunction('onUserAuthenticated ${user.uid}', name: name);
+        await UserManager.instance.startUserStreamSubscription(user.uid);
         isAuthenticated.value = true;
-        UserManager.instance.startUserStreamSubscription(user.uid);
-        onUserAuthenticatedCallback?.call(user.uid);
-      } else if (UserManager.instance.user.value.id.isNotEmpty) {
+        firebaseAuthUserStreamController.add(user.uid);
+      } else if (UserManager.instance.user.value.id.isNotEmpty &&
+          isAuthenticated.value == false) {
         // If UserModel exists, app is authenticated. Firebase Auth will return authenticated in a bit.
+        DebugLogger.instance.printInfo(
+            'Waiting for FirebaseAuth to authenticate...',
+            name: name);
+        return;
       } else {
         DebugLogger.instance.printFunction('onUserUnauthenticated', name: name);
         isAuthenticated.value = false;
-        onUserUnauthenticatedCallback?.call();
+        firebaseAuthUserStreamController.add(null);
       }
     });
   }
 
   Future<AuthService> init() async {
-    DebugLogger.instance.printFunction('AuthService init', name: name);
-    UserModel? userModel = await UserManager.instance.loadUserModelLocal();
-    isAuthenticated.value = (userModel != null);
+    DebugLogger.instance.printFunction('init', name: name);
+    await UserManager.instance.loadUserModelLocal();
     return this;
   }
 
-  @override
-  FutureOr onDispose() {
-    firebaseAuthListener.cancel();
+  Future<void> dispose() async {
+    _firebaseAuthListener.cancel();
     _instance = AuthService._();
   }
 
-  // BEGIN: Firebase Auth Methods.
   /// Method to handle user sign in using email and password
   Future<ValueResponse<void>> signInWithEmailAndPassword(
       String email, String password) async {
@@ -111,10 +125,12 @@ class AuthService implements Disposable {
 
   /// User registration using email and password
   Future<ValueResponse<void>> registerWithEmailAndPassword(
-      String name, String email, String password) async {
-    DebugLogger.instance.printFunction(
-        'registerWithEmailAndPassword: $name, $email, $password',
-        name: name);
+      {required String email,
+      required String password,
+      String? firstName,
+      String? lastName}) async {
+    DebugLogger.instance
+        .printFunction('registerWithEmailAndPassword', name: name);
     try {
       final UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -122,15 +138,15 @@ class AuthService implements Disposable {
         email: userCredential.user?.email ?? email,
         id: userCredential.user?.uid ?? '',
         photoUrl: userCredential.user?.photoURL ?? '',
-        name: userCredential.user?.displayName ?? '',
+        firstName: firstName ?? userCredential.user?.displayName,
+        lastName: lastName,
       );
-      UserModel? userModelHolder =
+      UserModel? userModel =
           await UserManager.instance.createUserModel(firebaseUser);
-      if (userModelHolder == null) {
+      if (userModel == null) {
         return ValueResponse.error('Error: unable to create user.');
       }
-      await UserManager.instance
-          .startUserStreamSubscription(userCredential.user?.uid ?? '');
+      userCreatedStreamController.add(userModel);
       return ValueResponse.success();
     } on FirebaseAuthException catch (e) {
       debugPrint('FirebaseAuthException: ${e.toString()}');
@@ -155,16 +171,6 @@ class AuthService implements Disposable {
     return ValueResponse.success();
   }
 
-  /// Sign out user from Firebase Auth.
-  Future<void> signOut() async {
-    DebugLogger.instance.printFunction('signOut', name: name);
-
-    /// Clear user data.
-    await UserManager.instance.resetUserModel();
-    await UserManager.instance.onDispose();
-    await FirebaseAuth.instance.signOut();
-  }
-
   /// Sign in with Google.
   Future<AuthResult> googleSignIn() async {
     DebugLogger.instance.printFunction('googleSignIn', name: name);
@@ -179,7 +185,7 @@ class AuthService implements Disposable {
         userCredential =
             await FirebaseAuth.instance.signInWithPopup(googleProvider);
       } else {
-        if (Platform.isWindows) {
+        if (Platform.isWindows && !kIsWeb) {
           // Default is a MissingPluginException error.
           return AuthResult.failure(
               'Sign in with Google is not yet supported on Windows');
@@ -204,8 +210,11 @@ class AuthService implements Disposable {
       UserModel user = UserModel(
         id: userCredential.user!.uid,
         email: userCredential.user!.email ?? '',
-        name: userCredential.user!.displayName ?? '',
         photoUrl: userCredential.user!.photoURL ?? '',
+        firstName: userCredential.user!.displayName?.split(' ').first ?? '',
+        lastName: userCredential.user!.displayName?.contains(' ') == true
+            ? userCredential.user!.displayName!.split(' ').skip(1).join(' ')
+            : '',
       );
       // When auth returns a null user, an AuthException is thrown.
       // This failure return is just for a null check.
@@ -220,7 +229,10 @@ class AuthService implements Disposable {
         if (userModel == null) {
           return AuthResult.failure('Error: unable to create user.');
         }
+        userCreatedStreamController.add(userModel);
+        return AuthResult.success(userModel: userModel);
       }
+
       await UserManager.instance.startUserStreamSubscription(user.id);
       return AuthResult.success();
     } on FirebaseAuthException catch (e) {
@@ -231,53 +243,4 @@ class AuthService implements Disposable {
       return AuthResult.failure(e.toString());
     }
   }
-  // END: Firebase Auth Methods.
 }
-
-/* Not currently used functions for managing
-google, apple and anonymous signin
-https://github.com/fireship-io/flutter-firebase-quizapp-course
-final GoogleSignIn _googleSignIn = GoogleSignIn();
-// Determine if Apple Signin is available on device
-  Future<bool> get appleSignInAvailable => AppleSignIn.isAvailable();
-  /// Sign in with Apple
-  Future<FirebaseUser> appleSignIn() async {
-    try {
-      final AuthorizationResult appleResult =
-          await AppleSignIn.performRequests([
-        AppleIdRequest(requestedScopes: [Scope.email, Scope.fullName])
-      ]);
-      if (appleResult.error != null) {
-        // handle errors from Apple
-      }
-      final AuthCredential credential =
-          OAuthProvider(providerId: 'apple.com').getCredential(
-        accessToken:
-            String.fromCharCodes(appleResult.credential.authorizationCode),
-        idToken: String.fromCharCodes(appleResult.credential.identityToken),
-      );
-      AuthResult firebaseResult = await _auth.signInWithCredential(credential);
-      FirebaseUser user = firebaseResult.user;
-      // Update user data
-      updateUserData(user);
-      return user;
-    } catch (error) {
-      print(error);
-      return null;
-    }
-  }
-  /// Anonymous Firebase login
-  Future<FirebaseUser> anonLogin() async {
-    AuthResult result = await _auth.signInAnonymously();
-    FirebaseUser user = result.user;
-    updateUserData(user);
-    return user;
-  }
-    /// Updates the User's data in Firestore on each new login
-  Future<void> updateUserData(FirebaseUser user) {
-    DocumentReference reportRef = _db.collection('reports').document(user.uid);
-    return reportRef.setData({'uid': user.uid, 'lastActivity': DateTime.now()},
-        merge: true);
-  }
-
- */
