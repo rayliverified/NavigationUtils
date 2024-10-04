@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:example_auth/models/model_user.dart';
-import 'package:example_auth/services/auth_exceptions.dart';
 import 'package:example_auth/services/debug_logger.dart';
 import 'package:example_auth/utils/value_response.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -102,8 +101,13 @@ class AuthService {
 
       final String uid = credential.user!.uid;
       await UserManager.instance.startUserStreamSubscription(uid);
-    } on FirebaseAuthException catch (e) {
-      return ValueResponse.exception(e.toException());
+    } on FirebaseAuthException catch (e, stackTrace) {
+      debugPrint('FirebaseAuthException: ${e.toString()}');
+
+      return ValueResponse.exception(ExceptionWrapper(
+          e.message ?? 'An error has occurred.',
+          stackTrace: stackTrace,
+          code: e.code));
     }
 
     return ValueResponse.success();
@@ -134,13 +138,16 @@ class AuthService {
       }
       userCreatedStreamController.add(userModel);
       return ValueResponse.success();
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e, stackTrace) {
       debugPrint('FirebaseAuthException: ${e.toString()}');
-      return ValueResponse.exception(e.toException());
-    } on AuthException catch (e) {
-      debugPrint('AuthException: ${e.toString()}');
+
+      return ValueResponse.exception(ExceptionWrapper(
+          e.message ?? 'An error has occurred.',
+          stackTrace: stackTrace,
+          code: e.code));
+    } on Exception catch (e, stackTrace) {
       return ValueResponse.exception(
-          ExceptionWrapper(e.message ?? e.toString()));
+          ExceptionWrapper(e.toString(), stackTrace: stackTrace));
     }
   }
 
@@ -150,8 +157,13 @@ class AuthService {
         .printFunction('sendPasswordResetEmail: $email', name: name);
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
-      return ValueResponse.exception(e.toException());
+    } on FirebaseAuthException catch (e, stackTrace) {
+      debugPrint('FirebaseAuthException: ${e.toString()}');
+
+      return ValueResponse.exception(ExceptionWrapper(
+          e.message ?? 'An error has occurred.',
+          stackTrace: stackTrace,
+          code: e.code));
     }
 
     return ValueResponse.success();
