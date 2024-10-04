@@ -1,41 +1,45 @@
-import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'model_user.g.dart';
 
 @JsonSerializable()
-class UserModel extends Equatable {
+class UserModel {
   @JsonKey(name: 'uid')
-  final String id;
-  final String email;
-  final String name;
-  final String photoUrl;
-  final bool? initial;
+  String id;
+  String email;
+  String? firstName;
+  String? lastName;
+  String photoUrl;
 
-  const UserModel({
+  String? get fullName => firstName != null && lastName != null
+      ? '$firstName $lastName'
+      : firstName ?? lastName;
+
+  bool get empty => id.isEmpty && email.isEmpty;
+
+  UserModel({
     required this.id,
     required this.email,
-    this.name = 'Guest',
+    this.firstName = '',
+    this.lastName = '',
     this.photoUrl =
         'https://www.gravatar.com/avatar/084e0343a0486ff05530df6c705c8bb9.png?s=200&d=retro&r=pg',
-    this.initial = false,
   });
 
-  factory UserModel.initial() =>
-      const UserModel(id: '', email: '', initial: true);
-
-  factory UserModel.empty() => const UserModel(id: '', email: '');
+  factory UserModel.empty() => UserModel(id: '', email: '');
 
   UserModel copyWith({
     String? id,
     String? email,
-    String? name,
+    String? firstName,
+    String? lastName,
     String? photoUrl,
   }) =>
       UserModel(
         id: id ?? this.id,
         email: email ?? this.email,
-        name: name ?? this.name,
+        firstName: firstName ?? this.firstName,
+        lastName: lastName ?? this.lastName,
         photoUrl: photoUrl ?? this.photoUrl,
       );
 
@@ -43,9 +47,6 @@ class UserModel extends Equatable {
       _$UserModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
-
-  @override
-  List<Object?> get props => [id, email, name, photoUrl, initial];
 
   @override
   String toString() => toJson().toString();
