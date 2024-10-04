@@ -49,7 +49,8 @@ class ValueResponse<T> {
   ValueResponse.exceptionRaw(Exception exception)
       : status = ValueResponseStatus.error,
         _data = null,
-        _error = null,
+        _error =
+            ExceptionWrapper(exception.toString(), baseException: exception),
         _exception = exception;
 }
 

@@ -11,20 +11,6 @@ import 'package:universal_io/io.dart';
 
 import 'user_manager.dart';
 
-class AuthResult {
-  final bool success;
-  final String? errorMessage;
-  final UserModel? userModel;
-
-  AuthResult._({required this.success, this.errorMessage, this.userModel});
-
-  factory AuthResult.success({UserModel? userModel}) =>
-      AuthResult._(success: true, userModel: userModel);
-
-  factory AuthResult.failure([String errorMessage = '']) =>
-      AuthResult._(success: false, errorMessage: errorMessage);
-}
-
 class AuthService {
   static const String name = 'AuthService';
 
@@ -172,7 +158,7 @@ class AuthService {
   }
 
   /// Sign in with Google.
-  Future<AuthResult> googleSignIn() async {
+  Future<ValueResponse<UserModel?>> googleSignIn() async {
     DebugLogger.instance.printFunction('googleSignIn', name: name);
 
     try {
@@ -187,13 +173,13 @@ class AuthService {
       } else {
         if (Platform.isWindows && !kIsWeb) {
           // Default is a MissingPluginException error.
-          return AuthResult.failure(
+          return ValueResponse.error(
               'Sign in with Google is not yet supported on Windows');
         }
         GoogleSignInAccount? googleSignInAccount =
             await GoogleSignIn().signIn();
         if (googleSignInAccount == null) {
-          return AuthResult.failure('Sign in canceled.');
+          return ValueResponse.error('Sign in canceled.');
         }
         GoogleSignInAuthentication googleAuth =
             await googleSignInAccount.authentication;
@@ -205,7 +191,7 @@ class AuthService {
             await FirebaseAuth.instance.signInWithCredential(credential);
       }
       if (userCredential.user == null) {
-        return AuthResult.failure('User credential missing.');
+        return ValueResponse.error('User credential missing.');
       }
       UserModel user = UserModel(
         id: userCredential.user!.uid,
@@ -218,7 +204,7 @@ class AuthService {
       );
       // When auth returns a null user, an AuthException is thrown.
       // This failure return is just for a null check.
-      if (user.id.isEmpty) return AuthResult.failure('Unable to sign in.');
+      if (user.id.isEmpty) return ValueResponse.error('Unable to sign in.');
       // Google auth does not differentiate between
       // login and signup. Check to see if user is already created.
       final ValueResponse<UserModel> response =
@@ -227,20 +213,20 @@ class AuthService {
         // User is not created
         UserModel? userModel = await UserManager.instance.createUserModel(user);
         if (userModel == null) {
-          return AuthResult.failure('Error: unable to create user.');
+          return ValueResponse.error('Error: unable to create user.');
         }
         userCreatedStreamController.add(userModel);
-        return AuthResult.success(userModel: userModel);
+        return ValueResponse.success(userModel);
       }
 
       await UserManager.instance.startUserStreamSubscription(user.id);
-      return AuthResult.success();
+      return ValueResponse.success();
     } on FirebaseAuthException catch (e) {
       debugPrint('FirebaseAuthException: ${e.toString()}');
-      return AuthResult.failure(e.toString());
+      return ValueResponse.exceptionRaw(e);
     } on Exception catch (e) {
       debugPrint('Exception: ${e.toString()}');
-      return AuthResult.failure(e.toString());
+      return ValueResponse.exceptionRaw(e);
     }
   }
 }

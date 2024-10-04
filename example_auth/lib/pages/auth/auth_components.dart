@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:example_auth/models/model_user.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -105,15 +106,16 @@ class _SignUpFormState extends State<SignUpForm> {
     isGoogleLoading = true;
     googleErrorMessage = null;
     setState(() {});
-    final AuthResult result = await AuthService.instance.googleSignIn();
+    ValueResponse<UserModel?> valueResponse =
+        await AuthService.instance.googleSignIn();
 
     isGoogleLoading = false;
 
-    if (result.success) {
+    if (valueResponse.isSuccess) {
       NavigationManager.instance.routerDelegate.set([HomePage.name]);
       return;
     } else {
-      googleErrorMessage = result.errorMessage;
+      googleErrorMessage = valueResponse.error.message;
     }
     if (mounted) setState(() {});
   }
@@ -290,18 +292,19 @@ class _LoginFormState extends State<LoginForm> {
     isGoogleLoading = true;
     googleErrorMessage = null;
     setState(() {});
-    final AuthResult result = await AuthService.instance.googleSignIn();
+    ValueResponse<UserModel?> valueResponse =
+        await AuthService.instance.googleSignIn();
 
     isGoogleLoading = false;
 
-    if (result.success) {
+    if (valueResponse.isSuccess) {
       NavigationManager.instance.routerDelegate.set([HomePage.name]);
       return;
     } else {
-      googleErrorMessage = result.errorMessage;
+      googleErrorMessage = valueResponse.error.message;
       // Don't show error message when popup is closed by the user.
       // Error codes list: https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#signinwithpopup
-      if (result.errorMessage?.contains('popup-closed-by-user') ?? false) {
+      if (valueResponse.error.message.contains('popup-closed-by-user')) {
         googleErrorMessage = null;
       }
     }
