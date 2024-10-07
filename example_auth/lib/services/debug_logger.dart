@@ -1,3 +1,6 @@
+/// DebugLogger V3 (20241006)
+library;
+
 import 'package:logging/logging.dart';
 
 /// A robust logging utility for managing extensive logs in Dart applications.

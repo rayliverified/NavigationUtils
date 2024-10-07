@@ -1,3 +1,6 @@
+/// SharedPreferencesHelper V3 (20241006)
+library;
+
 import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';

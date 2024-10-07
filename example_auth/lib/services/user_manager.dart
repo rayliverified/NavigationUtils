@@ -1,3 +1,6 @@
+/// UserManager V3 (20241006)
+library;
+
 import 'dart:async';
 import 'dart:convert';
 

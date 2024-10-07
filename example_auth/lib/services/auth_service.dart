@@ -1,3 +1,6 @@
+/// AuthService V18 (20241006)
+library;
+
 import 'dart:async';
 
 import 'package:example_auth/models/model_user.dart';

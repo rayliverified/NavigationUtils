@@ -1,3 +1,6 @@
+/// ValueResponse v4 (20241006)
+library;
+
 /// Defines possible states for [ValueResponse].
 enum ValueResponseStatus { empty, success, error }
 
@@ -6,9 +9,12 @@ class ValueResponse<T> {
   final T? _data;
   final ExceptionWrapper? _error;
   final ValueResponseStatus status;
+  // ignore: unused_field
   final Exception? _exception;
 
   T get data => _data!;
+
+  T? get dataOrNull => _data;
 
   ExceptionWrapper get error => _error!;
 

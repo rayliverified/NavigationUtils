@@ -13,7 +13,7 @@ dependencies:
   # Firebase
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
-  cloud_firestore: ^5.4.3
+  cloud_firestore: ^5.4.4
   google_sign_in: 6.2.1 # Missing Windows Support.
   firebase_database: ^11.1.4 # Missing Windows Support.
   firebase_storage: ^12.3.2
