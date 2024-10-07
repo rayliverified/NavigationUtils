@@ -1,41 +1,40 @@
-/// SharedPreferencesHelper V3 (20241006)
+/// SharedPreferencesHelper V5 (20241007)
 library;
 
 import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SharedPreferencesHelper implements SharedPreferences {
-  static const String instanceName = 'SharedPreferenceHelper';
+class SharedPreferencesHelper implements SharedPreferencesWithCache {
+  static const String instanceName = 'SharedPreferencesHelper';
 
   static SharedPreferencesHelper? _instance;
 
   static SharedPreferencesHelper get instance {
     if (_instance == null) {
       throw Exception(
-          'SharedPreferenceHelper has not been initialized. Call `init()` to initialize before using.');
+          'SharedPreferencesHelper has not been initialized. Call `init()` to initialize before using.');
     }
     return _instance!;
   }
 
-  late SharedPreferences _sharedPreferences;
-  SharedPreferences get sharedPreferences => _sharedPreferences;
+  late final SharedPreferencesWithCache sharedPreferences;
   final Map<String, Object?> _sharedPreferencesHolder = {};
 
   SharedPreferencesHelper._();
 
   static Future<SharedPreferencesHelper> init() async {
     _instance = SharedPreferencesHelper._();
-    _instance!._sharedPreferences = await SharedPreferences.getInstance();
+    _instance!.sharedPreferences = await SharedPreferencesWithCache.create(
+        cacheOptions: SharedPreferencesWithCacheOptions());
     return _instance!;
   }
 
   Future<void> backupInMemory({Set<String> keys = const {}}) async {
     _sharedPreferencesHolder.clear();
-    Set<String> keysHolder =
-        keys.isNotEmpty ? keys : sharedPreferences.getKeys();
+    Set<String> keysHolder = keys.isNotEmpty ? keys : sharedPreferences.keys;
     for (String key in keysHolder) {
-      Object? value = _sharedPreferences.get(key);
+      Object? value = sharedPreferences.get(key);
       if (value == null) continue;
       _sharedPreferencesHolder[key] = value;
     }
@@ -47,16 +46,16 @@ class SharedPreferencesHelper implements SharedPreferences {
     _sharedPreferencesHolder.forEach((key, value) {
       switch (value.runtimeType) {
         case const (String):
-          restoreTasks.add(_sharedPreferences.setString(key, value as String));
+          restoreTasks.add(sharedPreferences.setString(key, value as String));
         case const (bool):
-          restoreTasks.add(_sharedPreferences.setBool(key, value as bool));
+          restoreTasks.add(sharedPreferences.setBool(key, value as bool));
         case const (int):
-          restoreTasks.add(_sharedPreferences.setInt(key, value as int));
+          restoreTasks.add(sharedPreferences.setInt(key, value as int));
         case const (double):
-          restoreTasks.add(_sharedPreferences.setDouble(key, value as double));
+          restoreTasks.add(sharedPreferences.setDouble(key, value as double));
         case const (List):
-          restoreTasks.add(
-              _sharedPreferences.setStringList(key, value as List<String>));
+          restoreTasks
+              .add(sharedPreferences.setStringList(key, value as List<String>));
       }
     });
     await Future.wait(restoreTasks);
@@ -65,8 +64,8 @@ class SharedPreferencesHelper implements SharedPreferences {
 
   Map<String, Object> getAll() {
     final Map<String, Object> sharedPreferencesHolder = {};
-    for (String key in _sharedPreferences.getKeys()) {
-      Object? value = _sharedPreferences.get(key);
+    for (String key in sharedPreferences.keys) {
+      Object? value = sharedPreferences.get(key);
       if (value == null) continue;
       sharedPreferencesHolder[key] = value;
     }
@@ -75,88 +74,80 @@ class SharedPreferencesHelper implements SharedPreferences {
   }
 
   @override
-  Future<bool> clear() {
-    return _sharedPreferences.clear();
-  }
-
-  @override
-  Future<bool> commit() {
-    // ignore: deprecated_member_use
-    return _sharedPreferences.commit();
+  Future<void> clear() {
+    return sharedPreferences.clear();
   }
 
   @override
   bool containsKey(String key) {
-    return _sharedPreferences.containsKey(key);
+    return sharedPreferences.containsKey(key);
   }
 
   @override
   Object? get(String key) {
-    return _sharedPreferences.get(key);
+    return sharedPreferences.get(key);
   }
 
   @override
   bool? getBool(String key) {
-    return _sharedPreferences.getBool(key);
+    return sharedPreferences.getBool(key);
   }
 
   @override
   double? getDouble(String key) {
-    return _sharedPreferences.getDouble(key);
+    return sharedPreferences.getDouble(key);
   }
 
   @override
   int? getInt(String key) {
-    return _sharedPreferences.getInt(key);
-  }
-
-  @override
-  Set<String> getKeys() {
-    return _sharedPreferences.getKeys();
+    return sharedPreferences.getInt(key);
   }
 
   @override
   String? getString(String key) {
-    return _sharedPreferences.getString(key);
+    return sharedPreferences.getString(key);
   }
 
   @override
   List<String>? getStringList(String key) {
-    return _sharedPreferences.getStringList(key);
+    return sharedPreferences.getStringList(key);
   }
 
   @override
-  Future<void> reload() {
-    return _sharedPreferences.reload();
+  Future<void> reloadCache() {
+    return sharedPreferences.reloadCache();
   }
 
   @override
-  Future<bool> remove(String key) {
-    return _sharedPreferences.remove(key);
+  Future<void> remove(String key) {
+    return sharedPreferences.remove(key);
   }
 
   @override
-  Future<bool> setBool(String key, bool value) {
-    return _sharedPreferences.setBool(key, value);
+  Future<void> setBool(String key, bool value) {
+    return sharedPreferences.setBool(key, value);
   }
 
   @override
-  Future<bool> setDouble(String key, double value) {
-    return _sharedPreferences.setDouble(key, value);
+  Future<void> setDouble(String key, double value) {
+    return sharedPreferences.setDouble(key, value);
   }
 
   @override
-  Future<bool> setInt(String key, int value) {
-    return _sharedPreferences.setInt(key, value);
+  Future<void> setInt(String key, int value) {
+    return sharedPreferences.setInt(key, value);
   }
 
   @override
-  Future<bool> setString(String key, String value) {
-    return _sharedPreferences.setString(key, value);
+  Future<void> setString(String key, String value) {
+    return sharedPreferences.setString(key, value);
   }
 
   @override
-  Future<bool> setStringList(String key, List<String> value) {
-    return _sharedPreferences.setStringList(key, value);
+  Future<void> setStringList(String key, List<String> value) {
+    return sharedPreferences.setStringList(key, value);
   }
+
+  @override
+  Set<String> get keys => sharedPreferences.keys;
 }
