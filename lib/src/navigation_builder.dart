@@ -96,6 +96,7 @@ class NavigationBuilder {
     BaseRouterDelegate? mainRouterDelegate =
         (Router.of(context).routerDelegate as BaseRouterDelegate);
     List<Page> pages = [];
+    _pageKeys.clear();
 
     for (int i = 0; i < routeDataList.length; i++) {
       Object route = routeDataList[i];
@@ -157,6 +158,8 @@ class NavigationBuilder {
     return pages;
   }
 
+  static final Map<String, int> _pageKeys = {};
+
   static Page buildPage(
       {required String? name,
       required Widget child,
@@ -164,17 +167,19 @@ class NavigationBuilder {
       PageType pageType = PageType.material,
       bool? fullScreenDialog,
       Color? barrierColor}) {
+    final ValueKey<String> key = _getUniqueKey(name);
+
     switch (pageType) {
       case PageType.material:
         return MaterialPage(
-            key: ValueKey(name),
+            key: key,
             name: name,
             arguments: arguments,
             fullscreenDialog: fullScreenDialog ?? false,
             child: child);
       case PageType.transparent:
         return TransparentPage(
-            key: ValueKey(name),
+            key: key,
             name: name,
             arguments: arguments,
             fullscreenDialog: fullScreenDialog ?? false,
@@ -182,7 +187,7 @@ class NavigationBuilder {
             child: child);
       case PageType.cupertino:
         return CupertinoPage(
-            key: ValueKey(name),
+            key: key,
             name: name,
             arguments: arguments,
             fullscreenDialog: fullScreenDialog ?? false,
@@ -221,6 +226,18 @@ class NavigationBuilder {
     }
 
     return widgets;
+  }
+
+  // Helper method to get a unique key
+  static ValueKey<String> _getUniqueKey(String? name) {
+    if (name == null) {
+      return const ValueKey('');
+    }
+
+    _pageKeys[name] = (_pageKeys[name] ?? 0) + 1;
+    return _pageKeys[name]! > 1
+        ? ValueKey('$name-${_pageKeys[name]}')
+        : ValueKey(name);
   }
 
   // Trim character functions.
