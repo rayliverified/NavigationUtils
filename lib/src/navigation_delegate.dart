@@ -300,7 +300,15 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     if (routes.isNotEmpty &&
         (_routes.last.path == route.path ||
             (route.group != null && _routes.contains(route)))) {
-      _routes.remove(route);
+      // Note: Should probably move to keys or a canonicalized route identifier.
+      // There's a subtle behavior with routes matching based on label when the path is different.
+      // That behavior is sometimes intended but sometimes unintended.
+      for (int i = _routes.length - 1; i >= 0; i--) {
+        if (_routes[i] == route) {
+          _routes.removeAt(i);
+          break;
+        }
+      }
       _routes.add(route);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
@@ -329,7 +337,12 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     if (routes.isNotEmpty &&
         (_routes.last.path == route.path ||
             (route.group != null && _routes.contains(route)))) {
-      _routes.remove(route);
+      for (int i = _routes.length - 1; i >= 0; i--) {
+        if (_routes[i] == route) {
+          _routes.removeAt(i);
+          break;
+        }
+      }
       _routes.add(route);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
@@ -441,7 +454,12 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void removeRoute(DefaultRoute route, {bool apply = true}) {
     while (_routes.contains(route) && _routes.length > 1) {
-      _routes.remove(route);
+      for (int i = _routes.length - 1; i >= 0; i--) {
+        if (_routes[i] == route) {
+          _routes.removeAt(i);
+          break;
+        }
+      }
     }
     if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
@@ -526,7 +544,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void removeGroup(String name, {bool apply = true, bool all = false}) {
     for (int i = _routes.length - 1; i >= 0; i--) {
-      var route = _routes[i];
+      DefaultRoute route = _routes[i];
 
       if (route.group == name) {
         if (!canPop || (all == false && _routes.length <= 1)) {
