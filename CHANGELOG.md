@@ -1,3 +1,11 @@
+## 0.7.8
+- Create a new Page Key system to generate unique keys for each Page.
+  - Optimize rebuilds by assigning unique keys to each page.
+  - Add support for duplicate page routes.
+  - Add support for groups by assigning groups a consolidated group key.
+- Fix duplicate route removal. Remove routes in reverse order. 
+  - When there are multiple pages with the same label, the topmost one is removed first.
+
 ## 0.7.7
 - Loosen Flutter constraints to prepare for Predictive Back Navigation breaking change.
 
