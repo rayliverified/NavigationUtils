@@ -179,7 +179,7 @@ class NavigationBuilder {
       Color? barrierColor}) {
     switch (pageType) {
       case PageType.material:
-        return MaterialPage(
+        return OptimizedMaterialPage(
             key: key,
             name: name,
             arguments: arguments,
@@ -277,4 +277,44 @@ class NavigationBuilder {
   String _trim(String from, String pattern) {
     return _trimLeft(_trimRight(from, pattern), pattern);
   }
+}
+
+class OptimizedMaterialPage extends Page {
+  final Widget child;
+  final String? name;
+  final Object? arguments;
+  final bool fullscreenDialog;
+
+  const OptimizedMaterialPage({
+    required this.child,
+    this.name,
+    this.arguments,
+    this.fullscreenDialog = false,
+    super.key,
+  }) : super(name: name, arguments: arguments);
+
+  @override
+  Route createRoute(BuildContext context) {
+    return MaterialPageRoute(
+      settings: this,
+      builder: (BuildContext context) => child,
+      fullscreenDialog: fullscreenDialog,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) return false;
+    final bool result = other is OptimizedMaterialPage &&
+        other.child.runtimeType == child.runtimeType &&
+        other.name == name &&
+        other.arguments == arguments &&
+        other.fullscreenDialog == fullscreenDialog &&
+        other.key == key;
+    return result;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(child.runtimeType, name, arguments, fullscreenDialog, key);
 }
