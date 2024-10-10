@@ -132,7 +132,16 @@ class NavigationBuilder {
               // Get global data via path.
               mainRouterDelegate.globalData[route.path] ?? {});
 
+          // For groups, use the group name as the unique key because the page name could change.
+          ValueKey<String> pageKey;
+          if (navigationData.group != null) {
+            pageKey = _getUniqueKey(navigationData.group);
+          } else {
+            pageKey = _getUniqueKey(route.name);
+          }
+
           Page page = buildPage(
+              key: pageKey,
               name: route.name,
               child: child,
               arguments: route.arguments,
@@ -163,12 +172,11 @@ class NavigationBuilder {
   static Page buildPage(
       {required String? name,
       required Widget child,
+      ValueKey<String>? key,
       Object? arguments,
       PageType pageType = PageType.material,
       bool? fullScreenDialog,
       Color? barrierColor}) {
-    final ValueKey<String> key = _getUniqueKey(name);
-
     switch (pageType) {
       case PageType.material:
         return MaterialPage(
