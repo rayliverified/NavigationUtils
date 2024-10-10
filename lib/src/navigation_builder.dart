@@ -186,7 +186,7 @@ class NavigationBuilder {
             fullscreenDialog: fullScreenDialog ?? false,
             child: child);
       case PageType.transparent:
-        return TransparentPage(
+        return OptimizedTransparentPage(
             key: key,
             name: name,
             arguments: arguments,
@@ -194,7 +194,7 @@ class NavigationBuilder {
             barrierColor: barrierColor ?? Colors.transparent,
             child: child);
       case PageType.cupertino:
-        return CupertinoPage(
+        return OptimizedCupertinoPage(
             key: key,
             name: name,
             arguments: arguments,
@@ -279,19 +279,22 @@ class NavigationBuilder {
   }
 }
 
-class OptimizedMaterialPage extends Page {
+class OptimizedMaterialPage extends MaterialPage {
   final Widget child;
-  final String? name;
-  final Object? arguments;
   final bool fullscreenDialog;
+  final bool maintainState;
+  final bool allowSnapshotting;
 
   const OptimizedMaterialPage({
-    required this.child,
-    this.name,
-    this.arguments,
-    this.fullscreenDialog = false,
     super.key,
-  }) : super(name: name, arguments: arguments);
+    super.name,
+    super.arguments,
+    super.restorationId,
+    required this.child,
+    this.fullscreenDialog = false,
+    this.maintainState = true,
+    this.allowSnapshotting = true,
+  }) : super(child: child);
 
   @override
   Route createRoute(BuildContext context) {
@@ -299,22 +302,120 @@ class OptimizedMaterialPage extends Page {
       settings: this,
       builder: (BuildContext context) => child,
       fullscreenDialog: fullscreenDialog,
+      allowSnapshotting: allowSnapshotting,
     );
   }
 
   @override
   bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
-    final bool result = other is OptimizedMaterialPage &&
+    return other is OptimizedMaterialPage &&
         other.child.runtimeType == child.runtimeType &&
         other.name == name &&
         other.arguments == arguments &&
         other.fullscreenDialog == fullscreenDialog &&
+        other.maintainState == maintainState &&
+        other.allowSnapshotting == allowSnapshotting &&
         other.key == key;
-    return result;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(child.runtimeType, name, arguments, fullscreenDialog, key);
+  int get hashCode => Object.hash(child.runtimeType, name, arguments,
+      fullscreenDialog, maintainState, allowSnapshotting, key);
+}
+
+class OptimizedTransparentPage extends TransparentPage {
+  final Widget child;
+  final bool fullscreenDialog;
+  final bool maintainState;
+  final Color barrierColor;
+
+  const OptimizedTransparentPage({
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
+    required this.child,
+    this.fullscreenDialog = false,
+    this.maintainState = true,
+    this.barrierColor = Colors.transparent,
+  }) : super(child: child);
+
+  @override
+  Route createRoute(BuildContext context) {
+    return TransparentRoute(
+      settings: this,
+      builder: (BuildContext context) => child,
+      fullscreenDialog: fullscreenDialog,
+      maintainState: maintainState,
+      barrierColor: barrierColor,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) return false;
+    return other is OptimizedTransparentPage &&
+        other.child.runtimeType == child.runtimeType &&
+        other.name == name &&
+        other.arguments == arguments &&
+        other.fullscreenDialog == fullscreenDialog &&
+        other.maintainState == maintainState &&
+        other.barrierColor == barrierColor &&
+        other.key == key;
+  }
+
+  @override
+  int get hashCode => Object.hash(child.runtimeType, name, arguments,
+      fullscreenDialog, maintainState, barrierColor, key);
+}
+
+class OptimizedCupertinoPage extends CupertinoPage {
+  final Widget child;
+  final bool fullscreenDialog;
+  final bool maintainState;
+  final bool allowSnapshotting;
+  final String? title;
+
+  const OptimizedCupertinoPage({
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
+    required this.child,
+    this.fullscreenDialog = false,
+    this.maintainState = true,
+    this.allowSnapshotting = true,
+    this.title,
+  }) : super(child: child);
+
+  @override
+  Route createRoute(BuildContext context) {
+    return CupertinoPageRoute(
+      settings: this,
+      builder: (BuildContext context) => child,
+      fullscreenDialog: fullscreenDialog,
+      maintainState: maintainState,
+      allowSnapshotting: allowSnapshotting,
+      title: title,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) return false;
+    return other is OptimizedCupertinoPage &&
+        other.child.runtimeType == child.runtimeType &&
+        other.name == name &&
+        other.arguments == arguments &&
+        other.fullscreenDialog == fullscreenDialog &&
+        other.maintainState == maintainState &&
+        other.allowSnapshotting == allowSnapshotting &&
+        other.title == title &&
+        other.key == key;
+  }
+
+  @override
+  int get hashCode => Object.hash(child.runtimeType, name, arguments,
+      fullscreenDialog, maintainState, allowSnapshotting, title, key);
 }
