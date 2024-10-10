@@ -167,12 +167,14 @@ class NavigationBuilder {
     switch (pageType) {
       case PageType.material:
         return MaterialPage(
+            key: ValueKey(name),
             name: name,
             arguments: arguments,
             fullscreenDialog: fullScreenDialog ?? false,
             child: child);
       case PageType.transparent:
         return TransparentPage(
+            key: ValueKey(name),
             name: name,
             arguments: arguments,
             fullscreenDialog: fullScreenDialog ?? false,
@@ -180,6 +182,7 @@ class NavigationBuilder {
             child: child);
       case PageType.cupertino:
         return CupertinoPage(
+            key: ValueKey(name),
             name: name,
             arguments: arguments,
             fullscreenDialog: fullScreenDialog ?? false,
