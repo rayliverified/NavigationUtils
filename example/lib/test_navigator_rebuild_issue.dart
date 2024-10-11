@@ -56,7 +56,7 @@ class _NavigationRebuildTestState extends State<NavigationRebuildTest> {
           ...currentPages.map((page) {
             if (page is MaterialPage) {
               return MaterialPage(
-                key: page.key,
+                key: ValueKey(page.key.toString()),
                 name: page.name,
                 arguments: page.arguments,
                 fullscreenDialog: page.fullscreenDialog,
