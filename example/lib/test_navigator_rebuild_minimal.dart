@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_brace_in_string_interps
+
 import 'package:flutter/material.dart';
 
 /// Example of working Navigator comparison behavior.
@@ -23,13 +25,13 @@ class PageRebuildTest extends StatefulWidget {
   const PageRebuildTest({super.key});
 
   @override
-  _PageRebuildTestState createState() => _PageRebuildTestState();
+  State<PageRebuildTest> createState() => _PageRebuildTestState();
 }
 
 class _PageRebuildTestState extends State<PageRebuildTest> {
   GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   List<Page> _pages = [];
-  bool _useOptimizedPage = false;
+  bool _optimizedList = false;
 
   @override
   void initState() {
@@ -40,7 +42,7 @@ class _PageRebuildTestState extends State<PageRebuildTest> {
   void _updatePages() {
     setState(() {
       _pages = [
-        if (_useOptimizedPage)
+        if (_optimizedList)
           OptimizedMaterialPage(
             key: const ValueKey('page1'),
             child: const _TestPage(key: ValueKey('page1'), title: 'Page 1'),
@@ -57,31 +59,54 @@ class _PageRebuildTestState extends State<PageRebuildTest> {
   void _addPage() {
     debugPrint('Pages: ${_pages} addPage');
     setState(() {
-      _pages.add(
-        _useOptimizedPage
+      final newPageIndex = _pages.length + 1;
+      List<Page> newPages = [];
+      newPages = _pages.map((page) {
+        if (page is MaterialPage) {
+          return MaterialPage(
+            key: page.key,
+            name: page.name,
+            arguments: page.arguments,
+            fullscreenDialog: page.fullscreenDialog,
+            child: page.child,
+          );
+        } else if (page is OptimizedMaterialPage) {
+          return OptimizedMaterialPage(
+            key: page.key,
+            name: page.name,
+            arguments: page.arguments,
+            child: page.child,
+          );
+        }
+        return page;
+      }).toList();
+      _pages.clear();
+
+      newPages.add(
+        _optimizedList
             ? OptimizedMaterialPage(
-                key: ValueKey('page${_pages.length + 1}'),
+                key: ValueKey('page$newPageIndex'),
                 child: _TestPage(
-                    key: ValueKey('page${_pages.length + 1}'),
-                    title: 'Page ${_pages.length + 1}'),
+                    key: ValueKey('page$newPageIndex'),
+                    title: 'Page $newPageIndex'),
               )
             : MaterialPage(
-                key: ValueKey('page${_pages.length + 1}'),
-                name: 'page${_pages.length + 1}',
+                key: ValueKey('page$newPageIndex'),
+                name: 'page$newPageIndex',
                 arguments: null,
                 fullscreenDialog: false,
                 child: _TestPage(
-                    key: ValueKey('page${_pages.length + 1}'),
-                    title: 'Page ${_pages.length + 1}'),
+                    key: ValueKey('page$newPageIndex'),
+                    title: 'Page $newPageIndex'),
               ),
       );
+      _pages = newPages;
     });
   }
 
-  void _togglePageType() {
+  void _toggleOptimizedList(bool value) {
     setState(() {
-      _useOptimizedPage = !_useOptimizedPage;
-      _updatePages();
+      _optimizedList = value;
     });
   }
 
@@ -89,7 +114,18 @@ class _PageRebuildTestState extends State<PageRebuildTest> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_useOptimizedPage ? 'Optimized Pages' : 'Material Pages'),
+        title: Text(_optimizedList ? 'Optimized Pages' : 'Material Pages'),
+        actions: [
+          Row(
+            children: [
+              const Text('Optimized List'),
+              Switch(
+                value: _optimizedList,
+                onChanged: _toggleOptimizedList,
+              ),
+            ],
+          ),
+        ],
       ),
       body: Navigator(
         key: navigatorKey,
@@ -104,19 +140,9 @@ class _PageRebuildTestState extends State<PageRebuildTest> {
           return true;
         },
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: _addPage,
-            child: const Icon(Icons.add),
-          ),
-          const SizedBox(height: 16),
-          FloatingActionButton(
-            onPressed: _togglePageType,
-            child: const Icon(Icons.swap_horiz),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addPage,
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -158,11 +184,13 @@ class OptimizedMaterialPage<T> extends Page<T> {
   @override
   bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
-    return other is OptimizedMaterialPage &&
+    bool result = other is OptimizedMaterialPage &&
         other.child.runtimeType == child.runtimeType &&
         other.key == key &&
         other.name == name &&
         other.arguments == arguments;
+    debugPrint('Page Equality: $result');
+    return result;
   }
 
   @override
