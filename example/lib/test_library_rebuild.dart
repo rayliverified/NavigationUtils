@@ -6,12 +6,21 @@ import 'package:navigation_utils/navigation_utils.dart';
 
 List<NavigationData> routes = [
   NavigationData(
-      url: '/', builder: (context, routeData, globalData) => MyPage(id: 0)),
+      url: '/',
+      builder: (context, routeData, globalData) =>
+          MyPage(key: const Key('page0'), id: 0),
+      group: 'home'),
+  NavigationData(
+      url: '/home2',
+      builder: (context, routeData, globalData) =>
+          HomePage(key: const Key('home2'), id: 0),
+      group: 'home'),
   NavigationData(
       url: '/:id',
       label: MyPage.name,
-      builder: (context, routeData, globalData) =>
-          MyPage(id: int.tryParse(routeData.pathParameters['id'] ?? '') ?? 0)),
+      builder: (context, routeData, globalData) => MyPage(
+          key: ValueKey(int.tryParse(routeData.pathParameters['id'] ?? '')),
+          id: int.tryParse(routeData.pathParameters['id'] ?? '') ?? 0)),
 ];
 
 /// Test Navigation library page equality comparison behavior.
@@ -25,15 +34,6 @@ void main() {
       mainRouterDelegate:
           DefaultRouterDelegate(navigationDataRoutes: routes, debugLog: true),
       routeInformationParser: DefaultRouteInformationParser());
-  // NavigationManager.instance.routerDelegate.pages = [
-  //   MaterialPage(
-  //     key: const ValueKey(0),
-  //     child: const MyPage(
-  //       key: ValueKey('page1'),
-  //       id: 0,
-  //     ),
-  //   )
-  // ];
   runApp(const MyApp());
 }
 
@@ -51,6 +51,53 @@ class MyApp extends StatelessWidget {
       title: 'Page Rebuild Test',
       routerDelegate: NavigationManager.instance.routerDelegate,
       routeInformationParser: NavigationManager.instance.routeInformationParser,
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  static const String name = 'home_page';
+
+  final int id;
+
+  const HomePage({super.key, required this.id});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('Rebuild Home Page: ${widget.id}');
+
+    return Scaffold(
+      backgroundColor: Colors.blueAccent,
+      body: Container(
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              widget.id.toString(),
+              style: TextStyle(color: Colors.white, fontSize: 48),
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  NavigationManager.instance.push(MyPage.name,
+                      pathParameters: {'id': (widget.id + 1).toString()});
+                },
+                child: Text('Next page')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Go back')),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => NavigationManager.instance.push('/home2'),
+        child: Text('Home2'),
+      ),
     );
   }
 }
@@ -123,6 +170,10 @@ class _MyPageState extends State<MyPage> {
                 child: Text('Go back')),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => NavigationManager.instance.push('/home2'),
+        child: Text('Home2'),
       ),
     );
   }

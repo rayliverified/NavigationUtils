@@ -35,7 +35,8 @@ class NavigationRebuildTest extends StatefulWidget {
 }
 
 class _NavigationRebuildTestState extends State<NavigationRebuildTest> {
-  List<Page<dynamic>> currentPages = [];
+  GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  List<Page> currentPages = [];
   bool recreateList = true;
 
   @override
@@ -43,7 +44,6 @@ class _NavigationRebuildTestState extends State<NavigationRebuildTest> {
     super.initState();
     currentPages = [
       MaterialPage(
-        key: const ValueKey('page1'),
         child: const TestPage(title: 'Page 1'),
       ),
     ];
@@ -56,7 +56,7 @@ class _NavigationRebuildTestState extends State<NavigationRebuildTest> {
           ...currentPages.map((page) {
             if (page is MaterialPage) {
               return MaterialPage(
-                key: ValueKey(page.key.toString()),
+                key: page.key,
                 name: page.name,
                 arguments: page.arguments,
                 fullscreenDialog: page.fullscreenDialog,
@@ -67,6 +67,9 @@ class _NavigationRebuildTestState extends State<NavigationRebuildTest> {
           }),
           MaterialPage(
             key: ValueKey('page${currentPages.length + 1}'),
+            name: 'page${currentPages.length + 1}',
+            arguments: null,
+            fullscreenDialog: false,
             child: TestPage(title: 'Page ${currentPages.length + 1}'),
           ),
         ];
@@ -75,6 +78,9 @@ class _NavigationRebuildTestState extends State<NavigationRebuildTest> {
           ...currentPages,
           MaterialPage(
             key: ValueKey('page${currentPages.length + 1}'),
+            name: 'page${currentPages.length + 1}',
+            arguments: null,
+            fullscreenDialog: false,
             child: TestPage(title: 'Page ${currentPages.length + 1}'),
           ),
         ];
