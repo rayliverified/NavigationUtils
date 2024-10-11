@@ -186,7 +186,7 @@ class NavigationBuilder {
             fullscreenDialog: fullScreenDialog ?? false,
             child: child);
       case PageType.transparent:
-        return TransparentPage(
+        return OptimizedTransparentPage(
             key: key,
             name: name,
             arguments: arguments,
@@ -194,7 +194,7 @@ class NavigationBuilder {
             barrierColor: barrierColor ?? Colors.transparent,
             child: child);
       case PageType.cupertino:
-        return CupertinoPage(
+        return OptimizedCupertinoPage(
             key: key,
             name: name,
             arguments: arguments,
@@ -309,6 +309,81 @@ class OptimizedMaterialPage extends Page {
         other.fullscreenDialog == fullscreenDialog &&
         other.key == key;
     return result;
+  }
+
+  @override
+  int get hashCode => Object.hash(name, arguments, fullscreenDialog, key);
+}
+
+class OptimizedTransparentPage extends Page {
+  final Widget child;
+  final bool fullscreenDialog;
+  final Color barrierColor;
+
+  const OptimizedTransparentPage({
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+    this.fullscreenDialog = false,
+    this.barrierColor = Colors.transparent,
+  });
+
+  @override
+  Route createRoute(BuildContext context) {
+    return TransparentRoute(
+      settings: this,
+      builder: (BuildContext context) => child,
+      fullscreenDialog: fullscreenDialog,
+      barrierColor: barrierColor,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) return false;
+    return other is OptimizedTransparentPage &&
+        other.name == name &&
+        other.arguments == arguments &&
+        other.fullscreenDialog == fullscreenDialog &&
+        other.barrierColor == barrierColor &&
+        other.key == key;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(name, arguments, fullscreenDialog, barrierColor, key);
+}
+
+class OptimizedCupertinoPage extends Page {
+  final Widget child;
+  final bool fullscreenDialog;
+
+  const OptimizedCupertinoPage({
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+    this.fullscreenDialog = false,
+  });
+
+  @override
+  Route createRoute(BuildContext context) {
+    return CupertinoPageRoute(
+      settings: this,
+      builder: (BuildContext context) => child,
+      fullscreenDialog: fullscreenDialog,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) return false;
+    return other is OptimizedCupertinoPage &&
+        other.name == name &&
+        other.arguments == arguments &&
+        other.fullscreenDialog == fullscreenDialog &&
+        other.key == key;
   }
 
   @override
