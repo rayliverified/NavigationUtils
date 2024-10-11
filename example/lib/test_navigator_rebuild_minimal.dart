@@ -64,7 +64,7 @@ class _PageRebuildTestState extends State<PageRebuildTest> {
       newPages = _pages.map((page) {
         if (page is MaterialPage) {
           return MaterialPage(
-            key: ValueKey(page.key.toString()),
+            key: page.key,
             name: page.name,
             arguments: page.arguments,
             fullscreenDialog: page.fullscreenDialog,

@@ -92,7 +92,9 @@ class _PageRebuildTestState extends State<PageRebuildTest> {
       ),
       body: Navigator(
         key: navigatorKey,
-        pages: buildPages(_pageCount),
+        pages: [
+          ...buildPages(_pageCount),
+        ],
         onPopPage: (route, result) {
           if (!route.didPop(result)) {
             return false;
