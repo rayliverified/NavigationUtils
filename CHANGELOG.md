@@ -1,3 +1,7 @@
+## 0.7.9
+- Create OptimizedPage variants to optimize page rebuilds.
+  - Workaround an internal Navigator [issue](https://github.com/flutter/flutter/issues/135596) which causes unnecessary page rebuilds.
+
 ## 0.7.8
 - Create a new Page Key system to generate unique keys for each Page.
   - Optimize rebuilds by assigning unique keys to each page.
