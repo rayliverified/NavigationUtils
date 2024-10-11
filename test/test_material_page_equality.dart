@@ -56,4 +56,30 @@ void main() {
               'Lists with new instances of MaterialPages are incorrectly considered different');
     });
   });
+
+  test('ValueKey equality when typed as LocalKey', () {
+    final ValueKey<String> valueKey1 = ValueKey<String>('value1');
+    final ValueKey<String> valueKey2 = ValueKey<String>('value1');
+    final LocalKey localKey1 = valueKey1 as LocalKey;
+    final LocalKey localKey2 = valueKey2 as LocalKey;
+
+    List<LocalKey> localKeyList = [localKey1, localKey2];
+
+    // Test 1: ValueKey equality
+    expect(valueKey1 == valueKey2, isTrue);
+
+    // Test 2: ValueKey equality with LocalKey
+    expect(valueKey1 == localKey1, isTrue);
+    expect(valueKey2 == localKey2, isTrue);
+
+    // Test 3: LocalKey equality
+    expect(localKey1 == localKey2, isTrue);
+
+    // Test 4: LocalKey equality with ValueKey
+    expect(localKey1 == valueKey1, isTrue);
+    expect(localKey2 == valueKey2, isTrue);
+
+    expect(localKeyList.contains(valueKey1), isTrue);
+    expect(localKeyList.contains(valueKey2), isTrue);
+  });
 }
