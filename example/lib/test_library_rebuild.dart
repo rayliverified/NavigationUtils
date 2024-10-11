@@ -84,6 +84,9 @@ class _MyPageState extends State<MyPage> {
             ),
             ElevatedButton(
                 onPressed: () {
+                  NavigationManager.instance.push(MyPage.name,
+                      pathParameters: {'id': (widget.id + 1).toString()});
+
                   // final currentPages =
                   //     NavigationManager.instance.routerDelegate.pages;
                   // final newPageIndex = currentPages.length + 1;
