@@ -120,10 +120,26 @@ class _TestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Building $title'); // This print statement helps track rebuilds
+    debugPrint('Rebuild: $title'); // This print statement helps track rebuilds
+
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: Center(child: Text(title)),
+      resizeToAvoidBottomInset: true,
+      body: Center(
+          child: Stack(
+        children: [
+          Text(title),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: TextField(
+              onChanged: (value) {},
+              decoration: InputDecoration(
+                hintText: 'Keyboard ',
+              ),
+            ),
+          ),
+        ],
+      )),
     );
   }
 }

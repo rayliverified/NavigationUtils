@@ -108,14 +108,20 @@ class _ProjectPageState extends State<ProjectPage> {
           children: [
             Text('Projects Page ${widget.id}',
                 style: const TextStyle(color: Colors.white)),
-            MaterialButton(
+            ElevatedButton(
               onPressed: () => NavigationManager.instance.push(ProjectPage.name,
                   pathParameters: {'id': (widget.id + 1).toString()}),
               child: Text('Open Project Page ${(widget.id + 1).toString()}'),
             ),
-            MaterialButton(
+            ElevatedButton(
                 onPressed: () => NavigationManager.instance.pop(),
                 child: const Text('Back')),
+            TextField(
+              onChanged: (value) {},
+              decoration: InputDecoration(
+                hintText: 'Keyboard ',
+              ),
+            ),
           ],
         ),
       ),
