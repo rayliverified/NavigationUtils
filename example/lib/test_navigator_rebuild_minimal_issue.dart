@@ -14,9 +14,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Page Rebuild Test',
-      home: const PageRebuildTest(),
+      home: PageRebuildTest(),
     );
   }
 }
@@ -133,7 +133,7 @@ class _TestPage extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: TextField(
               onChanged: (value) {},
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Keyboard ',
               ),
             ),

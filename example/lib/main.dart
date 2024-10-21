@@ -118,7 +118,7 @@ class _ProjectPageState extends State<ProjectPage> {
                 child: const Text('Back')),
             TextField(
               onChanged: (value) {},
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Keyboard ',
               ),
             ),

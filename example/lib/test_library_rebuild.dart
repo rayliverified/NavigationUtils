@@ -8,12 +8,12 @@ List<NavigationData> routes = [
   NavigationData(
       url: '/',
       builder: (context, routeData, globalData) =>
-          MyPage(key: const Key('page0'), id: 0),
+          const MyPage(key: Key('page0'), id: 0),
       group: 'home'),
   NavigationData(
       url: '/home2',
       builder: (context, routeData, globalData) =>
-          HomePage(key: const Key('home2'), id: 0),
+          const HomePage(key: Key('home2'), id: 0),
       group: 'home'),
   NavigationData(
       url: '/:id',
@@ -80,23 +80,23 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text(
               widget.id.toString(),
-              style: TextStyle(color: Colors.white, fontSize: 48),
+              style: const TextStyle(color: Colors.white, fontSize: 48),
             ),
             ElevatedButton(
                 onPressed: () {
                   NavigationManager.instance.push(MyPage.name,
                       pathParameters: {'id': (widget.id + 1).toString()});
                 },
-                child: Text('Next page')),
+                child: const Text('Next page')),
             TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Go back')),
+                child: const Text('Go back')),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => NavigationManager.instance.push('/home2'),
-        child: Text('Home2'),
+        child: const Text('Home2'),
       ),
     );
   }
@@ -127,7 +127,7 @@ class _MyPageState extends State<MyPage> {
           children: [
             Text(
               widget.id.toString(),
-              style: TextStyle(color: Colors.white, fontSize: 48),
+              style: const TextStyle(color: Colors.white, fontSize: 48),
             ),
             ElevatedButton(
                 onPressed: () {
@@ -164,16 +164,16 @@ class _MyPageState extends State<MyPage> {
                   // NavigationManager.instance.routerDelegate.pages = newPages;
                   // NavigationManager.instance.routerDelegate.notifyListeners();
                 },
-                child: Text('Next page')),
+                child: const Text('Next page')),
             TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Go back')),
+                child: const Text('Go back')),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => NavigationManager.instance.push('/home2'),
-        child: Text('Home2'),
+        child: const Text('Home2'),
       ),
     );
   }

@@ -14,9 +14,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Page Rebuild Test',
-      home: const PageRebuildTest(),
+      home: PageRebuildTest(),
     );
   }
 }
@@ -43,14 +43,14 @@ class _PageRebuildTestState extends State<PageRebuildTest> {
     setState(() {
       _pages = [
         if (_optimizedList)
-          OptimizedMaterialPage(
-            key: const ValueKey('page1'),
-            child: const _TestPage(key: ValueKey('page1'), title: 'Page 1'),
+          const OptimizedMaterialPage(
+            key: ValueKey('page1'),
+            child: _TestPage(key: ValueKey('page1'), title: 'Page 1'),
           )
         else
-          MaterialPage(
-            key: const ValueKey('page1'),
-            child: const _TestPage(key: ValueKey('page1'), title: 'Page 1'),
+          const MaterialPage(
+            key: ValueKey('page1'),
+            child: _TestPage(key: ValueKey('page1'), title: 'Page 1'),
           ),
       ];
     });

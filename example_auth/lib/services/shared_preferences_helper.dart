@@ -26,7 +26,7 @@ class SharedPreferencesHelper implements SharedPreferencesWithCache {
   static Future<SharedPreferencesHelper> init() async {
     _instance = SharedPreferencesHelper._();
     _instance!.sharedPreferences = await SharedPreferencesWithCache.create(
-        cacheOptions: SharedPreferencesWithCacheOptions());
+        cacheOptions: const SharedPreferencesWithCacheOptions());
     return _instance!;
   }
 

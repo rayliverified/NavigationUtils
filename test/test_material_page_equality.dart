@@ -5,18 +5,18 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('MaterialPage Equality Tests', () {
     test('MaterialPages with same properties should be equal', () {
-      final page1 = MaterialPage(
-        key: const ValueKey('test'),
+      const page1 = MaterialPage(
+        key: ValueKey('test'),
         name: 'TestPage',
         arguments: {'id': 1},
-        child: const Text('Test'),
+        child: Text('Test'),
       );
 
-      final page2 = MaterialPage(
-        key: const ValueKey('test'),
+      const page2 = MaterialPage(
+        key: ValueKey('test'),
         name: 'TestPage',
         arguments: {'id': 1},
-        child: const Text('Test'),
+        child: Text('Test'),
       );
 
       expect(page1 == page2, isTrue,
@@ -26,28 +26,28 @@ void main() {
 
     test('List of MaterialPages considers new instances as different', () {
       final List<Page> originalPages = [
-        MaterialPage(
-          key: const ValueKey('page1'),
+        const MaterialPage(
+          key: ValueKey('page1'),
           name: 'Page1',
-          child: const Text('Page 1'),
+          child: Text('Page 1'),
         ),
-        MaterialPage(
-          key: const ValueKey('page2'),
+        const MaterialPage(
+          key: ValueKey('page2'),
           name: 'Page2',
-          child: const Text('Page 2'),
+          child: Text('Page 2'),
         ),
       ];
 
       final List<Page> newPages = [
-        MaterialPage(
-          key: const ValueKey('page1'),
+        const MaterialPage(
+          key: ValueKey('page1'),
           name: 'Page1',
-          child: const Text('Page 1'),
+          child: Text('Page 1'),
         ),
-        MaterialPage(
-          key: const ValueKey('page2'),
+        const MaterialPage(
+          key: ValueKey('page2'),
           name: 'Page2',
-          child: const Text('Page 2'),
+          child: Text('Page 2'),
         ),
       ];
 
@@ -58,10 +58,10 @@ void main() {
   });
 
   test('ValueKey equality when typed as LocalKey', () {
-    final ValueKey<String> valueKey1 = ValueKey<String>('value1');
-    final ValueKey<String> valueKey2 = ValueKey<String>('value1');
-    final LocalKey localKey1 = valueKey1 as LocalKey;
-    final LocalKey localKey2 = valueKey2 as LocalKey;
+    const ValueKey<String> valueKey1 = ValueKey<String>('value1');
+    const ValueKey<String> valueKey2 = ValueKey<String>('value1');
+    const LocalKey localKey1 = valueKey1 as LocalKey;
+    const LocalKey localKey2 = valueKey2 as LocalKey;
 
     List<LocalKey> localKeyList = [localKey1, localKey2];
 

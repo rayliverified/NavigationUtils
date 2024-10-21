@@ -20,9 +20,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Navigation Rebuild Test',
-      home: const NavigationRebuildTest(),
+      home: NavigationRebuildTest(),
     );
   }
 }
@@ -43,8 +43,8 @@ class _NavigationRebuildTestState extends State<NavigationRebuildTest> {
   void initState() {
     super.initState();
     currentPages = [
-      MaterialPage(
-        child: const TestPage(title: 'Page 1'),
+      const MaterialPage(
+        child: TestPage(title: 'Page 1'),
       ),
     ];
   }

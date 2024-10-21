@@ -181,7 +181,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return PageWrapper(
+    return const PageWrapper(
       child: SizedBox(
         width: double.infinity,
         height: double.infinity,
@@ -189,12 +189,12 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Home Page'),
+              Text('Home Page'),
               MaterialButton(
                 onPressed: SignoutHelper.signOut,
                 color: Colors.blue,
                 child:
-                    const Text('Logout', style: TextStyle(color: Colors.white)),
+                    Text('Logout', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
