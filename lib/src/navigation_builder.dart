@@ -98,7 +98,7 @@ class NavigationBuilder {
     }
 
     // For non-grouped routes, include an index for duplicates
-    String basePath = route.path;
+    String basePath = route.name ?? route.path;
     _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
 
     // Only add index suffix if this is a duplicate (count > 1)

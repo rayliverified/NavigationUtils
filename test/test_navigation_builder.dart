@@ -321,6 +321,109 @@ void main() {
       expect(updatedPage.key, equals(homePage.key));
       expect(updatedWidget.tab, equals('/community'));
     });
+
+    testWidgets('Query parameter changes behavior',
+        (WidgetTester tester) async {
+      final routes = [
+        // Grouped page that should update instance
+        NavigationData(
+          label: 'home',
+          url: '/',
+          builder: (context, routeData, globalData) =>
+              HomePage(tab: routeData.queryParameters['tab'] ?? 'default'),
+          group: 'home',
+        ),
+        // Non-grouped page that should create new instance
+        NavigationData(
+          label: 'post',
+          url: '/post',
+          builder: (context, routeData, globalData) =>
+              PostPage(id: routeData.queryParameters['id'] ?? ''),
+        ),
+      ];
+
+      routerDelegate.navigationDataRoutes = routes;
+
+      await tester.pumpWidget(MaterialApp.router(
+        routeInformationProvider: PlatformRouteInformationProvider(
+          initialRouteInformation: RouteInformation(uri: Uri.parse('/')),
+        ),
+        routerDelegate: routerDelegate,
+        routeInformationParser: DefaultRouteInformationParser(),
+        builder: (context, child) => child ?? const SizedBox(),
+      ));
+
+      await tester.pumpAndSettle();
+      final BuildContext context = tester.element(find.byType(Navigator));
+
+      // Test grouped page (should update instance)
+      routerDelegate.push('home', queryParameters: {'tab': 'tab1'});
+      await tester.pumpAndSettle();
+
+      final initialPages = NavigationBuilder.build(
+        context: context,
+        routeDataList: [
+          DefaultRoute(
+              path: '/', group: 'home', queryParameters: {'tab': 'tab1'})
+        ],
+        routes: routes,
+      );
+
+      final homePage = initialPages[0] as MaterialPage;
+      final initialWidget = homePage.child as HomePage;
+      expect(initialWidget.tab, equals('tab1'));
+
+      // Update query parameters for grouped page
+      routerDelegate.push('home', queryParameters: {'tab': 'tab2'});
+      await tester.pumpAndSettle();
+
+      final updatedPages = NavigationBuilder.build(
+        context: context,
+        routeDataList: [
+          DefaultRoute(
+              path: '/', group: 'home', queryParameters: {'tab': 'tab2'})
+        ],
+        routes: routes,
+      );
+
+      final updatedPage = updatedPages[0] as MaterialPage;
+      final updatedWidget = updatedPage.child as HomePage;
+      expect(updatedPage.key, equals(homePage.key),
+          reason: 'Grouped pages should maintain same instance');
+      expect(updatedWidget.tab, equals('tab2'));
+
+      // Test non-grouped page (should create new instance)
+      routerDelegate.push('post', queryParameters: {'id': '1'});
+      await tester.pumpAndSettle();
+
+      final initialPostPages = NavigationBuilder.build(
+        context: context,
+        routeDataList: [
+          DefaultRoute(path: '/post', queryParameters: {'id': '1'})
+        ],
+        routes: routes,
+      );
+
+      final postPage = initialPostPages[0] as MaterialPage;
+      final initialPostWidget = postPage.child as PostPage;
+      expect(initialPostWidget.id, equals('1'));
+
+      // Update query parameters for non-grouped page
+      routerDelegate.push('post', queryParameters: {'id': '2'});
+      await tester.pumpAndSettle();
+
+      final updatedPostPages = NavigationBuilder.build(
+        context: context,
+        routeDataList: [
+          DefaultRoute(path: '/post', queryParameters: {'id': '2'})
+        ],
+        routes: routes,
+      );
+
+      final updatedPostPage = updatedPostPages[0] as MaterialPage;
+      final updatedPostWidget = updatedPostPage.child as PostPage;
+      expect(updatedPostWidget.id, equals('2'));
+    });
   });
 }
 
