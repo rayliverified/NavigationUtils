@@ -322,6 +322,8 @@ class NavigationBuilder {
     return _pageKeys[name]! > 1
         ? ValueKey('$name-${_pageKeys[name]}')
         : ValueKey(name);
+  }
+
   // Add method to clear cache when needed
   static void clearCache() {
     _pageCache.clear();
