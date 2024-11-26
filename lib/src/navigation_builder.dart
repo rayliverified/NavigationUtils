@@ -83,8 +83,94 @@ enum PageType {
   cupertino,
 }
 
+// Helper class to maintain page configuration while allowing child updates
+class PageShell {
+  final ValueKey<String> key;
+  final String? name;
+  final PageType pageType;
+  final bool? fullScreenDialog;
+  final Color? barrierColor;
+
+  PageShell({
+    required this.key,
+    this.name,
+    required this.pageType,
+    this.fullScreenDialog,
+    this.barrierColor,
+  });
+
+  Page createPage({
+    required Widget child,
+    Object? arguments,
+  }) {
+    return PageShell.buildPage(
+      key: key,
+      name: name,
+      child: child,
+      arguments: arguments,
+      pageType: pageType,
+      fullScreenDialog: fullScreenDialog,
+      barrierColor: barrierColor,
+    );
+  }
+
+  // Moved from NavigationBuilder to here as static method
+  static Page buildPage({
+    required String? name,
+    required Widget child,
+    ValueKey<String>? key,
+    Object? arguments,
+    PageType pageType = PageType.material,
+    bool? fullScreenDialog,
+    Color? barrierColor,
+  }) {
+    switch (pageType) {
+      case PageType.material:
+        return MaterialPage(
+            key: key,
+            name: name,
+            arguments: arguments,
+            fullscreenDialog: fullScreenDialog ?? false,
+            child: child);
+      case PageType.transparent:
+        return TransparentPage(
+            key: key,
+            name: name,
+            arguments: arguments,
+            fullscreenDialog: fullScreenDialog ?? false,
+            barrierColor: barrierColor ?? Colors.transparent,
+            child: child);
+      case PageType.cupertino:
+        return CupertinoPage(
+            key: key,
+            name: name,
+            arguments: arguments,
+            fullscreenDialog: fullScreenDialog ?? false,
+            child: child);
+    }
+  }
+}
+
 class NavigationBuilder {
   NavigationBuilder();
+
+  // Cache page shells, not the complete pages
+  static final Map<String, PageShell> _pageCache = {};
+
+  static final Map<String, int> _routeIndices = {};
+
+  static String _getCacheKey(
+      NavigationData navigationData, DefaultRoute route) {
+    // If there's a group, use it as the primary cache key
+    if (navigationData.group != null) {
+      return navigationData.group!;
+    }
+
+    // For non-grouped routes, include an index for duplicates
+    String basePath = route.path;
+    _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
+    return '$basePath-${_routeIndices[basePath]}';
+  }
 
   static List<Page> build(
       {required BuildContext context,
@@ -97,6 +183,10 @@ class NavigationBuilder {
         (Router.of(context).routerDelegate as BaseRouterDelegate);
     List<Page> pages = [];
     _pageKeys.clear();
+    _routeIndices.clear();
+
+    // Create temporary cache for this build
+    final Map<String, PageShell> newCache = {};
 
     for (int i = 0; i < routeDataList.length; i++) {
       Object route = routeDataList[i];
@@ -125,12 +215,8 @@ class NavigationBuilder {
                     route.path, navigationData.path));
           }
 
-          Widget child = navigationData.builder(
-              context,
-              route.copyWith(pathParameters: pathParameters),
-              // Inject dynamic data to page builder.
-              // Get global data via path.
-              mainRouterDelegate.globalData[route.path] ?? {});
+          // Simplified cache key based on group or URL
+          String cacheKey = _getCacheKey(navigationData, route);
 
           // For groups, use the group name as the unique key because the page name could change.
           ValueKey<String> pageKey;
@@ -140,14 +226,30 @@ class NavigationBuilder {
             pageKey = _getUniqueKey(route.name);
           }
 
-          Page page = buildPage(
-              key: pageKey,
-              name: route.name,
-              child: child,
-              arguments: route.arguments,
-              pageType: navigationData.pageType ?? PageType.material,
-              fullScreenDialog: navigationData.fullScreenDialog,
-              barrierColor: navigationData.barrierColor);
+          debugPrint('cacheKey: $cacheKey');
+
+          // Get from existing cache or create new
+          PageShell pageShell = _pageCache[cacheKey] ??
+              PageShell(
+                key: pageKey,
+                name: route.name,
+                pageType: navigationData.pageType ?? PageType.material,
+                fullScreenDialog: navigationData.fullScreenDialog,
+                barrierColor: navigationData.barrierColor,
+              );
+
+          // Add to new cache
+          newCache[cacheKey] = pageShell;
+
+          // Create new page with updated child widget
+          Page page = pageShell.createPage(
+            child: navigationData.builder(
+                context,
+                route.copyWith(pathParameters: pathParameters),
+                mainRouterDelegate.globalData[route.path] ?? {}),
+            arguments: route.arguments,
+          );
+
           pages.add(page);
           continue;
         }
@@ -164,44 +266,14 @@ class NavigationBuilder {
       }
     }
 
+    // Replace old cache with new one
+    _pageCache.clear();
+    _pageCache.addAll(newCache);
+
     return pages;
   }
 
   static final Map<String, int> _pageKeys = {};
-
-  static Page buildPage(
-      {required String? name,
-      required Widget child,
-      ValueKey<String>? key,
-      Object? arguments,
-      PageType pageType = PageType.material,
-      bool? fullScreenDialog,
-      Color? barrierColor}) {
-    switch (pageType) {
-      case PageType.material:
-        return OptimizedMaterialPage(
-            key: key,
-            name: name,
-            arguments: arguments,
-            fullscreenDialog: fullScreenDialog ?? false,
-            child: child);
-      case PageType.transparent:
-        return OptimizedTransparentPage(
-            key: key,
-            name: name,
-            arguments: arguments,
-            fullscreenDialog: fullScreenDialog ?? false,
-            barrierColor: barrierColor ?? Colors.transparent,
-            child: child);
-      case PageType.cupertino:
-        return OptimizedCupertinoPage(
-            key: key,
-            name: name,
-            arguments: arguments,
-            fullscreenDialog: fullScreenDialog ?? false,
-            child: child);
-    }
-  }
 
   static List<Widget> buildWidgets(
       {required BuildContext context,
