@@ -169,7 +169,11 @@ class NavigationBuilder {
     // For non-grouped routes, include an index for duplicates
     String basePath = route.path;
     _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
-    return '$basePath-${_routeIndices[basePath]}';
+
+    // Only add index suffix if this is a duplicate (count > 1)
+    return _routeIndices[basePath] != null && _routeIndices[basePath]! > 1
+        ? '$basePath-${_routeIndices[basePath]}'
+        : basePath;
   }
 
   static List<Page> build(
@@ -318,6 +322,10 @@ class NavigationBuilder {
     return _pageKeys[name]! > 1
         ? ValueKey('$name-${_pageKeys[name]}')
         : ValueKey(name);
+  // Add method to clear cache when needed
+  static void clearCache() {
+    _pageCache.clear();
+    _routeIndices.clear(); // Also clear route indices
   }
 
   // Trim character functions.
