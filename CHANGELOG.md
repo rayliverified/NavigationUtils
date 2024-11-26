@@ -1,3 +1,8 @@
+## 0.8.0
+- Create NavigationBuilder page caching to properly reuse page instances.
+  - See an up to 10x performance increase from not rebuilding the entire page stack.
+  - Any changes to groups, paths, query parameters that results in a URL change will now properly rebuild.
+
 ## 0.7.9
 - Create OptimizedPage variants to optimize page rebuilds.
   - Workaround an internal Navigator [issue](https://github.com/flutter/flutter/issues/135596) which causes unnecessary page rebuilds.
