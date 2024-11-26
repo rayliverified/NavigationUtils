@@ -304,6 +304,11 @@ void main() {
       final initialWidget = homePage.child as HomePage;
       expect(initialWidget.tab, equals('/'));
 
+      // Push the community page
+      routerDelegate.push('community');
+      await tester.pumpAndSettle();
+
+      // Get the updated pages and verify
       final updatedPages = NavigationBuilder.build(
         context: context,
         routeDataList: [DefaultRoute(path: '/community', group: 'home')],

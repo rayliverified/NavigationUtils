@@ -83,38 +83,141 @@ enum PageType {
   cupertino,
 }
 
-// Helper class to maintain page configuration while allowing child updates
-class PageShell {
-  final ValueKey<String> key;
-  final String? name;
-  final PageType pageType;
-  final bool? fullScreenDialog;
-  final Color? barrierColor;
+class NavigationBuilder {
+  NavigationBuilder();
 
-  PageShell({
-    required this.key,
-    this.name,
-    required this.pageType,
-    this.fullScreenDialog,
-    this.barrierColor,
-  });
+  // Cache pages directly
+  static final Map<String, Page> _pageCache = {};
+  static final Map<String, int> _routeIndices = {};
 
-  Page createPage({
-    required Widget child,
-    Object? arguments,
-  }) {
-    return PageShell.buildPage(
-      key: key,
-      name: name,
-      child: child,
-      arguments: arguments,
-      pageType: pageType,
-      fullScreenDialog: fullScreenDialog,
-      barrierColor: barrierColor,
-    );
+  static String _getCacheKey(
+      NavigationData navigationData, DefaultRoute route) {
+    // If there's a group, use it as the primary cache key
+    if (navigationData.group != null) {
+      return navigationData.group!;
+    }
+
+    // For non-grouped routes, include an index for duplicates
+    String basePath = route.path;
+    _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
+
+    // Only add index suffix if this is a duplicate (count > 1)
+    return _routeIndices[basePath] != null && _routeIndices[basePath]! > 1
+        ? '$basePath-${_routeIndices[basePath]}'
+        : basePath;
   }
 
-  // Moved from NavigationBuilder to here as static method
+  static List<Page> build(
+      {required BuildContext context,
+      required List<Object> routeDataList,
+      required List<NavigationData> routes,
+      OnUnknownRoute? onUnknownRoute,
+      NavigationPageBuilder? pageBuilder,
+      String? group}) {
+    BaseRouterDelegate? mainRouterDelegate =
+        (Router.of(context).routerDelegate as BaseRouterDelegate);
+    List<Page> pages = [];
+    _pageKeys.clear();
+    _routeIndices.clear();
+
+    // Create temporary cache for this build
+    final Map<String, Page> newCache = {};
+
+    for (int i = 0; i < routeDataList.length; i++) {
+      Object route = routeDataList[i];
+      if (route is DefaultRoute) {
+        NavigationData? navigationData =
+            NavigationUtils.getNavigationDataFromRoute(
+                routes: routes, route: route);
+
+        // TODO: Add wildcard support.
+        if (navigationData != null &&
+            (group == null || navigationData.group == group)) {
+          // Skip building duplicated groups.
+          if (group == null &&
+              navigationData.group != null &&
+              i < routeDataList.length - 1 &&
+              (routeDataList[i + 1] as DefaultRoute).group ==
+                  navigationData.group) {
+            continue;
+          }
+
+          Map<String, String> pathParameters = {};
+          pathParameters.addAll(route.pathParameters);
+          if (navigationData.path.contains(':')) {
+            pathParameters.addAll(
+                NavigationUtils.extractPathParametersWithPattern(
+                    route.path, navigationData.path));
+          }
+
+          String cacheKey = _getCacheKey(navigationData, route);
+
+          // For groups, use the group name as the unique key
+          ValueKey<String> pageKey;
+          if (navigationData.group != null) {
+            pageKey = _getUniqueKey(navigationData.group);
+          } else {
+            pageKey = _getUniqueKey(route.name);
+          }
+
+          // For grouped pages, always create new page to get updated child
+          // For non-grouped pages, use cache
+          Page page;
+          if (navigationData.group != null) {
+            page = buildPage(
+              key: pageKey,
+              name: route.name,
+              child: navigationData.builder(
+                  context,
+                  route.copyWith(pathParameters: pathParameters),
+                  mainRouterDelegate.globalData[route.path] ?? {}),
+              arguments: route.arguments,
+              pageType: navigationData.pageType ?? PageType.material,
+              fullScreenDialog: navigationData.fullScreenDialog,
+              barrierColor: navigationData.barrierColor,
+            );
+          } else {
+            page = _pageCache[cacheKey] ??
+                buildPage(
+                  key: pageKey,
+                  name: route.name,
+                  child: navigationData.builder(
+                      context,
+                      route.copyWith(pathParameters: pathParameters),
+                      mainRouterDelegate.globalData[route.path] ?? {}),
+                  arguments: route.arguments,
+                  pageType: navigationData.pageType ?? PageType.material,
+                  fullScreenDialog: navigationData.fullScreenDialog,
+                  barrierColor: navigationData.barrierColor,
+                );
+          }
+
+          newCache[cacheKey] = page;
+          pages.add(page);
+          continue;
+        }
+      }
+
+      Page? customPage = pageBuilder?.call(context, route);
+      if (customPage != null) {
+        pages.add(customPage);
+        continue;
+      }
+
+      if (onUnknownRoute != null) {
+        pages.add(onUnknownRoute.call(route as DefaultRoute));
+      }
+    }
+
+    // Replace old cache with new one
+    _pageCache.clear();
+    _pageCache.addAll(newCache);
+
+    return pages;
+  }
+
+  static final Map<String, int> _pageKeys = {};
+
   static Page buildPage({
     required String? name,
     required Widget child,
@@ -149,135 +252,6 @@ class PageShell {
             child: child);
     }
   }
-}
-
-class NavigationBuilder {
-  NavigationBuilder();
-
-  // Cache page shells, not the complete pages
-  static final Map<String, PageShell> _pageCache = {};
-
-  static final Map<String, int> _routeIndices = {};
-
-  static String _getCacheKey(
-      NavigationData navigationData, DefaultRoute route) {
-    // If there's a group, use it as the primary cache key
-    if (navigationData.group != null) {
-      return navigationData.group!;
-    }
-
-    // For non-grouped routes, include an index for duplicates
-    String basePath = route.path;
-    _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
-
-    // Only add index suffix if this is a duplicate (count > 1)
-    return _routeIndices[basePath] != null && _routeIndices[basePath]! > 1
-        ? '$basePath-${_routeIndices[basePath]}'
-        : basePath;
-  }
-
-  static List<Page> build(
-      {required BuildContext context,
-      required List<Object> routeDataList,
-      required List<NavigationData> routes,
-      OnUnknownRoute? onUnknownRoute,
-      NavigationPageBuilder? pageBuilder,
-      String? group}) {
-    BaseRouterDelegate? mainRouterDelegate =
-        (Router.of(context).routerDelegate as BaseRouterDelegate);
-    List<Page> pages = [];
-    _pageKeys.clear();
-    _routeIndices.clear();
-
-    // Create temporary cache for this build
-    final Map<String, PageShell> newCache = {};
-
-    for (int i = 0; i < routeDataList.length; i++) {
-      Object route = routeDataList[i];
-      if (route is DefaultRoute) {
-        NavigationData? navigationData =
-            NavigationUtils.getNavigationDataFromRoute(
-                routes: routes, route: route);
-
-        // TODO: Add wildcard support.
-        if (navigationData != null &&
-            (group == null || navigationData.group == group)) {
-          // Skip building duplicated groups.
-          if (group == null &&
-              navigationData.group != null &&
-              i < routeDataList.length - 1 &&
-              (routeDataList[i + 1] as DefaultRoute).group ==
-                  navigationData.group) {
-            continue;
-          }
-
-          Map<String, String> pathParameters = {};
-          pathParameters.addAll(route.pathParameters);
-          if (navigationData.path.contains(':')) {
-            pathParameters.addAll(
-                NavigationUtils.extractPathParametersWithPattern(
-                    route.path, navigationData.path));
-          }
-
-          // Simplified cache key based on group or URL
-          String cacheKey = _getCacheKey(navigationData, route);
-
-          // For groups, use the group name as the unique key because the page name could change.
-          ValueKey<String> pageKey;
-          if (navigationData.group != null) {
-            pageKey = _getUniqueKey(navigationData.group);
-          } else {
-            pageKey = _getUniqueKey(route.name);
-          }
-
-          debugPrint('cacheKey: $cacheKey');
-
-          // Get from existing cache or create new
-          PageShell pageShell = _pageCache[cacheKey] ??
-              PageShell(
-                key: pageKey,
-                name: route.name,
-                pageType: navigationData.pageType ?? PageType.material,
-                fullScreenDialog: navigationData.fullScreenDialog,
-                barrierColor: navigationData.barrierColor,
-              );
-
-          // Add to new cache
-          newCache[cacheKey] = pageShell;
-
-          // Create new page with updated child widget
-          Page page = pageShell.createPage(
-            child: navigationData.builder(
-                context,
-                route.copyWith(pathParameters: pathParameters),
-                mainRouterDelegate.globalData[route.path] ?? {}),
-            arguments: route.arguments,
-          );
-
-          pages.add(page);
-          continue;
-        }
-      }
-
-      Page? customPage = pageBuilder?.call(context, route);
-      if (customPage != null) {
-        pages.add(customPage);
-        continue;
-      }
-
-      if (onUnknownRoute != null) {
-        pages.add(onUnknownRoute.call(route as DefaultRoute));
-      }
-    }
-
-    // Replace old cache with new one
-    _pageCache.clear();
-    _pageCache.addAll(newCache);
-
-    return pages;
-  }
-
-  static final Map<String, int> _pageKeys = {};
 
   static List<Widget> buildWidgets(
       {required BuildContext context,
