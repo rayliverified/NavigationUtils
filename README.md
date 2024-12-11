@@ -102,6 +102,22 @@ class ProjectsPage extends StatefulWidget {
 }
 ```
 
+## Examples
+
+For new users, see the quick 5 line setup at [example/lib/main.dart](example/lib/main.dart). 
+
+For a full, production ready configuration similar to the one used by 10,000+ users in [Codelessly - A Flutter App and Website Builder](https://codelessly.com), see [example_auth/main.dart](https://github.com/rayliverified/NavigationUtils/blob/master/example_auth/lib/main.dart).
+
+Features:
+- Complete authentication flow with login/signup screens.
+- Route guards for authenticated pages.
+- Navigation sync with user auth.
+- Deep link and URL parameter handling.
+- Flutter Firebase Auth integration and issues solved.
+- Working Firebase Auth example on all platforms. 
+- Handling navigation during authentication state changes.
+- Managing loading and initialization.
+
 ## Navigation
 
 The NavigationData class in the NavigationUtils library is used to encapsulate all the necessary data for defining a route in your application. It provides an easy way to define and manage your routes.
