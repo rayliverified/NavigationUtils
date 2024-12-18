@@ -38,8 +38,8 @@ jobs:
       - name: Push build commit
         run: |
           cd clone_dir
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name rayliverified
+          git config user.email ray.li.verified@gmail.com
           git add *
           git commit -m "Build Example Auth ${{ steps.date.outputs.date }} (${{ steps.seconds.outputs.seconds }})"
           git pull --rebase
