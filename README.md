@@ -265,6 +265,45 @@ Multiple `NavigationData` instances can be defined with different URL patterns a
 - `/project` and `/project/:projectId` are different URLs. To support both, define a `NavigationData(url: '/project')` and `NavigationData(url: '/project/:projectId')`.
 - A trailing slash such as `/project/` does not pass a null ID to `/project/:projectId`. Instead, `/project/` is equivalent to `/project`.
 
+### Passing Objects and Data Between Pages with GlobalData
+
+Arbitrary data such as classes and non-serializable variables can be passed between pages with `globalData`. `globalData` can be used to pass anything between pages.
+
+#### Example
+```dart
+// Route Navigation
+PostModel postModel = PostModel();
+NavigationManager.instance.push(PostPage.name, globalData: {'postModel': postModel});
+
+NavigationData(
+  label: PostPage.name,
+  url: '/post',
+  builder: (context, routeData, globalData) => ProjectPage(
+      postModel: globalData['postModel']),
+    );
+  },
+)
+```
+
+A `PostModel` is passed to `PostPage` via `globalData`. The `PostPage` widget can now load the Post UI immediately.
+
+#### Accessing and Modifying `globalData`
+
+Beyond its use during navigation, `globalData` can be accessed and modified at any point in your application at `NavigationManager.instance.routerDelegate.globalData`. This allows for setting data and configurations at anytime.
+
+**Example:**
+```dart
+// Set or update data
+NavigationManager.instance.routerDelegate.globalData['selected_variant'] = 'A';
+
+// Access data
+String variant = NavigationManager.instance.routerDelegate.globalData['selected_variant'];
+```
+
+**Note:** `globalData` is not bound to the page lifecycle so any variables set must be manually disposed. Any outdated variables will need to be explicitly cleared. Most of the time, opening a page will set and override the data so stale variables are not a concern.
+
+**Note:** The URL of the page is used as the key for storing data.
+
 ## Deeplinks
 
 A special feature of NavigationUtils is it supports *deeplinks as data* and defining them all *in a single list*. This is done by creating a list of `DeeplinkDestination` instances. 
