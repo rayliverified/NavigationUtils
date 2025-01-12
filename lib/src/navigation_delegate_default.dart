@@ -17,7 +17,9 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
   @override
   OnUnknownRoute? onUnknownRoute;
 
-  NavigationPageBuilder? pageBuilder;
+  CustomPageBuilder? pageBuilder;
+
+  MigrationPageBuilder? migrationPageBuilder;
 
   List<NavigatorObserver> observers;
 
@@ -36,6 +38,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
     this.debugLog = false,
     this.onUnknownRoute,
     this.pageBuilder,
+    this.migrationPageBuilder,
     this.observers = const [],
     this.deeplinkDestinations = const [],
     this.customDeeplinkHandler,
@@ -62,6 +65,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
             routeDataList: routes,
             routes: navigationDataRoutes,
             pageBuilder: pageBuilder,
+            migrationPageBuilder: migrationPageBuilder,
             onUnknownRoute: onUnknownRoute ?? _buildUnknownRouteDefault,
           ),
           if (pageOverlay != null)

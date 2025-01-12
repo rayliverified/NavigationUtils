@@ -11,6 +11,15 @@ typedef NavigationPageFactory = Widget Function(BuildContext context,
 
 typedef OnUnknownRoute = Page Function(DefaultRoute route);
 
+typedef CustomPageBuilder = Page Function({
+  required ValueKey<String>? key,
+  required String? name,
+  required Widget child,
+  DefaultRoute routeData,
+  Map<String, dynamic> globalData,
+  Object? arguments,
+});
+
 class NavigationData {
   final String? label;
   final String url;
@@ -19,6 +28,7 @@ class NavigationData {
   final bool? fullScreenDialog;
   final Color? barrierColor;
   final Map<String, dynamic> metadata;
+  final CustomPageBuilder? pageBuilder;
 
   /// Routes can be grouped together by setting
   /// a common `group` name.
@@ -63,7 +73,8 @@ class NavigationData {
       this.fullScreenDialog,
       this.barrierColor,
       this.metadata = const {},
-      this.group})
+      this.group,
+      this.pageBuilder})
       : assert(url.startsWith('/'),
             'URLs must be prefixed with /. A NavigationData contains a `url` value that is not prefixed with a /.');
 
@@ -74,7 +85,7 @@ class NavigationData {
 
 /// Custom navigation builder for gradual migration support.
 /// Wrapper the legacy navigation page builder with this function.
-typedef NavigationPageBuilder = Page? Function(
+typedef MigrationPageBuilder = Page? Function(
     BuildContext context, dynamic routeData);
 
 enum PageType {
@@ -112,7 +123,8 @@ class NavigationBuilder {
       required List<Object> routeDataList,
       required List<NavigationData> routes,
       OnUnknownRoute? onUnknownRoute,
-      NavigationPageBuilder? pageBuilder,
+      CustomPageBuilder? pageBuilder,
+      MigrationPageBuilder? migrationPageBuilder,
       String? group}) {
     BaseRouterDelegate? mainRouterDelegate =
         (Router.of(context).routerDelegate as BaseRouterDelegate);
@@ -163,33 +175,50 @@ class NavigationBuilder {
           // For grouped pages, always create new page to get updated child
           // For non-grouped pages, use cache
           Page page;
-          if (navigationData.group != null) {
-            page = buildPage(
+          final CustomPageBuilder? effectivePageBuilder =
+              navigationData.pageBuilder ?? pageBuilder;
+
+          if (effectivePageBuilder != null) {
+            page = effectivePageBuilder(
               key: pageKey,
               name: route.name,
               child: navigationData.builder(
                   context,
                   route.copyWith(pathParameters: pathParameters),
                   mainRouterDelegate.globalData[route.path] ?? {}),
+              routeData: route.copyWith(pathParameters: pathParameters),
+              globalData: mainRouterDelegate.globalData[route.path] ?? {},
               arguments: route.arguments,
-              pageType: navigationData.pageType ?? PageType.material,
-              fullScreenDialog: navigationData.fullScreenDialog,
-              barrierColor: navigationData.barrierColor,
             );
           } else {
-            page = _pageCache[cacheKey] ??
-                buildPage(
-                  key: pageKey,
-                  name: route.name,
-                  child: navigationData.builder(
-                      context,
-                      route.copyWith(pathParameters: pathParameters),
-                      mainRouterDelegate.globalData[route.path] ?? {}),
-                  arguments: route.arguments,
-                  pageType: navigationData.pageType ?? PageType.material,
-                  fullScreenDialog: navigationData.fullScreenDialog,
-                  barrierColor: navigationData.barrierColor,
-                );
+            if (navigationData.group != null) {
+              page = buildPage(
+                key: pageKey,
+                name: route.name,
+                child: navigationData.builder(
+                    context,
+                    route.copyWith(pathParameters: pathParameters),
+                    mainRouterDelegate.globalData[route.path] ?? {}),
+                arguments: route.arguments,
+                pageType: navigationData.pageType ?? PageType.material,
+                fullScreenDialog: navigationData.fullScreenDialog,
+                barrierColor: navigationData.barrierColor,
+              );
+            } else {
+              page = _pageCache[cacheKey] ??
+                  buildPage(
+                    key: pageKey,
+                    name: route.name,
+                    child: navigationData.builder(
+                        context,
+                        route.copyWith(pathParameters: pathParameters),
+                        mainRouterDelegate.globalData[route.path] ?? {}),
+                    arguments: route.arguments,
+                    pageType: navigationData.pageType ?? PageType.material,
+                    fullScreenDialog: navigationData.fullScreenDialog,
+                    barrierColor: navigationData.barrierColor,
+                  );
+            }
           }
 
           newCache[cacheKey] = page;
@@ -198,7 +227,7 @@ class NavigationBuilder {
         }
       }
 
-      Page? customPage = pageBuilder?.call(context, route);
+      Page? customPage = migrationPageBuilder?.call(context, route);
       if (customPage != null) {
         pages.add(customPage);
         continue;
