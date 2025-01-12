@@ -1,3 +1,10 @@
+## 0.9.0
+- **Breaking:** Rename `pageBuilder` to `migrationPageBuilder`.
+- Add support for passing a custom `pageBuilder` instead of using the default MaterialPage or CupertinoPage.
+- Customize PageTransitions with a custom `pageBuilder`.
+  - Set a global `pageBuilder` in DefaultRouteDelegate to override the default page behavior across the entire app.
+  - Override individual page transitions by setting the `pageBuilder` on individual NavigationDatas.
+
 ## 0.8.0
 - Create NavigationBuilder page caching to properly reuse page instances.
   - See an up to 10x performance increase from not rebuilding the entire page stack.
