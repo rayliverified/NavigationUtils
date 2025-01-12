@@ -506,3 +506,190 @@ NavigationUtils supports asynchronous navigation, allowing you to perform asynch
 #### Nested Tabs
 
 [Example](https://github.com/rayliverified/NavigationUtils/blob/master/example/lib/main_nested_tabs.dart)
+
+
+## Custom Route Transition Animations
+
+NavigationUtils allows you to customize route transitions both globally and on a per-page basis.
+
+### Global Transitions
+
+You can define a global transition that will be applied to all routes unless overridden by a local (per-page) transition. To set a global transition, create a custom `Page` class that defines the transition within its `createRoute` method using `PageRouteBuilder`.
+
+```dart
+// Define a Custom Page for your global transition
+class ScaleTransitionPageBuilder extends Page {
+  final Widget child;
+
+  const ScaleTransitionPageBuilder({
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+  });
+
+  @override
+  Route createRoute(BuildContext context) {
+    return PageRouteBuilder(
+      settings: this,
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // Define your custom transition animation here
+        return ScaleTransition(
+          scale: animation,
+          alignment: Alignment.center,
+          child: child,
+        );
+      },
+    );
+  }
+}
+
+// Override pageBuilder
+NavigationManager.init(
+  mainRouterDelegate: DefaultRouterDelegate(
+    navigationDataRoutes: routes,
+    pageBuilder: ({
+      key,
+      name,
+      child,
+      routeData,
+      globalData,
+      arguments,
+    }) =>
+        ScaleTransitionPageBuilder(
+          key: key,
+          name: name,
+          arguments: arguments,
+          child: child,
+        ),
+  ),
+  routeInformationParser: DefaultRouteInformationParser(),
+);
+```
+
+This will override the default MaterialPage transition animation and apply a scale transition to all pages.
+
+### Per-Page Transitions
+
+To override the global transition for a specific route, create a custom `Page` class for that route and use the `pageBuilder` property in `NavigationData`:
+
+```dart
+// Define a custom Page for your per-page transition
+class RightToLeftTransitionPage extends Page {
+  final Widget child;
+
+  const RightToLeftTransitionPage({
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+  });
+
+  @override
+  Route createRoute(BuildContext context) {
+    return PageRouteBuilder(
+      settings: this,
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        );
+      },
+    );
+  }
+}
+
+// Usage in NavigationData:
+NavigationData(
+  label: 'Details',
+  url: '/details',
+  builder: (context, routeData, globalData) => DetailsPage(),
+  pageBuilder: ({key, name, child, routeData, globalData, arguments}) {
+    return RightToLeftTransitionPage(
+      key: key,
+      name: name,
+      arguments: arguments,
+      child: child,
+    );
+  },
+),
+```
+
+In this example, the `DetailsPage` will have a right-to-left slide transition, overriding any global transition.
+
+### Disable Transition Animations
+
+#### Globally
+
+```dart
+// Define a custom Page for no transition
+class NoTransitionPage extends Page {
+  final Widget child;
+
+  const NoTransitionPage({
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+  });
+
+  @override
+  Route createRoute(BuildContext context) {
+    return PageRouteBuilder(
+      settings: this,
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) => child, // No transition
+    );
+  }
+}
+
+// In your main app initialization:
+NavigationManager.init(
+  mainRouterDelegate: DefaultRouterDelegate(
+    navigationDataRoutes: routes,
+    pageBuilder: ({
+      key,
+      name,
+      child,
+      routeData,
+      globalData,
+      arguments,
+    }) => NoTransitionPage(
+      key: key,
+      name: name,
+      arguments: arguments,
+      child: child,
+    ),
+  ),
+  routeInformationParser: DefaultRouteInformationParser(),
+);
+```
+
+#### Per-Page
+
+To disable transitions for a specific page, use the `NoTransitionPage` within the `pageBuilder` of the corresponding `NavigationData`:
+
+```dart
+NavigationData(
+  label: 'No Animation',
+  url: '/no-animation',
+  builder: (context, routeData, globalData) => NoAnimationPage(),
+  pageBuilder: ({key, name, child, routeData, globalData, arguments}) {
+    return NoTransitionPage(
+      key: key,
+      name: name,
+      arguments: arguments,
+      child: child,
+    );
+  },
+),
+```
+
+You can create any custom transition effect you need by defining your own `Page` classes and using them either globally or on a per-page basis.

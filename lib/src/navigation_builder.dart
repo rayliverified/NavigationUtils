@@ -11,14 +11,14 @@ typedef NavigationPageFactory = Widget Function(BuildContext context,
 
 typedef OnUnknownRoute = Page Function(DefaultRoute route);
 
-typedef CustomPageBuilder = Page Function({
-  required ValueKey<String>? key,
-  required String? name,
-  required Widget child,
+typedef CustomPageBuilder = Page Function(
+  ValueKey<String>? key,
+  String? name,
+  Widget child,
   DefaultRoute routeData,
   Map<String, dynamic> globalData,
   Object? arguments,
-});
+);
 
 class NavigationData {
   final String? label;
@@ -180,15 +180,15 @@ class NavigationBuilder {
 
           if (effectivePageBuilder != null) {
             page = effectivePageBuilder(
-              key: pageKey,
-              name: route.name,
-              child: navigationData.builder(
+              pageKey,
+              route.name,
+              navigationData.builder(
                   context,
                   route.copyWith(pathParameters: pathParameters),
                   mainRouterDelegate.globalData[route.path] ?? {}),
-              routeData: route.copyWith(pathParameters: pathParameters),
-              globalData: mainRouterDelegate.globalData[route.path] ?? {},
-              arguments: route.arguments,
+              route.copyWith(pathParameters: pathParameters),
+              mainRouterDelegate.globalData[route.path] ?? {},
+              route.arguments,
             );
           } else {
             if (navigationData.group != null) {
