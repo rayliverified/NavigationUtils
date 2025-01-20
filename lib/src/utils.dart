@@ -439,7 +439,9 @@ class NavigationUtils {
             authenticated: authenticated,
             currentRoute: currentRoute,
             excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages) ==
-        false) return false;
+        false) {
+      return false;
+    }
 
     // Set backstack. If pushOverride is true, skip backstack behavior.
     if (push == false) {
