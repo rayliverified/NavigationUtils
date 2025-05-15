@@ -33,6 +33,7 @@ void main() {
 
     // Create route information parser with debug logging
     DefaultRouteInformationParser routeInformationParser = DefaultRouteInformationParser(
+      defaultRoutePath: '/profile',
       debugLog: true,
     );
 
@@ -41,11 +42,6 @@ void main() {
         routerDelegate: routerDelegate,
         routeInformationParser: routeInformationParser,
     ));
-
-    // Simulate app initialization with deeplink
-    await routerDelegate.setNewRoutePath(
-      DefaultRoute.fromUrl('/profile'),
-    );
 
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
