@@ -91,7 +91,14 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
   Future<void> setNewRoutePath(DefaultRoute configuration) async {
     bool? openedCustomDeeplink =
         customDeeplinkHandler?.call(configuration.uri) ?? false;
-    if (openedCustomDeeplink) return;
+    if (openedCustomDeeplink) {
+      // When the user provides a custom deeplink handler, they can process the deeplink without navigating or handle asynchronously.
+      // Initial app open requires a route to be set so fallback and set route.
+      if (routes.isEmpty) {
+        return super.setNewRoutePath(configuration);
+      }
+      return;
+    }
 
     DeeplinkDestination? deeplinkDestination;
     if (deeplinkDestinations.isNotEmpty) {
@@ -108,7 +115,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
           authenticated: authenticated,
           currentRoute: currentConfiguration,
           excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages);
-      return Future.value();
+      return;
     }
 
     return super.setNewRoutePath(configuration);
