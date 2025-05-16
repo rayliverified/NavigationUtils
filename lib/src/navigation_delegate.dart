@@ -301,6 +301,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         group: navigationData.group,
         arguments: arguments);
 
+    // Save global data to unique path key.
+    globalData[path] = data;
+
     // Generate and assign a cache key
     String cacheKey = NavigationBuilder.generateCacheKey(navigationData, route);
     route = route.copyWith(cacheKey: cacheKey);
