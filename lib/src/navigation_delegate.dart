@@ -16,6 +16,9 @@ class DefaultRoute extends RouteSettings {
   final Map<String, dynamic>? metadata;
   final String? group;
 
+  /// A unique cache key for this route, used to manage page caching
+  final String? cacheKey;
+
   Uri get uri => Uri(path: path, queryParameters: queryParameters);
 
   DefaultRoute(
@@ -25,30 +28,39 @@ class DefaultRoute extends RouteSettings {
       this.pathParameters = const {},
       this.metadata = const {},
       this.group,
+      this.cacheKey,
       super.arguments})
       : super(
             name: canonicalUri(
                 Uri(path: path, queryParameters: queryParameters).toString()));
 
   factory DefaultRoute.fromUrl(String url,
-      {String label = '', String? group, Map<String, dynamic>? metadata}) {
+      {String label = '',
+      String? group,
+      Map<String, dynamic>? metadata,
+      String? cacheKey}) {
     Uri uri = Uri.parse(url);
     return DefaultRoute(
         path: uri.path,
         queryParameters: uri.queryParameters,
         label: label,
         group: group,
-        metadata: metadata);
+        metadata: metadata,
+        cacheKey: cacheKey);
   }
 
   factory DefaultRoute.fromUri(Uri uri,
-      {String label = '', String? group, Map<String, dynamic>? metadata}) {
+      {String label = '',
+      String? group,
+      Map<String, dynamic>? metadata,
+      String? cacheKey}) {
     return DefaultRoute(
         path: uri.path,
         queryParameters: uri.queryParameters,
         label: label,
         group: group,
-        metadata: metadata);
+        metadata: metadata,
+        cacheKey: cacheKey);
   }
 
   DefaultRoute copyWith(
@@ -58,6 +70,7 @@ class DefaultRoute extends RouteSettings {
       Map<String, String>? pathParameters,
       Map<String, dynamic>? metadata,
       String? group,
+      String? cacheKey,
       Object? arguments}) {
     return DefaultRoute(
       label: label ?? this.label,
@@ -66,6 +79,7 @@ class DefaultRoute extends RouteSettings {
       pathParameters: pathParameters ?? this.pathParameters,
       metadata: metadata ?? this.metadata,
       group: group ?? this.group,
+      cacheKey: cacheKey ?? this.cacheKey,
       arguments: arguments ?? this.arguments,
     );
   }
@@ -287,8 +301,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         group: navigationData.group,
         arguments: arguments);
 
-    // Save global data to unique path key.
-    globalData[path] = data;
+    // Generate and assign a cache key
+    String cacheKey = NavigationBuilder.generateCacheKey(navigationData, route);
+    route = route.copyWith(cacheKey: cacheKey);
 
     // Check duplicate route to prevent inadvertently
     // adding the same page twice. Duplicate pages are
@@ -363,10 +378,17 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   void pop([dynamic result, bool apply = true, bool all = false]) {
     if (canPop == false) return;
     if (all == false && _routes.length <= 1) return;
-    if (_pageCompleters.containsKey(routes.last)) {
-      _pageCompleters[routes.last]!.complete(result);
-      _pageCompleters.remove(routes.last);
+
+    DefaultRoute poppedRoute = _routes.last;
+
+    // Use the route's cacheKey directly for reliable cache clearing
+    NavigationBuilder.clearCachedRoute(poppedRoute);
+
+    if (_pageCompleters.containsKey(poppedRoute)) {
+      _pageCompleters[poppedRoute]!.complete(result);
+      _pageCompleters.remove(poppedRoute);
     }
+
     _routes.removeLast();
     if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();

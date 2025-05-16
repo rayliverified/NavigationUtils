@@ -101,7 +101,9 @@ class NavigationBuilder {
   static final Map<String, Page> _pageCache = {};
   static final Map<String, int> _routeIndices = {};
 
-  static String _getCacheKey(
+  /// Generates a cache key for the route
+  /// This method is public so it can be used when creating routes
+  static String generateCacheKey(
       NavigationData navigationData, DefaultRoute route) {
     // If there's a group, use it as the primary cache key
     if (navigationData.group != null) {
@@ -162,7 +164,14 @@ class NavigationBuilder {
                     route.path, navigationData.path));
           }
 
-          String cacheKey = _getCacheKey(navigationData, route);
+          // Use the route's assigned cacheKey or generate one if missing
+          String cacheKey =
+              route.cacheKey ?? generateCacheKey(navigationData, route);
+
+          // Update the route with the cache key if it wasn't already set
+          if (route.cacheKey == null) {
+            route = route.copyWith(cacheKey: cacheKey);
+          }
 
           // For groups, use the group name as the unique key
           ValueKey<String> pageKey;
@@ -331,6 +340,46 @@ class NavigationBuilder {
   static void clearCache() {
     _pageCache.clear();
     _routeIndices.clear(); // Also clear route indices
+  }
+
+  /// Clears cached route entries related to a specific route
+  ///
+  /// Uses the route's assigned cacheKey for more reliable cache management
+  /// Properly maintains index counters to ensure correct cache key generation
+  static void clearCachedRoute(DefaultRoute route) {
+    if (route.cacheKey != null) {
+      // Use the assigned cache key directly
+      _pageCache.remove(route.cacheKey);
+
+      // Handle index suffix for indexed routes
+      if (route.cacheKey!.contains('-')) {
+        // Extract the base key and index
+        List<String> parts = route.cacheKey!.split('-');
+        if (parts.length == 2) {
+          String baseKey = parts[0];
+          int removedIndex = int.tryParse(parts[1]) ?? 0;
+
+          // If this was the highest index for this base path,
+          // decrement the counter to the next highest index
+          if (_routeIndices.containsKey(baseKey) &&
+              _routeIndices[baseKey] == removedIndex) {
+            _routeIndices[baseKey] = removedIndex - 1;
+          }
+        }
+      }
+      return;
+    }
+
+    // Fallback for routes without assigned cache keys
+    if (route.group != null) {
+      _pageCache.remove(route.group);
+      return;
+    }
+
+    // For routes with neither cacheKey nor group
+    // Use the path or name as the base key
+    String basePath = route.name ?? route.path;
+    _pageCache.remove(basePath);
   }
 
   // Trim character functions.
