@@ -1,3 +1,7 @@
+## 0.9.1
+- Create empty route fallback for `customDeeplinkHandler`. Initial app open always requires a route to be set and cannot be empty.
+- Fix cached pages not being cleared when popped.
+
 ## 0.9.0
 - **Breaking:** Rename `pageBuilder` to `migrationPageBuilder`.
 - Add support for passing a custom `pageBuilder` instead of using the default MaterialPage or CupertinoPage.
