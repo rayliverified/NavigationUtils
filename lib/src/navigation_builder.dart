@@ -347,8 +347,8 @@ class NavigationBuilder {
   /// Uses the route's assigned cacheKey for more reliable cache management
   /// Properly maintains index counters to ensure correct cache key generation
   static void clearCachedRoute(DefaultRoute route) {
+    // If the route has an explicit cache key, use it directly
     if (route.cacheKey != null) {
-      // Use the assigned cache key directly
       _pageCache.remove(route.cacheKey);
 
       // Handle index suffix for indexed routes
@@ -370,16 +370,24 @@ class NavigationBuilder {
       return;
     }
 
-    // Fallback for routes without assigned cache keys
-    if (route.group != null) {
-      _pageCache.remove(route.group);
-      return;
-    }
+    // For routes without explicit cache key
+    String cacheKey = route.group ?? route.name ?? route.path;
 
-    // For routes with neither cacheKey nor group
-    // Use the path or name as the base key
-    String basePath = route.name ?? route.path;
-    _pageCache.remove(basePath);
+    // Remove the main entry
+    _pageCache.remove(cacheKey);
+
+    // For non-grouped routes, also check for any indexed variants
+    if (route.group == null) {
+      // Check for indexed variants
+      for (int i = 2; i <= (_routeIndices[cacheKey] ?? 1); i++) {
+        _pageCache.remove('$cacheKey-$i');
+      }
+
+      // Reset the counter
+      if (_routeIndices.containsKey(cacheKey)) {
+        _routeIndices[cacheKey] = 0;
+      }
+    }
   }
 
   // Trim character functions.
