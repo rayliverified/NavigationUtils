@@ -1,3 +1,8 @@
+## 0.9.2
+- Consolidate cache key and unique key into an unified indentifier system.
+  - Fix duplicate and grouped route cache handling.
+- Implement clear cache properly for all navigation methods.
+
 ## 0.9.1
 - Create empty route fallback for `customDeeplinkHandler`. Initial app open always requires a route to be set and cannot be empty.
 - Fix cached pages not being cleared when popped.
