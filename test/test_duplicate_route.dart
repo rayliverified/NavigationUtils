@@ -4,7 +4,7 @@ import 'package:navigation_utils/navigation_utils.dart';
 
 void main() {
   group('Navigation with Duplicate Routes Tests', () {
-    testWidgets('Should handle navigation with duplicate routes',
+    testWidgets('Duplicate routes - simple navigation scenario',
         (WidgetTester tester) async {
       DefaultRouterDelegate routerDelegate = DefaultRouterDelegate(
         navigationDataRoutes: [
@@ -64,7 +64,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Notifications Page'), findsOneWidget);
 
-      // Check that our routes don't have duplicates
+      // Check that our routes can have duplicates
       final routes = routerDelegate.routes;
 
       // Extract all paths
@@ -76,16 +76,13 @@ void main() {
         pathCounts[path] = (pathCounts[path] ?? 0) + 1;
       }
 
-      // Verify no path occurs more than once
-      for (final entry in pathCounts.entries) {
-        expect(entry.value, equals(1),
-            reason:
-                'Path "${entry.key}" appears ${entry.value} times in route stack');
-      }
+      // Now we expect duplicate paths
+      expect(pathCounts['/notifications'], equals(2),
+          reason: 'Path "/notifications" should appear 2 times in route stack');
     });
 
     test(
-        'DefaultRouterDelegate.push should replace existing routes with same path',
+        'Duplicate routes - route cache key generation',
         () {
       DefaultRouterDelegate routerDelegate = DefaultRouterDelegate(
         navigationDataRoutes: [
@@ -132,12 +129,13 @@ void main() {
       // Verify routes
       final routes = routerDelegate.routes;
 
-      // Expected routes in order
+      // Now we expect the notifications route to appear twice
       final expectedPaths = [
         '/home',
         '/community',
+        '/notifications',
         '/therapy',
-        '/notifications'
+        '/notifications' // The duplicate route
       ];
 
       // Check routes match expected
@@ -150,16 +148,20 @@ void main() {
                 'Route at position $i should have path ${expectedPaths[i]}');
       }
 
-      // Check for duplicates
-      final routePaths = routes.map((r) => r.path).toList();
-      final uniquePaths = routePaths.toSet();
+      // Check for unique cache keys for duplicate routes
+      final notificationRoutes = routes
+          .where((route) => route.path == '/notifications')
+          .toList();
+      expect(notificationRoutes.length, equals(2),
+          reason: 'There should be 2 notification routes');
 
-      // Number of unique paths should match total paths (no duplicates)
-      expect(uniquePaths.length, equals(routePaths.length),
-          reason: 'There should be no duplicate routes');
+      if (notificationRoutes.length > 1) {
+        expect(notificationRoutes[0].cacheKey, isNot(equals(notificationRoutes[1].cacheKey)),
+            reason: 'Duplicate routes should have different cache keys');
+      }
     });
 
-    testWidgets('Full navigation flow should not have duplicate routes',
+    testWidgets('Duplicate routes - complex navigation flow with duplicates',
         (WidgetTester tester) async {
       DefaultRouterDelegate routerDelegate = DefaultRouterDelegate(
         navigationDataRoutes: [
@@ -211,17 +213,17 @@ void main() {
       routerDelegate.push('notifications');
       await tester.pumpAndSettle();
 
-      // Verify the routes - should have therapy and notifications, no duplicates
+      // Verify the routes - should now have TWO notifications routes
       final routes = routerDelegate.routes;
       final labels = routes.map((r) => r.label).toList();
 
-      // Should not contain duplicate entries
-      expect(routes.where((r) => r.path == '/notifications').length, equals(1),
-          reason: 'Should have only one notifications route');
+      // Should contain duplicate entries
+      expect(routes.where((r) => r.path == '/notifications').length, equals(2),
+          reason: 'Should have two notifications routes');
 
-      // Final routes should be in correct order without duplicates
-      expect(labels, containsAllInOrder(['feed', 'therapy', 'notifications']),
-          reason: 'Routes should be in the correct order without duplicates');
+      // Final routes should be in correct order with duplicates
+      expect(labels, containsAllInOrder(['feed', 'notifications', 'therapy', 'notifications']),
+          reason: 'Routes should be in the correct order with duplicates allowed');
     });
   });
 }
