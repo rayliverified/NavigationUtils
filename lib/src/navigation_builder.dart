@@ -105,13 +105,18 @@ class NavigationBuilder {
   /// This method is public so it can be used when creating routes
   static String generateCacheKey(
       NavigationData navigationData, DefaultRoute route) {
-    // If there's a group, use it as the primary cache key
+    // For both grouped and non-grouped routes, include an index for duplicates
+    String basePath;
+    
     if (navigationData.group != null) {
-      return navigationData.group!;
+      // For groups, use the group name as the base key
+      basePath = navigationData.group!;
+    } else {
+      // For non-grouped routes, use name or path
+      basePath = route.name ?? route.path;
     }
-
-    // For non-grouped routes, include an index for duplicates
-    String basePath = route.name ?? route.path;
+    
+    // Increment the route index counter for this base path
     _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
 
     // Only add index suffix if this is a duplicate (count > 1)
@@ -132,7 +137,9 @@ class NavigationBuilder {
         (Router.of(context).routerDelegate as BaseRouterDelegate);
     List<Page> pages = [];
     _pageKeys.clear();
-    _routeIndices.clear();
+    
+    // Do not clear _routeIndices here - it needs to persist between builds
+    // to maintain unique cache keys for routes
 
     // Create temporary cache for this build
     final Map<String, Page> newCache = {};
@@ -164,25 +171,20 @@ class NavigationBuilder {
                     route.path, navigationData.path));
           }
 
-          // Use the route's assigned cacheKey or generate one if missing
-          String cacheKey =
-              route.cacheKey ?? generateCacheKey(navigationData, route);
-
+          // Generate a cache key if not already assigned to this route
+          String cacheKey = route.cacheKey ?? generateCacheKey(navigationData, route);
+          
           // Update the route with the cache key if it wasn't already set
           if (route.cacheKey == null) {
             route = route.copyWith(cacheKey: cacheKey);
           }
 
-          // For groups, use the group name as the unique key
-          ValueKey<String> pageKey;
-          if (navigationData.group != null) {
-            pageKey = _getUniqueKey(navigationData.group);
-          } else {
-            pageKey = _getUniqueKey(route.name);
-          }
+          // Key for the page - use the cache key for uniqueness
+          // This ensures Flutter Navigator can distinguish between duplicate routes
+          ValueKey<String> pageKey = ValueKey<String>(cacheKey);
 
           // For grouped pages, always create new page to get updated child
-          // For non-grouped pages, use cache
+          // For non-grouped pages, either create new or reuse based on cacheKey
           Page page;
           final CustomPageBuilder? effectivePageBuilder =
               navigationData.pageBuilder ?? pageBuilder;
@@ -214,9 +216,11 @@ class NavigationBuilder {
                 barrierColor: navigationData.barrierColor,
               );
             } else {
+              // For non-groups, we use the cacheKey to decide if we need to build a new page
+              // This naturally handles duplicates since each has a unique cacheKey
               page = _pageCache[cacheKey] ??
                   buildPage(
-                    key: pageKey,
+                    key: pageKey, // Use the unique cache key for the page key
                     name: route.name,
                     child: navigationData.builder(
                         context,
@@ -235,7 +239,7 @@ class NavigationBuilder {
           continue;
         }
       }
-
+      
       Page? customPage = migrationPageBuilder?.call(context, route);
       if (customPage != null) {
         pages.add(customPage);
