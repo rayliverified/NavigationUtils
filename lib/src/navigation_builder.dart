@@ -116,6 +116,15 @@ class NavigationBuilder {
       basePath = route.name ?? route.path;
     }
     
+    // Do not increment when generating a key for route detection/lookup
+    // Only increment when we're actually adding a new route
+    // This way routes with the same path will have the same base key for comparison
+
+    // If the route already has a cacheKey, don't generate a new one
+    if (route.cacheKey != null) {
+      return route.cacheKey!;
+    }
+    
     // Increment the route index counter for this base path
     _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
 
@@ -248,6 +257,14 @@ class NavigationBuilder {
 
       if (onUnknownRoute != null) {
         pages.add(onUnknownRoute.call(route as DefaultRoute));
+      }
+    }
+
+    // After building all pages, check for duplicate paths
+    // This is a diagnostic check that will help identify issues
+    for (final entry in routePathCounts.entries) {
+      if (entry.value > 1) {
+        debugPrint('WARNING: Path "${entry.key}" appears ${entry.value} times in navigation stack');
       }
     }
 
