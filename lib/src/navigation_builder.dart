@@ -101,39 +101,6 @@ class NavigationBuilder {
   static final Map<String, Page> _pageCache = {};
   static final Map<String, int> _routeIndices = {};
 
-  /// Generates a cache key for the route
-  /// This method is public so it can be used when creating routes
-  static String generateCacheKey(
-      NavigationData navigationData, DefaultRoute route) {
-    // For both grouped and non-grouped routes, include an index for duplicates
-    String basePath;
-
-    if (navigationData.group != null) {
-      // For groups, use the group name as the base key
-      basePath = navigationData.group!;
-    } else {
-      // For non-grouped routes, use name or path
-      basePath = route.name ?? route.path;
-    }
-
-    // Do not increment when generating a key for route detection/lookup
-    // Only increment when we're actually adding a new route
-    // This way routes with the same path will have the same base key for comparison
-
-    // If the route already has a cacheKey, don't generate a new one
-    if (route.cacheKey != null) {
-      return route.cacheKey!;
-    }
-
-    // Increment the route index counter for this base path
-    _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
-
-    // Only add index suffix if this is a duplicate (count > 1)
-    return _routeIndices[basePath] != null && _routeIndices[basePath]! > 1
-        ? '$basePath-${_routeIndices[basePath]}'
-        : basePath;
-  }
-
   static List<Page> build(
       {required BuildContext context,
       required List<Object> routeDataList,
@@ -148,11 +115,36 @@ class NavigationBuilder {
     _pageKeys.clear();
 
     // Do not clear _routeIndices here - it needs to persist between builds
-    // to maintain unique cache keys for routes
 
     // Create temporary cache for this build
     final Map<String, Page> newCache = {};
 
+    // Track groups to handle contiguous group items correctly
+    final Map<String, int> lastGroupIndex = {};
+    final Set<String> processedGroups = {};
+
+    // First pass: identify contiguous groups and mark them for skipping
+    for (int i = 0; i < routeDataList.length; i++) {
+      Object route = routeDataList[i];
+      if (route is DefaultRoute && route.group != null) {
+        String groupName = route.group!;
+
+        // If this is a new group, start tracking it
+        if (!lastGroupIndex.containsKey(groupName)) {
+          lastGroupIndex[groupName] = i;
+        }
+        // If this is a contiguous group item, update the last index
+        else if (lastGroupIndex[groupName]! == i - 1) {
+          lastGroupIndex[groupName] = i;
+        }
+        // If this is a non-contiguous group item, start a new tracking
+        else {
+          lastGroupIndex[groupName] = i;
+        }
+      }
+    }
+
+    // Second pass: build pages, skipping contiguous group items except the last one
     for (int i = 0; i < routeDataList.length; i++) {
       Object route = routeDataList[i];
       if (route is DefaultRoute) {
@@ -164,12 +156,20 @@ class NavigationBuilder {
         if (navigationData != null &&
             (group == null || navigationData.group == group)) {
           // Skip building duplicated groups.
-          if (group == null &&
-              navigationData.group != null &&
-              i < routeDataList.length - 1 &&
-              (routeDataList[i + 1] as DefaultRoute).group ==
-                  navigationData.group) {
-            continue;
+          // Skip non-top contiguous group items
+          if (navigationData.group != null) {
+            String groupName = navigationData.group!;
+
+            // Skip if this is part of a contiguous group but not the last item
+            if (i < lastGroupIndex[groupName]!) {
+              continue;
+            }
+
+            // For grouped routes, track first instance of group in this route stack
+            // to determine cache key assignment
+            if (!processedGroups.contains(groupName)) {
+              processedGroups.add(groupName);
+            }
           }
 
           Map<String, String> pathParameters = {};
@@ -338,16 +338,28 @@ class NavigationBuilder {
     return widgets;
   }
 
-  // Helper method to get a unique key
-  static ValueKey<String> _getUniqueKey(String? name) {
-    if (name == null) {
-      return const ValueKey('');
+  /// Generates a cache key for the route
+  /// This method is public so it can be used when creating routes
+  static String generateCacheKey(
+      NavigationData navigationData, DefaultRoute route) {
+    // If the route already has a cacheKey, don't generate a new one
+    if (route.cacheKey != null) {
+      return route.cacheKey!;
     }
 
-    _pageKeys[name] = (_pageKeys[name] ?? 0) + 1;
-    return _pageKeys[name]! > 1
-        ? ValueKey('$name-${_pageKeys[name]}')
-        : ValueKey(name);
+    // For groups, always use the group name as the cache key
+    if (navigationData.group != null) {
+      return navigationData.group!;
+    }
+
+    // For non-grouped routes, include an index for duplicates
+    String basePath = route.name ?? route.path;
+    _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
+
+    // Only add index suffix if this is a duplicate (count > 1)
+    return (_routeIndices[basePath] ?? 0) > 1
+        ? '$basePath-${_routeIndices[basePath]}'
+        : basePath;
   }
 
   // Add method to clear cache when needed
