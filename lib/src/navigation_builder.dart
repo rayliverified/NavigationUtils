@@ -107,7 +107,7 @@ class NavigationBuilder {
       NavigationData navigationData, DefaultRoute route) {
     // For both grouped and non-grouped routes, include an index for duplicates
     String basePath;
-    
+
     if (navigationData.group != null) {
       // For groups, use the group name as the base key
       basePath = navigationData.group!;
@@ -115,7 +115,7 @@ class NavigationBuilder {
       // For non-grouped routes, use name or path
       basePath = route.name ?? route.path;
     }
-    
+
     // Do not increment when generating a key for route detection/lookup
     // Only increment when we're actually adding a new route
     // This way routes with the same path will have the same base key for comparison
@@ -124,7 +124,7 @@ class NavigationBuilder {
     if (route.cacheKey != null) {
       return route.cacheKey!;
     }
-    
+
     // Increment the route index counter for this base path
     _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
 
@@ -146,7 +146,7 @@ class NavigationBuilder {
         (Router.of(context).routerDelegate as BaseRouterDelegate);
     List<Page> pages = [];
     _pageKeys.clear();
-    
+
     // Do not clear _routeIndices here - it needs to persist between builds
     // to maintain unique cache keys for routes
 
@@ -181,8 +181,9 @@ class NavigationBuilder {
           }
 
           // Generate a cache key if not already assigned to this route
-          String cacheKey = route.cacheKey ?? generateCacheKey(navigationData, route);
-          
+          String cacheKey =
+              route.cacheKey ?? generateCacheKey(navigationData, route);
+
           // Update the route with the cache key if it wasn't already set
           if (route.cacheKey == null) {
             route = route.copyWith(cacheKey: cacheKey);
@@ -248,7 +249,7 @@ class NavigationBuilder {
           continue;
         }
       }
-      
+
       Page? customPage = migrationPageBuilder?.call(context, route);
       if (customPage != null) {
         pages.add(customPage);
@@ -257,14 +258,6 @@ class NavigationBuilder {
 
       if (onUnknownRoute != null) {
         pages.add(onUnknownRoute.call(route as DefaultRoute));
-      }
-    }
-
-    // After building all pages, check for duplicate paths
-    // This is a diagnostic check that will help identify issues
-    for (final entry in routePathCounts.entries) {
-      if (entry.value > 1) {
-        debugPrint('WARNING: Path "${entry.key}" appears ${entry.value} times in navigation stack');
       }
     }
 
