@@ -481,6 +481,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     while (_routes.contains(route) && _routes.length > 1) {
       for (int i = _routes.length - 1; i >= 0; i--) {
         if (_routes[i] == route) {
+          NavigationBuilder.clearCachedRoute(_routes[i]);
           _routes.removeAt(i);
           break;
         }
@@ -500,6 +501,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       Map<String, String> pathParameters = const {},
       dynamic result,
       bool apply = true}) async {
+    if (_routes.isNotEmpty) {
+      NavigationBuilder.clearCachedRoute(_routes.last);
+    }
     pop(result, false, true);
     return await push(name,
         queryParameters: queryParameters,
@@ -512,6 +516,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   Future<dynamic> pushReplacementRoute(DefaultRoute route,
       [dynamic result, bool apply = true]) async {
+    if (_routes.isNotEmpty) {
+      NavigationBuilder.clearCachedRoute(_routes.last);
+    }
     pop(result, false, true);
     return await pushRoute(route, apply: apply);
   }
@@ -525,6 +532,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
+      NavigationBuilder.clearCachedRoute(_routes[anchorIndex - 1]);
       _routes.removeAt(anchorIndex - 1);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
@@ -535,6 +543,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   void removeRouteBelow(DefaultRoute route, {bool apply = true}) {
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex >= 1) {
+      NavigationBuilder.clearCachedRoute(_routes[anchorIndex - 1]);
       _routes.removeAt(anchorIndex - 1);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
@@ -550,6 +559,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex < _routes.length - 1) {
+      // Clear the route cache before removing
+      NavigationBuilder.clearCachedRoute(_routes[anchorIndex + 1]);
       _routes.removeAt(anchorIndex + 1);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
@@ -560,6 +571,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   void removeRouteAbove(DefaultRoute route, {bool apply = true}) {
     int anchorIndex = _routes.indexOf(route);
     if (anchorIndex < _routes.length - 1) {
+      NavigationBuilder.clearCachedRoute(_routes[anchorIndex + 1]);
       _routes.removeAt(anchorIndex + 1);
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
@@ -575,6 +587,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         if (!canPop || (all == false && _routes.length <= 1)) {
           continue;
         }
+
+        NavigationBuilder.clearCachedRoute(route);
 
         if (_pageCompleters.containsKey(route)) {
           _pageCompleters[route]!.complete(null);
@@ -610,6 +624,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int index = _routes.indexOf(oldRoute);
     if (index == -1) return;
 
+    NavigationBuilder.clearCachedRoute(_routes[index]);
+    
     DefaultRoute? defaultRouteHolder = newRoute;
 
     if (newName != null) {
@@ -651,6 +667,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
     int index = _routes.indexOf(anchorRoute);
     if (index >= 1) {
+      NavigationBuilder.clearCachedRoute(_routes[index - 1]);
+      
       DefaultRoute newRoute =
           NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
@@ -665,6 +683,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
       {bool apply = true}) {
     int index = _routes.indexOf(anchorRoute);
     if (index >= 1) {
+      NavigationBuilder.clearCachedRoute(_routes[index - 1]);
+      
       _routes[index - 1] = newRoute;
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
@@ -676,6 +696,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void set(List<String> names, {bool apply = true}) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
+    NavigationBuilder.clearCache();
     _routes.clear();
     // Map route names to routes.
     _routes.addAll(names.map((e) {
@@ -693,6 +714,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void setRoutes(List<DefaultRoute> routes, {bool apply = true}) {
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
+    NavigationBuilder.clearCache();
     _routes.clear();
     _routes.addAll(routes);
     _routes = setMainRoutes?.call(_routes) ?? _routes;
@@ -708,6 +730,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   @override
   void setBackstack(List<String> names, {bool apply = true}) {
     assert(names.isNotEmpty, 'Names cannot be empty.');
+    for (int i = 0; i < _routes.length - 1; i++) {
+      NavigationBuilder.clearCachedRoute(_routes[i]);
+    }
     DefaultRoute currentRoute = _routes.last;
     _routes.clear();
     // Map route names to routes.
@@ -721,6 +746,9 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   @override
   void setBackstackRoutes(List<DefaultRoute> routes, {bool apply = true}) {
+    for (int i = 0; i < _routes.length - 1; i++) {
+      NavigationBuilder.clearCachedRoute(_routes[i]);
+    }
     DefaultRoute currentRoute = _routes.last;
     _routes.clear();
     _routes.addAll(routes);
@@ -803,6 +831,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   @override
   void clear() {
+      NavigationBuilder.clearCache();
     _routes.clear();
   }
 

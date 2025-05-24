@@ -274,5 +274,59 @@ void main() {
       // Should still use group2 as the key
       expect(key3, 'group2');
     });
+
+    test('set() method clears all cached pages', () {
+      // Setup initial routes and router delegate
+      final routes = [
+        NavigationData(
+          label: 'home',
+          url: '/home',
+          builder: (_, __, ___) => const SizedBox(),
+        ),
+        NavigationData(
+          label: 'details',
+          url: '/details',
+          builder: (_, __, ___) => const SizedBox(),
+        ),
+        NavigationData(
+          label: 'profile',
+          url: '/profile',
+          builder: (_, __, ___) => const SizedBox(),
+        ),
+      ];
+
+      // Create router delegate
+      final routerDelegate = DefaultRouterDelegate(navigationDataRoutes: routes);
+
+      // Create some route entries and generate cache keys
+      final route1 = DefaultRoute(path: '/home', label: 'home');
+      final route2 = DefaultRoute(path: '/details', label: 'details');
+
+      // Populate cache by generating keys
+      NavigationBuilder.generateCacheKey(routes[0], route1);
+      NavigationBuilder.generateCacheKey(routes[1], route2);
+
+      // Add duplicate route to create an indexed cache entry
+      final route3 = DefaultRoute(path: '/home', label: 'home');
+      final key3 = NavigationBuilder.generateCacheKey(routes[0], route3);
+      expect(key3, '/home-2', reason: 'Should have created indexed cache key');
+
+      // Call set() method which should clear the cache
+      routerDelegate.set(['profile'], apply: false);
+
+      // Check if cache was properly cleared by attempting to create a new key
+      final route4 = DefaultRoute(path: '/home', label: 'home');
+      final key4 = NavigationBuilder.generateCacheKey(routes[0], route4);
+
+      // If cache was cleared, we should get the base key again, not an indexed one
+      expect(key4, '/home', reason: 'Cache should be cleared after set() call');
+
+      // Create another route to verify indices were reset properly
+      final route5 = DefaultRoute(path: '/home', label: 'home');
+      final key5 = NavigationBuilder.generateCacheKey(routes[0], route5);
+
+      // Should now be the first index after base
+      expect(key5, '/home-2', reason: 'Index counter should start from 1 after cache clear');
+    });
   });
 }
