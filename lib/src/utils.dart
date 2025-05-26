@@ -109,28 +109,29 @@ class NavigationUtils {
   static DefaultRoute? mapNavigationDataToDefaultRoute(
       {required List<NavigationData> routes,
       required DefaultRoute route,
-      Map<String, dynamic>? globalData}) {
-    NavigationData? navigationData =
+      Map<String, dynamic>? globalData,
+      NavigationData? navigationData}) {
+    NavigationData? navigationDataHolder = navigationData ??
         getNavigationDataFromRoute(routes: routes, route: route);
     DefaultRoute? routeHolder;
 
-    if (navigationData != null) {
+    if (navigationDataHolder != null) {
       Map<String, String> pathParameters = {};
-      String path = navigationData.path;
-      if (navigationData.path.contains(':')) {
-        pathParameters =
-            extractPathParametersWithPattern(route.path, navigationData.path);
-        path = patternToPath(navigationData.path, pathParameters);
+      String path = navigationDataHolder.path;
+      if (navigationDataHolder.path.contains(':')) {
+        pathParameters = extractPathParametersWithPattern(
+            route.path, navigationDataHolder.path);
+        path = patternToPath(navigationDataHolder.path, pathParameters);
       }
 
       // Build DefaultRoute.
       routeHolder = DefaultRoute(
-          label: navigationData.label ?? '',
+          label: navigationDataHolder.label ?? '',
           path: path,
           pathParameters: pathParameters,
           queryParameters: route.queryParameters,
-          group: navigationData.group,
-          metadata: navigationData.metadata);
+          group: navigationDataHolder.group,
+          metadata: navigationDataHolder.metadata);
     }
 
     return routeHolder;

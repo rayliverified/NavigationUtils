@@ -296,7 +296,8 @@ void main() {
       ];
 
       // Create router delegate
-      final routerDelegate = DefaultRouterDelegate(navigationDataRoutes: routes);
+      final routerDelegate =
+          DefaultRouterDelegate(navigationDataRoutes: routes);
 
       // Create some route entries and generate cache keys
       final route1 = DefaultRoute(path: '/home', label: 'home');
@@ -326,7 +327,137 @@ void main() {
       final key5 = NavigationBuilder.generateCacheKey(routes[0], route5);
 
       // Should now be the first index after base
-      expect(key5, '/home-2', reason: 'Index counter should start from 1 after cache clear');
+      expect(key5, '/home-2',
+          reason: 'Index counter should start from 1 after cache clear');
+    });
+
+    test('Generate cache key for removed and re-added routes', () {
+      final navigationData = NavigationData(
+        label: 'downloads',
+        url: '/downloads',
+        builder: (_, __, ___) => const SizedBox(),
+      );
+
+      // Add the route first time
+      final route1 = DefaultRoute(path: '/downloads', label: 'downloads');
+      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
+      expect(key1, '/downloads');
+
+      // Remove the route by clearing its cache entry
+      NavigationBuilder.clearCachedRoute(route1.copyWith(cacheKey: key1));
+
+      // Add the route second time - should get index 2
+      final route2 = DefaultRoute(path: '/downloads', label: 'downloads');
+      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
+      expect(key2, '/downloads-2');
+
+      // Remove the route again
+      NavigationBuilder.clearCachedRoute(route2.copyWith(cacheKey: key2));
+
+      // Add the route third time - should get index 3, not stay at 2
+      final route3 = DefaultRoute(path: '/downloads', label: 'downloads');
+      final key3 = NavigationBuilder.generateCacheKey(navigationData, route3);
+      expect(key3, '/downloads-3',
+          reason: 'Index should increment on each addition after removal');
+    });
+
+    test('Navigation scenario: Home -> Downloads -> Pop -> Downloads', () {
+      // Clear any existing cache
+      NavigationBuilder.clearCache();
+
+      final routes = [
+        NavigationData(
+          label: 'start',
+          url: '/',
+          builder: (_, __, ___) => const SizedBox(),
+        ),
+        NavigationData(
+          label: 'downloads',
+          url: '/downloads',
+          builder: (_, __, ___) => const SizedBox(),
+        ),
+      ];
+
+      // Create router delegate
+      final routerDelegate = DefaultRouterDelegate(
+        navigationDataRoutes: routes,
+        debugLog: true,
+      );
+
+      // Step 1: Start with home page - use set() instead of direct assignment
+      routerDelegate.set(['/'], apply: false); // Initialize with home route
+
+      // Get the home page route from the delegate
+      final homePage = routerDelegate.routes.first;
+      final homeKey = homePage.cacheKey ?? '';
+      expect(homeKey.isNotEmpty, true,
+          reason: 'Home page should have a cache key');
+
+      // Step 2: Add downloads page
+      routerDelegate.push('/downloads');
+
+      // Get the downloads page from the routes
+      expect(routerDelegate.routes.length, 2,
+          reason: 'Should have 2 routes after push');
+      final downloadsPage1 = routerDelegate.routes.last;
+      final downloadKey1 = downloadsPage1.cacheKey ?? '';
+      expect(downloadKey1.isNotEmpty, true,
+          reason: 'Downloads page should have a cache key');
+      expect(downloadKey1, '/downloads',
+          reason: 'First downloads page should have base key');
+
+      // Step 3: Pop downloads page
+      routerDelegate.pop();
+      expect(routerDelegate.routes.length, 1,
+          reason: 'Should have 1 route after pop');
+
+      // Step 4: Add downloads page again
+      routerDelegate.push('/downloads');
+      expect(routerDelegate.routes.length, 2,
+          reason: 'Should have 2 routes after second push');
+
+      // Get the new downloads page
+      final downloadsPage2 = routerDelegate.routes.last;
+      final downloadKey2 = downloadsPage2.cacheKey ?? '';
+
+      // Check that the key for the second addition is NOT incremented
+      expect(downloadKey2, '/downloads',
+          reason:
+              'When re-adding a previously popped page, it should reuse the base key');
+
+      // Step 5: Let's directly create a new route for the same path
+      // to test the cache key generation without the router delegate
+      final downloadsPage3 =
+          DefaultRoute(path: '/downloads', label: 'downloads');
+      final downloadKey3 =
+          NavigationBuilder.generateCacheKey(routes[1], downloadsPage3);
+
+      // Since there's already one downloads page in the stack,
+      // this should get an incremented key
+      expect(downloadKey3, '/downloads-2',
+          reason: 'Adding another page with same path should use indexed key');
+    });
+
+    test('Initial route in DefaultRouterDelegate has cache key', () {
+      final routes = [
+        NavigationData(
+          label: 'start',
+          url: '/',
+          builder: (_, __, ___) => const SizedBox(),
+        ),
+      ];
+
+      // Create router delegate with initial route using set()
+      final routerDelegate = DefaultRouterDelegate(
+        navigationDataRoutes: routes,
+      );
+
+      // Set the initial route properly
+      routerDelegate.set(['/'], apply: false);
+
+      // Check that initial route has a cache key
+      expect(routerDelegate.routes.first.cacheKey, isNotNull,
+          reason: 'Initial route should have a cache key');
     });
   });
 }

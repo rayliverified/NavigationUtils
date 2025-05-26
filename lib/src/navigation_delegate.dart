@@ -95,7 +95,7 @@ class DefaultRoute extends RouteSettings {
 
   @override
   String toString() =>
-      'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, metadata: $metadata, group: $group, arguments: $arguments)';
+      'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, metadata: $metadata, group: $group, arguments: $arguments, cacheKey: $cacheKey)';
 
   operator [](String key) => queryParameters[key];
 }
@@ -182,18 +182,28 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     _debugPrintMessage('setNewRoutePath: $configuration');
     // Do not set empty route.
     if (configuration.label.isEmpty && configuration.path.isEmpty) return;
-
     _debugPrintMessage('setNewRoutePath: Old Routes: $routes');
-
+    NavigationData? navigationData = NavigationUtils.getNavigationDataFromRoute(
+        routes: navigationDataRoutes, route: configuration);
     // Resolve Route From Navigation Data.
     DefaultRoute? configurationHolder =
         NavigationUtils.mapNavigationDataToDefaultRoute(
             route: configuration,
             routes: navigationDataRoutes,
-            globalData: globalData);
+            globalData: globalData,
+            navigationData: navigationData);
 
     // Unknown route. Show unknown route.
     configurationHolder ??= configuration;
+
+    // Generate and assign cache key if not already present
+    if (configurationHolder.cacheKey == null) {
+      if (navigationData != null) {
+        String cacheKey = NavigationBuilder.generateCacheKey(
+            navigationData, configurationHolder);
+        configurationHolder = configurationHolder.copyWith(cacheKey: cacheKey);
+      }
+    }
 
     // Handle InitialRoutePath logic here. Adding a page here ensures
     // there is always a page to display. The initial page is now set here
@@ -233,9 +243,14 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     List<DefaultRoute> pathsHolder = [];
     pathsHolder.addAll(routes);
     // Check if new path exists in history.
-    for (DefaultRoute route in routes) {
+    for (int i = 0; i < routes.length; i++) {
+      DefaultRoute route = routes[i];
+
       // If path exists, remove all paths on top.
       if (route == newRoute) {
+        // Important: preserve the existing route's cache key
+        newRoute = newRoute.copyWith(cacheKey: route.cacheKey);
+
         int index = routes.indexOf(route);
         int count = routes.length;
         for (var i = index; i < count - 1; i++) {
@@ -625,7 +640,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     if (index == -1) return;
 
     NavigationBuilder.clearCachedRoute(_routes[index]);
-    
+
     DefaultRoute? defaultRouteHolder = newRoute;
 
     if (newName != null) {
@@ -668,7 +683,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int index = _routes.indexOf(anchorRoute);
     if (index >= 1) {
       NavigationBuilder.clearCachedRoute(_routes[index - 1]);
-      
+
       DefaultRoute newRoute =
           NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
 
@@ -684,7 +699,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     int index = _routes.indexOf(anchorRoute);
     if (index >= 1) {
       NavigationBuilder.clearCachedRoute(_routes[index - 1]);
-      
+
       _routes[index - 1] = newRoute;
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
@@ -831,7 +846,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
   @override
   void clear() {
-      NavigationBuilder.clearCache();
+    NavigationBuilder.clearCache();
     _routes.clear();
   }
 

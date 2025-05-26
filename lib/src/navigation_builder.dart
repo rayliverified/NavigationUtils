@@ -183,10 +183,10 @@ class NavigationBuilder {
           // Generate a cache key if not already assigned to this route
           String cacheKey =
               route.cacheKey ?? generateCacheKey(navigationData, route);
-
           // Update the route with the cache key if it wasn't already set
           if (route.cacheKey == null) {
-            route = route.copyWith(cacheKey: cacheKey);
+            mainRouterDelegate.routes[i] =
+                mainRouterDelegate.routes[i].copyWith(cacheKey: cacheKey);
           }
 
           // Key for the page - use the cache key for uniqueness
@@ -352,20 +352,40 @@ class NavigationBuilder {
       return navigationData.group!;
     }
 
-    // For non-grouped routes, include an index for duplicates
+    // For non-grouped routes, use path or name as base key
     String basePath = route.name ?? route.path;
-    _routeIndices[basePath] = (_routeIndices[basePath] ?? 0) + 1;
 
-    // Only add index suffix if this is a duplicate (count > 1)
-    return (_routeIndices[basePath] ?? 0) > 1
-        ? '$basePath-${_routeIndices[basePath]}'
-        : basePath;
+    // Check if we already have a route with this path
+    // Initialize counter if not already tracked
+    if (!_routeIndices.containsKey(basePath)) {
+      _routeIndices[basePath] = 1;
+      return basePath;
+    }
+
+    // Look for the lowest available index
+    int index = 1;
+    String candidateKey = basePath;
+
+    // First try without index (if the base key isn't in use in current page stack)
+    if (!_pageCache.containsKey(basePath)) {
+      _routeIndices[basePath] = 1;
+      return basePath;
+    }
+
+    // Find the first available index gap
+    while (_pageCache.containsKey(candidateKey)) {
+      index++;
+      candidateKey = '$basePath-$index';
+    }
+
+    _routeIndices[basePath] = index;
+    return candidateKey;
   }
 
   // Add method to clear cache when needed
   static void clearCache() {
     _pageCache.clear();
-    _routeIndices.clear(); // Also clear route indices
+    _routeIndices.clear();
   }
 
   /// Clears cached route entries related to a specific route
@@ -385,12 +405,45 @@ class NavigationBuilder {
           String baseKey = parts[0];
           int removedIndex = int.tryParse(parts[1]) ?? 0;
 
-          // If this was the highest index for this base path,
-          // decrement the counter to the next highest index
+          // If we're removing the highest index, find the next highest available index
           if (_routeIndices.containsKey(baseKey) &&
               _routeIndices[baseKey] == removedIndex) {
-            _routeIndices[baseKey] = removedIndex - 1;
+            // Find the highest existing index less than the removed one
+            int nextHighestIndex = 0;
+
+            // Check for the existence of cache keys with lower indices
+            for (int i = removedIndex - 1; i >= 1; i--) {
+              if (_pageCache.containsKey('$baseKey-$i')) {
+                nextHighestIndex = i;
+                break;
+              }
+            }
+
+            // If we found a lower index or there's a base path without index
+            if (nextHighestIndex > 0 || _pageCache.containsKey(baseKey)) {
+              _routeIndices[baseKey] = nextHighestIndex;
+            } else {
+              // No other instances of this route exist, remove tracking
+              _routeIndices.remove(baseKey);
+            }
           }
+        }
+      } else {
+        // Removing a base route without an index
+        // Check if there are any indexed versions before removing the counter
+        bool hasIndexedVersions = false;
+        String baseKey = route.cacheKey!;
+
+        for (int i = 2; i <= (_routeIndices[baseKey] ?? 1); i++) {
+          if (_pageCache.containsKey('$baseKey-$i')) {
+            hasIndexedVersions = true;
+            break;
+          }
+        }
+
+        // If no indexed versions exist, remove the counter
+        if (!hasIndexedVersions) {
+          _routeIndices.remove(baseKey);
         }
       }
       return;
@@ -402,16 +455,22 @@ class NavigationBuilder {
     // Remove the main entry
     _pageCache.remove(cacheKey);
 
-    // For non-grouped routes, also check for any indexed variants
+    // The group check is needed because group routes use a different caching strategy
+    // For non-grouped routes, we need to manage indices
     if (route.group == null) {
-      // Check for indexed variants
+      // Check if any indexed variants exist
+      bool hasIndexedVariants = false;
+
       for (int i = 2; i <= (_routeIndices[cacheKey] ?? 1); i++) {
-        _pageCache.remove('$cacheKey-$i');
+        if (_pageCache.containsKey('$cacheKey-$i')) {
+          hasIndexedVariants = true;
+          break;
+        }
       }
 
-      // Reset the counter
-      if (_routeIndices.containsKey(cacheKey)) {
-        _routeIndices[cacheKey] = 0;
+      // If no indexed variants exist, remove tracking entirely
+      if (!hasIndexedVariants) {
+        _routeIndices.remove(cacheKey);
       }
     }
   }
