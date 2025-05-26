@@ -1,3 +1,7 @@
+## 0.9.3
+- Add cache key to `setNewRoute` and `_setNewRouteHistory`.
+  - Update cache key index calculation logic.
+
 ## 0.9.2
 - Consolidate cache key and unique key into an unified indentifier system.
   - Fix duplicate and grouped route cache handling.
