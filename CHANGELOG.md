@@ -1,5 +1,4 @@
 ## 0.9.4
-
 ### Enabling Hot Reload for Routes
 
 When developing, you may add or change routes and expect hot reload to pick up the updates. To enable hot reload:
