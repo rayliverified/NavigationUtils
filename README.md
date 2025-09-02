@@ -48,7 +48,7 @@ void main() {
 ### Define Routes
 
 ```dart
-List<NavigationData> routes = [
+List<NavigationData> get routes => [
   NavigationData(
       url: '/',
       builder: (context, routeData, globalData) =>
@@ -666,3 +666,21 @@ NavigationData(
 ```
 
 You can create any custom transition effect you need by defining your own `Page` classes and using them either globally or on a per-page basis.
+
+### Enabling Hot Reload for Routes
+
+When developing, you may add or change routes and expect hot reload to pick up the updates. Unfortunately, hot reload does not work out of the box with Flutter's Navigator widget if it is static, which it needs to be to avoid recreating itself on every navigation event. To enable hot reload, add the following to your top level App widget.
+
+```dart
+@override
+void reassemble() {
+  NavigationManager.instance.routerDelegate.navigationDataRoutes = routes;
+  super.reassemble();
+}
+```
+
+**Why this works:**
+In Flutter, hot reload only reloads the widget build path.
+- Use a getter for `routes`, as top-level variables are not re-initialized on hot reload.
+- Avoid `final` references so new instances can be created on hot reload.
+- Update static `Navigator` internal variables.

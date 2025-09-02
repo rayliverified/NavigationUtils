@@ -1,3 +1,25 @@
+## 0.9.4
+
+### Enabling Hot Reload for Routes
+
+When developing, you may add or change routes and expect hot reload to pick up the updates. To enable hot reload:
+
+1. Change `routes` to a getter.
+    ```dart
+    // Old
+    List<NavigationData> routes = [];
+    // New
+    List<NavigationData> get routes => [];
+    ```
+2. Add a `reassemble` method to the top level `App` widget.
+    ```dart
+    @override
+    void reassemble() {
+      NavigationManager.instance.routerDelegate.navigationDataRoutes = routes;
+      super.reassemble();
+    }
+    ```
+
 ## 0.9.3
 - Add cache key to `setNewRoute` and `_setNewRouteHistory`.
   - Update cache key index calculation logic.

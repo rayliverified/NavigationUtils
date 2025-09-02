@@ -21,8 +21,8 @@ class NavigationManager implements NavigationInterface {
     return _instance!;
   }
 
-  final BaseRouterDelegate routerDelegate;
-  final DefaultRouteInformationParser routeInformationParser;
+  BaseRouterDelegate routerDelegate;
+  DefaultRouteInformationParser routeInformationParser;
 
   NavigationManager._(this.routerDelegate, this.routeInformationParser);
 

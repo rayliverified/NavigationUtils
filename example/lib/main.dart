@@ -27,8 +27,21 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  /// Enables hot reload for navigation route changes. Without this, adding new routes
+  /// and any route changes won't apply with hot reload because the Navigator is static.
+  @override
+  void reassemble() {
+    NavigationManager.instance.routerDelegate.navigationDataRoutes = routes;
+    super.reassemble();
+  }
 
   @override
   Widget build(BuildContext context) {
