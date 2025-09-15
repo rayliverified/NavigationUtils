@@ -510,6 +510,10 @@ class NavigationUtils {
             arguments: arguments,
             apply: false);
       }
+
+      if (deeplinkDestinationHolder.runFunction != null) {
+        deeplinkDestinationHolder.runFunction!(pathParameters, queryParameters);
+      }
     }
 
     // Set deeplink destination.
@@ -538,6 +542,11 @@ class NavigationUtils {
               apply: false);
         }
         routerDelegate.apply();
+
+        if (deeplinkDestinationHolder.runFunction != null) {
+          deeplinkDestinationHolder.runFunction!(
+              pathParameters ?? {}, queryParameters ?? {});
+        }
       })
           .then((value) {
         if (value == false) {

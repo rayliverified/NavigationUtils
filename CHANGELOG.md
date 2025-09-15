@@ -1,3 +1,6 @@
+## 0.9.5
+- Add `runFunction` parameter to `DeeplinkDestination` class. Support handling deeplinks without navigating, such as allowing deeplinks to trigger app functionalities (e.g., analytics, social share links, or showing a bottom sheet) without navigating to a new page. It is invoked after navigation completes, which allows for logic to be run after deeplink navigation is complete.
+
 ## 0.9.4
 ### Enabling Hot Reload for Routes
 

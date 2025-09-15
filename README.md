@@ -319,7 +319,10 @@ DeeplinkDestination(
     InstallReferrer.instance.setReferrerId(referrerId);
 
     return {'id': pathParameters['userId'] ?? ''};
-  },   
+  },
+  runFunction: (pathParameters, queryParameters) async {
+    // Arbitrary function call for handling deeplinks without doing navigation.
+  },
   authenticationRequired: false,
 )
 ```
@@ -331,6 +334,7 @@ DeeplinkDestination(
 - `excludeDeeplinkNavigationPages`: A list of pages that should be excluded from deep link navigation.
 - `shouldNavigateDeeplinkFunction`: A function that determines whether the deep link should be navigated.
 - `mapPathParameterFunction`, `mapQueryParameterFunction`, `mapArgumentsFunction`, `mapGlobalDataFunction`: Optional functions that map path parameters, query parameters, arguments, and global data, respectively.
+- `runFunction`: A function to support handling deeplinks without navigating, such as allowing deeplinks to trigger app functionality such as analytics, sharing data through social links, or showing a bottom sheet, without navigating to a new page. This function is also called after navigation completes, which allows for logic to be run after deeplink navigation is complete.
 - `authenticationRequired`: A boolean indicating whether authentication is required to navigate the deeplink.
 
 By providing these parameters, NavigationUtils gives you the flexibility to customize deeplink behavior to suit your application's specific needs. Contributors are welcome to open an issue and PR to add additional functionality that might be missing.

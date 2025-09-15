@@ -22,6 +22,8 @@ typedef RedirectFunction = Future<bool> Function(
             Map<String, dynamic>? globalData,
             Object? arguments})
         redirect);
+typedef RunFunction = Future<void> Function(
+    Map<String, String> pathParameters, Map<String, String> queryParameters);
 
 class DeeplinkDestination {
   final String deeplinkUrl;
@@ -36,6 +38,7 @@ class DeeplinkDestination {
   final MapArgumentsFunction? mapArgumentsFunction;
   final MapGlobalDataFunction? mapGlobalDataFunction;
   final RedirectFunction? redirectFunction;
+  final RunFunction? runFunction;
   final bool authenticationRequired;
   // TODO: Add platform filter parameter.
 
@@ -55,10 +58,14 @@ class DeeplinkDestination {
       this.mapArgumentsFunction,
       this.mapGlobalDataFunction,
       this.redirectFunction,
+      this.runFunction,
       this.authenticationRequired = false})
       : assert(deeplinkUrl != '', 'Deeplink URL required.'),
-        assert(destinationLabel != '' || destinationUrl != '',
-            'Deeplink destination required.'),
+        assert(
+            destinationLabel != '' ||
+                destinationUrl != '' ||
+                runFunction != null,
+            'Deeplink destination or runFunction required.'),
         assert(backstack == null || backstackRoutes == null,
             'Cannot set both url backstacks and route object backstacks.');
 
