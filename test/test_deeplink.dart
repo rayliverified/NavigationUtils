@@ -263,6 +263,54 @@ void main() {
       expect(capturedQueryParams['source'], 'redirect_test');
     });
 
+    test('runFunction is called even when shouldNavigateDeeplinkFunction returns false', () async {
+      bool functionCalled = false;
+      bool shouldNavigateCalled = false;
+      Map<String, String> capturedPathParams = {};
+      Map<String, String> capturedQueryParams = {};
+
+      final deeplinkDestination = DeeplinkDestination(
+        deeplinkUrl: '/test/blocked/:id',
+        destinationLabel: 'blocked_page',
+        shouldNavigateDeeplinkFunction: (uri, pathParameters, queryParameters) {
+          shouldNavigateCalled = true;
+          // Block navigation
+          return false;
+        },
+        runFunction: (pathParameters, queryParameters) async {
+          functionCalled = true;
+          capturedPathParams = pathParameters;
+          capturedQueryParams = queryParameters;
+        },
+      );
+
+      final deeplinkDestinations = [deeplinkDestination];
+      final uri = Uri.parse('/test/blocked/789?analytics=track&event=click');
+
+      final result = NavigationUtils.openDeeplinkDestination(
+        uri: uri,
+        deeplinkDestinations: deeplinkDestinations,
+        routerDelegate: mockRouterDelegate,
+      );
+
+      // Wait for async function to complete
+      await Future.delayed(Duration.zero);
+
+      // openDeeplinkDestination should return false because navigation is blocked
+      expect(result, false);
+      // shouldNavigateDeeplinkFunction should have been called
+      expect(shouldNavigateCalled, true);
+      // Navigation should NOT have happened
+      expect(mockRouterDelegate.pushedRoutes, isEmpty);
+      expect(mockRouterDelegate.applyCalled, false);
+      
+      // BUT runFunction SHOULD still be called despite navigation being blocked
+      expect(functionCalled, true);
+      expect(capturedPathParams['id'], '789');
+      expect(capturedQueryParams['analytics'], 'track');
+      expect(capturedQueryParams['event'], 'click');
+    });
+
     test('No matching deeplink destination', () {
       final deeplinkDestination = DeeplinkDestination(
         deeplinkUrl: '/test/match',
