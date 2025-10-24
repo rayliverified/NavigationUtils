@@ -1,156 +1,332 @@
-// ignore_for_file: avoid_classes_with_only_static_members
+import 'models/model_deeplink.dart';
+import 'navigation_builder.dart';
+import 'navigation_delegate.dart';
+import 'path_utils_go_router.dart';
 
-import 'package:navigation_utils/navigation_utils.dart';
-
-/// String utility functions.
-extension StringExtension on String {
-  String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1)}";
-  }
-}
-
-/// Utility functions for canonicalizing URIs (paths/urls).
-String canonicalUri(String uri) {
-  if (uri.isEmpty) return '';
-
-  /// Trim leading and trailing slashes.
-  if (uri.startsWith('/')) {
-    uri = uri.substring(1);
-  }
-  if (uri.endsWith('/')) {
-    uri = uri.substring(0, uri.length - 1);
-  }
-  return uri;
-}
-
-/// An easy-to-use, extendable, maintainable, and scalable navigation utility
-/// for Flutter web and mobile.
-///
-/// This class offers an opinionated and structured solution for managing
-/// navigation for Flutter applications. It includes utility functions to
-/// improve route navigation and deeplink handling. In addition, it provides
-/// conditional navigation support, parameterized routing, redirection, global
-/// navigation data, and customizable backstack support for deeplinks.
 class NavigationUtils {
-  /// Finds a [NavigationData] object from a label or url.
+  /// Extracts the corresponding `NavigationData` from a given `uri`.
   ///
-  /// If the navigation data cannot be found, this returns `null`.
-  static NavigationData? getNavigationDataFromLabel(
-      List<NavigationData> navigationDataRoutes, String label) {
-    for (NavigationData navigationData in navigationDataRoutes) {
-      if (navigationData.label == label) {
-        return navigationData;
-      }
+  /// The method goes through the provided [routes] and attempts to match the [uri]
+  /// with each of the [NavigationData] objects in the [routes]. If a match is found,
+  /// that [NavigationData] is returned.
+  static NavigationData? getNavigationDataFromUri(
+      {required List<NavigationData> routes,
+      required Uri uri,
+      Map<String, dynamic>? globalData}) {
+    NavigationData? navigationData;
+    try {
+      navigationData = routes.firstWhere((element) =>
+          Uri(path: element.path, queryParameters: element.queryParameters) ==
+          uri);
+    } on StateError {
+      // ignore: empty_catches
     }
-    return null;
+
+    return navigationData;
   }
 
-  /// Finds a [NavigationData] object from a name (label or url).
+  /// A method that retrieves a [NavigationData] object from a given route.
   ///
-  /// If the navigation data cannot be found, this returns `null`.
+  /// This method takes into account several routing scenarios such as named routing,
+  /// exact URL match routing, exact path match routing, and path pattern matching.
+  ///
+  /// [routes] is a list of available [NavigationData] for your application.
+  /// [route] is the [DefaultRoute] object from which to extract the navigation data.
+  ///
+  /// Usage:
+  /// ```
+  /// var navigationData = getNavigationDataFromRoute(routes: routesList, route: defaultRoute);
+  /// ```
+  ///
+  /// Returns a [NavigationData] object if a match is found, or [null] if no matching route is found.
+  static NavigationData? getNavigationDataFromRoute(
+      {required List<NavigationData> routes, required DefaultRoute route}) {
+    NavigationData? navigationData;
+
+    // Named routing.
+    try {
+      navigationData = routes.firstWhere((element) =>
+          ((element.label?.isNotEmpty ?? false) &&
+              element.label == route.label));
+    } on StateError {
+      // ignore: empty_catches
+    }
+
+    // Exact URL match routing.
+    if (navigationData == null) {
+      try {
+        navigationData = routes.firstWhere((element) =>
+            ((element.uri == route.uri &&
+                element.path.isNotEmpty &&
+                route.path.isNotEmpty)));
+      } on StateError {
+        // ignore: empty_catches
+      }
+    }
+
+    // Exact path match routing.
+    if (navigationData == null) {
+      try {
+        navigationData = routes.firstWhere((element) =>
+            ((element.path == route.path &&
+                element.path.isNotEmpty &&
+                route.path.isNotEmpty)));
+      } on StateError {
+        // ignore: empty_catches
+      }
+    }
+
+    // Path pattern matching.
+    if (navigationData == null) {
+      try {
+        navigationData = routes.firstWhere((element) {
+          Map<String, String> pathParameters =
+              extractPathParametersWithPattern(route.path, element.path);
+          return pathParameters.isNotEmpty;
+        });
+      } on StateError {
+        // ignore: empty_catches
+      }
+    }
+
+    return navigationData;
+  }
+
+  /// This function maps a [NavigationData] object to a [DefaultRoute] object.
+  ///
+  /// It requires:
+  ///   [routes] - a list of available [NavigationData] for your application.
+  ///   [route] - the [DefaultRoute] object you want to map navigation data to.
+  ///   [globalData] - a map of dynamic data that can be used in the mapped routes.
+  ///
+  /// The method checks if [navigationData] (obtained from [getNavigationDataFromRoute]) is not null,
+  /// extracts the path parameters if any, and builds a [DefaultRoute].
+  ///
+  /// Usage:
+  /// ```
+  /// var defaultRoute = mapNavigationDataToDefaultRoute(routes: routesList, route: defaultRoute, globalData: myGlobalData);
+  /// ```
+  static DefaultRoute? mapNavigationDataToDefaultRoute(
+      {required List<NavigationData> routes,
+      required DefaultRoute route,
+      Map<String, dynamic>? globalData,
+      NavigationData? navigationData}) {
+    NavigationData? navigationDataHolder = navigationData ??
+        getNavigationDataFromRoute(routes: routes, route: route);
+    DefaultRoute? routeHolder;
+
+    if (navigationDataHolder != null) {
+      Map<String, String> pathParameters = {};
+      String path = navigationDataHolder.path;
+      if (navigationDataHolder.path.contains(':')) {
+        pathParameters = extractPathParametersWithPattern(
+            route.path, navigationDataHolder.path);
+        path = patternToPath(navigationDataHolder.path, pathParameters);
+      }
+
+      // Build DefaultRoute.
+      routeHolder = DefaultRoute(
+          label: navigationDataHolder.label ?? '',
+          path: path,
+          pathParameters: pathParameters,
+          queryParameters: route.queryParameters,
+          group: navigationDataHolder.group,
+          metadata: navigationDataHolder.metadata);
+    }
+
+    return routeHolder;
+  }
+
+  /// Returns the first [NavigationData] that matches with [name].
+  ///
+  /// The method iterates through [routes] to find a [NavigationData] where the [name]
+  /// matches with [NavigationData.label] or [NavigationData.url] or [NavigationData.path].
+  /// It can match with either exact URL or path or with path pattern.
+  ///
+  /// If [name] does not start with '/', the method assumes it's a label and tries to find a match in [routes].
+  ///
+  /// If [name] starts with '/', the method tries exact URL match first. If it doesn't find any, it tries
+  /// exact path match, then it tries path pattern match.
+  ///
+  /// The method canonicalizes the URL path before comparing it with [NavigationData.url] and [NavigationData.path].
+  ///
+  /// Returns the first matching [NavigationData], or null if no match is found.
   static NavigationData? getNavigationDataFromName(
+      List<NavigationData> routes, String name) {
+    if (name.isEmpty) return null;
+
+    NavigationData? navigationData;
+    if (name.startsWith('/') == false) {
+      try {
+        navigationData = routes.firstWhere((element) =>
+            ((element.label?.isNotEmpty ?? false) && element.label == name));
+      } on StateError {
+        // ignore: empty_catches
+      }
+    } else {
+      String path = canonicalUri(Uri.tryParse(name)?.path ?? '');
+
+      // Exact URL match routing.
+      try {
+        navigationData = routes.firstWhere((element) => (element.url == name));
+      } on StateError {
+        // ignore: empty_catches
+      }
+
+      // Exact path match routing.
+      if (navigationData == null) {
+        try {
+          navigationData =
+              routes.firstWhere((element) => (element.path == path));
+        } on StateError {
+          // ignore: empty_catches
+        }
+      }
+
+      // Path pattern matching.
+      if (navigationData == null) {
+        try {
+          navigationData = routes.firstWhere((element) {
+            Map<String, String> pathParameters =
+                extractPathParametersWithPattern(path, element.path);
+            return pathParameters.isNotEmpty;
+          });
+        } on StateError {
+          // ignore: empty_catches
+        }
+      }
+    }
+
+    return navigationData;
+  }
+
+  /// Builds and returns a [DefaultRoute] from the given [name] using a list of [NavigationData].
+  ///
+  /// This method uses [NavigationUtils.getNavigationDataFromName] to search for a matching
+  /// [NavigationData] in [navigationDataRoutes] based on [name].
+  ///
+  /// Returns a [DefaultRoute] constructed from the named route or URL.
+  /// Throws an [Exception] if a named route is not found in [navigationDataRoutes].
+  static DefaultRoute buildDefaultRouteFromName(
       List<NavigationData> navigationDataRoutes, String name) {
-    // Check if there is an exact match (label or path).
-    for (NavigationData navigationData in navigationDataRoutes) {
-      if (navigationData.label == name) {
-        return navigationData;
+    NavigationData? navigationData =
+        NavigationUtils.getNavigationDataFromName(navigationDataRoutes, name);
+
+    // Named route.
+    if (name.startsWith('/') == false) {
+      if (navigationData == null) {
+        throw Exception('`$name` route not found.');
       }
+
+      return DefaultRoute(
+          label: navigationData.label ?? '',
+          path: navigationData.path,
+          group: navigationData.group,
+          metadata: navigationData.metadata);
+    } else {
+      return DefaultRoute.fromUrl(name,
+          label: navigationData?.label ?? '',
+          group: navigationData?.group,
+          metadata: navigationData?.metadata);
     }
-    for (NavigationData navigationData in navigationDataRoutes) {
-      if (navigationData.path == name) {
-        return navigationData;
-      }
-    }
-    // Check if there is a pattern match (path parameters).
-    for (NavigationData navigationData in navigationDataRoutes) {
-      if (navigationData.path.contains(':')) {
-        if (matchesPattern(name, navigationData.path)) {
-          return navigationData;
-        }
-      }
-    }
-    return null;
   }
 
-  /// Finds a [NavigationData] object from a url.
+  /// Extracts and returns path parameters from the given [route] using the [pattern].
   ///
-  /// If the navigation data cannot be found, this returns `null`.
-  static NavigationData? getNavigationDataFromPath(
-      List<NavigationData> navigationDataRoutes, String path) {
-    // Check if there is an exact match (path).
-    for (NavigationData navigationData in navigationDataRoutes) {
-      if (navigationData.path == path) {
-        return navigationData;
-      }
-    }
-    // Check if there is a pattern match (path parameters).
-    for (NavigationData navigationData in navigationDataRoutes) {
-      if (navigationData.path.contains(':')) {
-        if (matchesPattern(path, navigationData.path)) {
-          return navigationData;
-        }
-      }
-    }
-    return null;
-  }
-
-  /// Checks if a given [path] matches the [pattern].
-  ///
-  /// Example: matchesPattern('/user/123', '/user/:id') returns true.
-  static bool matchesPattern(String path, String pattern) {
-    // Canonicalize both path and pattern.
-    path = canonicalUri(path);
-    pattern = canonicalUri(pattern);
-    List<String> pathSegments = path.split('/');
-    List<String> patternSegments = pattern.split('/');
-
-    if (pathSegments.length != patternSegments.length) return false;
-
-    for (int i = 0; i < patternSegments.length; i++) {
-      if (patternSegments[i].startsWith(':')) continue;
-      if (patternSegments[i] != pathSegments[i]) return false;
-    }
-    return true;
-  }
-
-  /// Extracts path parameters from a [path] given a [pattern].
-  ///
-  /// Example: extractPathParametersWithPattern('/user/123', '/user/:id')
-  /// returns {'id': '123'}.
+  /// Returns a [Map] of parameter names and their corresponding values from the route.
   static Map<String, String> extractPathParametersWithPattern(
-      String path, String pattern) {
-    // Canonicalize both path and pattern.
-    path = canonicalUri(path);
-    pattern = canonicalUri(pattern);
-    Map<String, String> parameters = {};
-    List<String> pathSegments = path.split('/');
-    List<String> patternSegments = pattern.split('/');
+      String route, String pattern) {
+    Map<String, String> pathParameters = {};
 
-    if (pathSegments.length != patternSegments.length) return parameters;
-
-    for (int i = 0; i < patternSegments.length; i++) {
-      if (patternSegments[i].startsWith(':')) {
-        String key = patternSegments[i].substring(1);
-        parameters[key] = pathSegments[i];
+    if ((pattern.isNotEmpty && route.isNotEmpty)) {
+      if (pattern.contains(':')) {
+        final List<String> paramNames = <String>[];
+        RegExp regExp = patternToRegExp(pattern, paramNames);
+        final String? match = regExp.stringMatch(route);
+        if (match == route) {
+          final RegExpMatch match = regExp.firstMatch(route)!;
+          pathParameters = extractPathParameters(paramNames, match);
+          return pathParameters;
+        }
       }
     }
-    return parameters;
+
+    return pathParameters;
   }
 
-  /// Checks whether a deeplink destination can be opened, or if
-  /// navigation should be blocked.
+  /// Trims all instances of [pattern] from the end of [from].
   ///
-  /// The function evaluates several conditions: whether the given
-  /// [deeplinkDestination] exists, whether the user is [authenticated] (if
-  /// authentication is required), whether the current route is in the
-  /// deny-list ([excludeDeeplinkNavigationPages]), and whether any custom
-  /// [shouldNavigateDeeplinkFunction] allows navigation.
+  /// This function removes [pattern] from the end of [from] repeatedly until [from] no longer ends with [pattern].
   ///
-  /// The [uri] parameter contains the URI for the deeplink.
+  /// Returns [from] if it's empty, if [pattern] is empty, or if [pattern] is longer than [from].
   ///
-  /// The [deeplinkDestinations] parameter contains a list of all available [DeeplinkDestination] instances.
+  /// Returns the modified [from] string, without any trailing [pattern].
+  static String trimRight(String from, String pattern) {
+    if (from.isEmpty || pattern.isEmpty || pattern.length > from.length) {
+      return from;
+    }
+
+    while (from.endsWith(pattern)) {
+      from = from.substring(0, from.length - pattern.length);
+    }
+    return from;
+  }
+
+  /// Gets the `DeeplinkDestination` from an [url].
+  static DeeplinkDestination? getDeeplinkDestinationFromUrl(
+      List<DeeplinkDestination> deeplinkDestinations, String? url) {
+    if (url?.isEmpty ?? true) return null;
+    return getDeeplinkDestinationFromUri(
+        deeplinkDestinations, Uri.tryParse(url!));
+  }
+
+  /// Gets the `DeeplinkDestination` from an [uri].
   ///
-  /// The [routerDelegate] parameter is the router delegate managing app navigation.
+  /// The function first attempts to find a direct path match. If no match
+  /// is found, it then attempts to match the path pattern.
+  static DeeplinkDestination? getDeeplinkDestinationFromUri(
+      List<DeeplinkDestination> deeplinkDestinations, Uri? uri) {
+    if (uri?.hasEmptyPath ?? true) return null;
+
+    String deeplinkPath = canonicalUri(uri!.path);
+    DeeplinkDestination? deeplinkDestination;
+
+    // Exact path match routing.
+    try {
+      deeplinkDestination = deeplinkDestinations
+          .firstWhere((element) => (element.path == deeplinkPath));
+    } on StateError {
+      // ignore: empty_catches
+    }
+
+    // Path pattern matching.
+    if (deeplinkDestination == null) {
+      try {
+        deeplinkDestination = deeplinkDestinations.firstWhere((element) {
+          Map<String, String> pathParameters = extractPathParametersWithPattern(
+              deeplinkPath, element.deeplinkUrl);
+          return pathParameters.isNotEmpty;
+        });
+      } on StateError {
+        // ignore: empty_catches
+      }
+    }
+
+    return deeplinkDestination;
+  }
+
+  /// Determines whether a [DeeplinkDestination] can be opened.
+  ///
+  /// The method checks various conditions, like whether the URI is null, authentication is needed,
+  /// whether navigation from the current page is allowed, etc., and returns true
+  /// if the [DeeplinkDestination] can be opened.
+  ///
+  /// The [uri] parameter is the URI for the deeplink.
+  ///
+  /// The [deeplinkDestinations] parameter is a list of all available
+  /// `DeeplinkDestination` instances.
+  ///
+  /// The [routerDelegate] parameter is the router delegate currently managing app navigation.
   ///
   /// The [deeplinkDestination] parameter is the specific destination to be checked.
   ///
@@ -255,6 +431,38 @@ class NavigationUtils {
           deeplinkPath, deeplinkDestinationHolder.deeplinkUrl);
     }
 
+    if (canOpenDeeplinkDestination(
+            uri: uri,
+            deeplinkDestinations: deeplinkDestinations,
+            routerDelegate: routerDelegate,
+            deeplinkDestination: deeplinkDestinationHolder,
+            pathParameters: pathParameters,
+            authenticated: authenticated,
+            currentRoute: currentRoute,
+            excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages) ==
+        false) {
+      return false;
+    }
+
+    // Set backstack. If pushOverride is true, skip backstack behavior.
+    if (push == false) {
+      if (deeplinkDestinationHolder.backstack != null) {
+        if (deeplinkDestinationHolder.backstack!.isEmpty) {
+          routerDelegate.clear();
+        } else {
+          routerDelegate.set(deeplinkDestinationHolder.backstack!,
+              apply: false);
+        }
+      } else if (deeplinkDestinationHolder.backstackRoutes != null) {
+        if (deeplinkDestinationHolder.backstackRoutes!.isEmpty) {
+          routerDelegate.clear();
+        } else {
+          routerDelegate.setRoutes(deeplinkDestinationHolder.backstackRoutes!,
+              apply: false);
+        }
+      }
+    }
+
     // Process deeplink path parameters.
     // Process deeplink query parameters.
     Map<String, String> queryParameters = {};
@@ -285,50 +493,6 @@ class NavigationUtils {
           pathParameters, uri.queryParameters);
     }
 
-    // Check if we can navigate to the destination.
-    bool canNavigate = canOpenDeeplinkDestination(
-        uri: uri,
-        deeplinkDestinations: deeplinkDestinations,
-        routerDelegate: routerDelegate,
-        deeplinkDestination: deeplinkDestinationHolder,
-        pathParameters: pathParameters,
-        authenticated: authenticated,
-        currentRoute: currentRoute,
-        excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages);
-
-    // Always run the runFunction regardless of whether navigation happens.
-    // Store this in a variable to execute it at the end.
-    void executeRunFunction() {
-      if (deeplinkDestinationHolder.runFunction != null) {
-        deeplinkDestinationHolder.runFunction!(pathParameters, queryParameters);
-      }
-    }
-
-    // If we cannot navigate, call runFunction and return early.
-    if (canNavigate == false) {
-      executeRunFunction();
-      return false;
-    }
-
-    // Set backstack. If pushOverride is true, skip backstack behavior.
-    if (push == false) {
-      if (deeplinkDestinationHolder.backstack != null) {
-        if (deeplinkDestinationHolder.backstack!.isEmpty) {
-          routerDelegate.clear();
-        } else {
-          routerDelegate.set(deeplinkDestinationHolder.backstack!,
-              apply: false);
-        }
-      } else if (deeplinkDestinationHolder.backstackRoutes != null) {
-        if (deeplinkDestinationHolder.backstackRoutes!.isEmpty) {
-          routerDelegate.clear();
-        } else {
-          routerDelegate.setRoutes(deeplinkDestinationHolder.backstackRoutes!,
-              apply: false);
-        }
-      }
-    }
-
     // Default set deeplink navigation function. Skipped if redirect is provided.
     navigateFunctionHolder() {
       if (deeplinkDestinationHolder.destinationLabel.isNotEmpty) {
@@ -345,6 +509,10 @@ class NavigationUtils {
             data: globalData,
             arguments: arguments,
             apply: false);
+      }
+
+      if (deeplinkDestinationHolder.runFunction != null) {
+        deeplinkDestinationHolder.runFunction!(pathParameters, queryParameters);
       }
     }
 
@@ -375,15 +543,15 @@ class NavigationUtils {
         }
         routerDelegate.apply();
 
-        // Call runFunction after redirect completes
-        executeRunFunction();
+        if (deeplinkDestinationHolder.runFunction != null) {
+          deeplinkDestinationHolder.runFunction!(
+              pathParameters ?? {}, queryParameters ?? {});
+        }
       })
           .then((value) {
         if (value == false) {
           navigateFunctionHolder();
           routerDelegate.apply();
-          // Call runFunction after navigation completes
-          executeRunFunction();
         }
       });
 
@@ -391,46 +559,8 @@ class NavigationUtils {
     } else {
       navigateFunctionHolder();
       routerDelegate.apply();
-      // Call runFunction after navigation completes
-      executeRunFunction();
     }
 
     return true;
-  }
-
-  /// Gets the [DeeplinkDestination] from a deeplink url string.
-  ///
-  /// If no matching destination is found, this returns `null`.
-  static DeeplinkDestination? getDeeplinkDestinationFromUrl(
-      List<DeeplinkDestination> deeplinkDestinations, String? url) {
-    if (url == null || url.isEmpty) return null;
-
-    url = canonicalUri(url);
-
-    for (DeeplinkDestination destination in deeplinkDestinations) {
-      String destinationUrl = canonicalUri(destination.deeplinkUrl);
-
-      // Check for exact match.
-      if (destinationUrl == url) {
-        return destination;
-      }
-
-      // Check for pattern match (path parameters).
-      if (destinationUrl.contains(':')) {
-        if (matchesPattern(url, destinationUrl)) {
-          return destination;
-        }
-      }
-    }
-    return null;
-  }
-
-  /// Gets the [DeeplinkDestination] from a deeplink [Uri].
-  ///
-  /// If no matching destination is found, this returns `null`.
-  static DeeplinkDestination? getDeeplinkDestinationFromUri(
-      List<DeeplinkDestination> deeplinkDestinations, Uri? uri) {
-    if (uri == null) return null;
-    return getDeeplinkDestinationFromUrl(deeplinkDestinations, uri.path);
   }
 }
