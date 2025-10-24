@@ -301,5 +301,137 @@ void main() {
       expect(mockRouterDelegate.pushedRoutes, isEmpty);
       expect(mockRouterDelegate.applyCalled, false);
     });
+
+    test('runFunction called even when shouldNavigateDeeplinkFunction returns false', () async {
+      bool functionCalled = false;
+      Map<String, String> capturedPathParams = {};
+      Map<String, String> capturedQueryParams = {};
+      bool shouldNavigateCalled = false;
+
+      final deeplinkDestination = DeeplinkDestination(
+        deeplinkUrl: '/test/blocked/:id',
+        destinationLabel: 'blocked_page',
+        shouldNavigateDeeplinkFunction: (uri, pathParameters, queryParameters) {
+          shouldNavigateCalled = true;
+          // Block navigation
+          return false;
+        },
+        runFunction: (pathParameters, queryParameters) async {
+          functionCalled = true;
+          capturedPathParams = pathParameters;
+          capturedQueryParams = queryParameters;
+        },
+      );
+
+      final deeplinkDestinations = [deeplinkDestination];
+      final uri = Uri.parse('/test/blocked/789?reason=test&blocked=true');
+
+      final result = NavigationUtils.openDeeplinkDestination(
+        uri: uri,
+        deeplinkDestinations: deeplinkDestinations,
+        routerDelegate: mockRouterDelegate,
+      );
+
+      // Wait for async operations to complete
+      await Future.delayed(Duration.zero);
+
+      // Navigation should be blocked
+      expect(result, false);
+      expect(shouldNavigateCalled, true);
+      expect(mockRouterDelegate.pushedRoutes, isEmpty);
+      expect(mockRouterDelegate.applyCalled, false);
+      
+      // BUT runFunction should still be called!
+      expect(functionCalled, true);
+      expect(capturedPathParams['id'], '789');
+      expect(capturedQueryParams['reason'], 'test');
+      expect(capturedQueryParams['blocked'], 'true');
+    });
+
+    test('runFunction called with correct parameters when navigation is blocked by authentication', () async {
+      bool functionCalled = false;
+      Map<String, String> capturedPathParams = {};
+      Map<String, String> capturedQueryParams = {};
+
+      final deeplinkDestination = DeeplinkDestination(
+        deeplinkUrl: '/test/auth/:userId',
+        destinationLabel: 'protected_page',
+        authenticationRequired: true,
+        runFunction: (pathParameters, queryParameters) async {
+          functionCalled = true;
+          capturedPathParams = pathParameters;
+          capturedQueryParams = queryParameters;
+        },
+      );
+
+      final deeplinkDestinations = [deeplinkDestination];
+      final uri = Uri.parse('/test/auth/456?access=premium');
+
+      final result = NavigationUtils.openDeeplinkDestination(
+        uri: uri,
+        deeplinkDestinations: deeplinkDestinations,
+        routerDelegate: mockRouterDelegate,
+        authenticated: false, // User is NOT authenticated
+      );
+
+      // Wait for async operations to complete
+      await Future.delayed(Duration.zero);
+
+      // Navigation should be blocked due to authentication
+      expect(result, false);
+      expect(mockRouterDelegate.pushedRoutes, isEmpty);
+      expect(mockRouterDelegate.applyCalled, false);
+      
+      // BUT runFunction should still be called!
+      expect(functionCalled, true);
+      expect(capturedPathParams['userId'], '456');
+      expect(capturedQueryParams['access'], 'premium');
+    });
+
+    test('runFunction called when navigation blocked by excludeDeeplinkNavigationPages', () async {
+      bool functionCalled = false;
+      Map<String, String> capturedPathParams = {};
+      Map<String, String> capturedQueryParams = {};
+
+      final deeplinkDestination = DeeplinkDestination(
+        deeplinkUrl: '/test/excluded/:id',
+        destinationLabel: 'excluded_page',
+        runFunction: (pathParameters, queryParameters) async {
+          functionCalled = true;
+          capturedPathParams = pathParameters;
+          capturedQueryParams = queryParameters;
+        },
+      );
+
+      final deeplinkDestinations = [deeplinkDestination];
+      final uri = Uri.parse('/test/excluded/321?from=blocked_page');
+
+      // Simulate being on a page that blocks deeplink navigation
+      final currentRoute = DefaultRoute(
+        label: 'onboarding',
+        path: '/onboarding',
+      );
+
+      final result = NavigationUtils.openDeeplinkDestination(
+        uri: uri,
+        deeplinkDestinations: deeplinkDestinations,
+        routerDelegate: mockRouterDelegate,
+        currentRoute: currentRoute,
+        excludeDeeplinkNavigationPages: ['onboarding'], // Block navigation from onboarding
+      );
+
+      // Wait for async operations to complete
+      await Future.delayed(Duration.zero);
+
+      // Navigation should be blocked
+      expect(result, false);
+      expect(mockRouterDelegate.pushedRoutes, isEmpty);
+      expect(mockRouterDelegate.applyCalled, false);
+      
+      // BUT runFunction should still be called!
+      expect(functionCalled, true);
+      expect(capturedPathParams['id'], '321');
+      expect(capturedQueryParams['from'], 'blocked_page');
+    });
   });
 }
