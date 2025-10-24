@@ -453,7 +453,8 @@ class NavigationUtils {
     // If navigation is blocked but runFunction exists, still call it
     if (canNavigate == false) {
       if (deeplinkDestinationHolder.runFunction != null) {
-        deeplinkDestinationHolder.runFunction!(pathParameters, queryParameters);
+        deeplinkDestinationHolder.runFunction!(
+            pathParameters, uri.queryParameters);
       }
       return false;
     }

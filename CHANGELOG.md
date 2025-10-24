@@ -1,3 +1,6 @@
+## 0.9.8
+- Fix `runFunction` deeplink execution behavior.
+
 ## 0.9.7
 - Fix `runFunction` query parameters not being passed and redirect call order. The `runFunction` now correctly runs after navigation.
 

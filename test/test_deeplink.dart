@@ -313,6 +313,106 @@ void main() {
       expect(capturedQueryParams['event'], 'click');
     });
 
+    test(
+        'runFunction receives original queryParameters, not mapped queryParameters',
+        () async {
+      Map<String, String> capturedQueryParams = {};
+
+      final deeplinkDestination = DeeplinkDestination(
+        deeplinkUrl: '/test/query/:id',
+        destinationLabel: 'query_test_page',
+        // This function transforms/maps the query parameters
+        mapQueryParameterFunction: (queryParameters, pathParameters) {
+          // Transform the query parameters
+          return {
+            'transformed_source': queryParameters['source'] ?? '',
+            'transformed_version': queryParameters['version'] ?? '',
+            'extra': 'added_value',
+          };
+        },
+        runFunction: (pathParameters, queryParameters) async {
+          capturedQueryParams = queryParameters;
+        },
+      );
+
+      final deeplinkDestinations = [deeplinkDestination];
+      final uri = Uri.parse('/test/query/123?source=app&version=1.0');
+
+      final result = NavigationUtils.openDeeplinkDestination(
+        uri: uri,
+        deeplinkDestinations: deeplinkDestinations,
+        routerDelegate: mockRouterDelegate,
+      );
+
+      // Wait for async function to complete
+      await Future.delayed(Duration.zero);
+
+      expect(result, true);
+
+      // runFunction should receive the ORIGINAL query parameters from uri
+      // NOT the transformed ones from mapQueryParameterFunction
+      expect(capturedQueryParams['source'], 'app');
+      expect(capturedQueryParams['version'], '1.0');
+      expect(capturedQueryParams.containsKey('transformed_source'), false);
+      expect(capturedQueryParams.containsKey('transformed_version'), false);
+      expect(capturedQueryParams.containsKey('extra'), false);
+
+      // But the navigation should use the transformed parameters
+      final lastPush = mockRouterDelegate.lastPushData;
+      final pushedQueryParams =
+          lastPush['queryParameters'] as Map<String, String>?;
+      expect(pushedQueryParams?['transformed_source'], 'app');
+      expect(pushedQueryParams?['transformed_version'], '1.0');
+      expect(pushedQueryParams?['extra'], 'added_value');
+    });
+
+    test(
+        'runFunction receives original queryParameters when navigation is blocked',
+        () async {
+      Map<String, String> capturedQueryParams = {};
+
+      final deeplinkDestination = DeeplinkDestination(
+        deeplinkUrl: '/test/blocked-query/:id',
+        destinationLabel: 'blocked_query_page',
+        // Transform query parameters
+        mapQueryParameterFunction: (queryParameters, pathParameters) {
+          return {
+            'mapped_key': 'mapped_value',
+            'original': 'was_transformed',
+          };
+        },
+        // Block navigation
+        shouldNavigateDeeplinkFunction: (uri, pathParameters, queryParameters) {
+          return false;
+        },
+        runFunction: (pathParameters, queryParameters) async {
+          capturedQueryParams = queryParameters;
+        },
+      );
+
+      final deeplinkDestinations = [deeplinkDestination];
+      final uri =
+          Uri.parse('/test/blocked-query/456?original=actual_value&key=value');
+
+      final result = NavigationUtils.openDeeplinkDestination(
+        uri: uri,
+        deeplinkDestinations: deeplinkDestinations,
+        routerDelegate: mockRouterDelegate,
+      );
+
+      // Wait for async function to complete
+      await Future.delayed(Duration.zero);
+
+      expect(result, false);
+
+      // Even when navigation is blocked, runFunction should receive
+      // the ORIGINAL query parameters, not the mapped ones
+      expect(capturedQueryParams['original'], 'actual_value');
+      expect(capturedQueryParams['key'], 'value');
+      expect(capturedQueryParams.containsKey('mapped_key'), false);
+      expect(capturedQueryParams['original'], isNot('was_transformed'));
+    });
+
     test('No matching deeplink destination', () {
       final deeplinkDestination = DeeplinkDestination(
         deeplinkUrl: '/test/match',
