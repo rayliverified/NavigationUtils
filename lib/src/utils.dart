@@ -515,10 +515,6 @@ class NavigationUtils {
             arguments: arguments,
             apply: false);
       }
-
-      if (deeplinkDestinationHolder.runFunction != null) {
-        deeplinkDestinationHolder.runFunction!(pathParameters, queryParameters);
-      }
     }
 
     // Set deeplink destination.
@@ -547,16 +543,15 @@ class NavigationUtils {
               apply: false);
         }
         routerDelegate.apply();
-
-        if (deeplinkDestinationHolder.runFunction != null) {
-          deeplinkDestinationHolder.runFunction!(
-              pathParameters ?? {}, queryParameters ?? {});
-        }
       })
           .then((value) {
         if (value == false) {
           navigateFunctionHolder();
           routerDelegate.apply();
+        }
+        if (deeplinkDestinationHolder.runFunction != null) {
+          deeplinkDestinationHolder.runFunction!(
+              pathParameters, uri.queryParameters);
         }
       });
 
@@ -564,6 +559,10 @@ class NavigationUtils {
     } else {
       navigateFunctionHolder();
       routerDelegate.apply();
+      if (deeplinkDestinationHolder.runFunction != null) {
+        deeplinkDestinationHolder.runFunction!(
+            pathParameters, uri.queryParameters);
+      }
     }
 
     return true;

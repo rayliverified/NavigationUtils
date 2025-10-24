@@ -1,3 +1,6 @@
+## 0.9.7
+- Fix `runFunction` query parameters not being passed and redirect call order. The `runFunction` now correctly runs after navigation.
+
 ## 0.9.6
 - Fix `runFunction` not being called when `shouldNavigateDeeplinkFunction` returns false. The `runFunction` is now always called regardless of whether navigation happens or not, allowing deeplink handlers to execute logic (e.g., analytics, showing dialogs) even when navigation is blocked.
 

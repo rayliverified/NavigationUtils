@@ -263,7 +263,9 @@ void main() {
       expect(capturedQueryParams['source'], 'redirect_test');
     });
 
-    test('runFunction is called even when shouldNavigateDeeplinkFunction returns false', () async {
+    test(
+        'runFunction is called even when shouldNavigateDeeplinkFunction returns false',
+        () async {
       bool functionCalled = false;
       bool shouldNavigateCalled = false;
       Map<String, String> capturedPathParams = {};
@@ -303,7 +305,7 @@ void main() {
       // Navigation should NOT have happened
       expect(mockRouterDelegate.pushedRoutes, isEmpty);
       expect(mockRouterDelegate.applyCalled, false);
-      
+
       // BUT runFunction SHOULD still be called despite navigation being blocked
       expect(functionCalled, true);
       expect(capturedPathParams['id'], '789');
