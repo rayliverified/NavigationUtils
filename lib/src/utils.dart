@@ -431,16 +431,30 @@ class NavigationUtils {
           deeplinkPath, deeplinkDestinationHolder.deeplinkUrl);
     }
 
-    if (canOpenDeeplinkDestination(
-            uri: uri,
-            deeplinkDestinations: deeplinkDestinations,
-            routerDelegate: routerDelegate,
-            deeplinkDestination: deeplinkDestinationHolder,
-            pathParameters: pathParameters,
-            authenticated: authenticated,
-            currentRoute: currentRoute,
-            excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages) ==
-        false) {
+    // Process deeplink query parameters.
+    Map<String, String> queryParameters = {};
+    if (deeplinkDestinationHolder.mapQueryParameterFunction != null) {
+      queryParameters = deeplinkDestinationHolder.mapQueryParameterFunction!(
+          uri.queryParameters, pathParameters);
+    } else {
+      queryParameters = uri.queryParameters;
+    }
+
+    bool canNavigate = canOpenDeeplinkDestination(
+        uri: uri,
+        deeplinkDestinations: deeplinkDestinations,
+        routerDelegate: routerDelegate,
+        deeplinkDestination: deeplinkDestinationHolder,
+        pathParameters: pathParameters,
+        authenticated: authenticated,
+        currentRoute: currentRoute,
+        excludeDeeplinkNavigationPages: excludeDeeplinkNavigationPages);
+
+    // If navigation is blocked but runFunction exists, still call it
+    if (canNavigate == false) {
+      if (deeplinkDestinationHolder.runFunction != null) {
+        deeplinkDestinationHolder.runFunction!(pathParameters, queryParameters);
+      }
       return false;
     }
 
@@ -464,17 +478,8 @@ class NavigationUtils {
     }
 
     // Process deeplink path parameters.
-    // Process deeplink query parameters.
-    Map<String, String> queryParameters = {};
     Object? arguments;
     Map<String, dynamic> globalData = {};
-
-    if (deeplinkDestinationHolder.mapQueryParameterFunction != null) {
-      queryParameters = deeplinkDestinationHolder.mapQueryParameterFunction!(
-          uri.queryParameters, pathParameters);
-    } else {
-      queryParameters = uri.queryParameters;
-    }
 
     if (deeplinkDestinationHolder.mapArgumentsFunction != null) {
       arguments = deeplinkDestinationHolder.mapArgumentsFunction!(
