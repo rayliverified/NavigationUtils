@@ -671,6 +671,42 @@ NavigationData(
 
 You can create any custom transition effect you need by defining your own `Page` classes and using them either globally or on a per-page basis.
 
+## Understanding Cache Behavior
+
+NavigationUtils implements intelligent page caching to optimize performance and provide smooth navigation experiences. 
+
+> **🎯 Unique Feature:** This caching system is exclusive to NavigationUtils. Flutter's Navigator 2 and popular libraries like go_router have a bug which causes significant performance issues when there are 5+ pages in the navigation stack as all pages get rebuilt on every navigation event. This works by default in Navigator 1, but requires special care due to opaque Navigator internal equality checks. NavigationUtils brings back this essential optimization by intelligently caching and reusing page instances.
+
+The caching system automatically handles:
+
+- **Grouped routes** that share widget instances (e.g., tab navigation)
+- **Query parameter changes** that update pages instead of recreating them
+- **Duplicate routes** that create separate instances when needed
+- **State preservation** across navigation events
+
+For a comprehensive guide on how cache keys are generated and managed, see [CACHE_BEHAVIOR.md](CACHE_BEHAVIOR.md).
+
+### Key Behaviors
+
+**Query Parameters Update Pages:**
+```dart
+push('/product?id=1');  // Creates page
+push('/product?id=2');  // Updates same page with new data
+```
+
+**Grouped Routes Share Instances:**
+```dart
+NavigationData(url: '/', group: 'home'),
+NavigationData(url: '/games', group: 'home'),
+// Both share the same widget instance
+```
+
+**Duplicates Create New Instances:**
+```dart
+push('/item');  // First instance
+push('/item');  // Second instance (separate page)
+```
+
 ### Enabling Hot Reload for Routes
 
 When developing, you may add or change routes and expect hot reload to pick up the updates. Unfortunately, hot reload does not work out of the box with Flutter's Navigator widget if it is static, which it needs to be to avoid recreating itself on every navigation event. To enable hot reload, add the following to your top level App widget.
