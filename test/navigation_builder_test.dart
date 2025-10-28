@@ -77,8 +77,8 @@ void main() {
       expect(pages.length, 1,
           reason: 'Grouped pages should only create one page instance');
 
-      final homePage = pages[0] as MaterialPage;
-      expect(homePage.child, isA<HomePage>());
+      final homePage = pages[0] as Page;
+      expect((homePage as dynamic).child, isA<HomePage>());
     });
 
     testWidgets('Duplicate non-grouped pages create unique instances',
@@ -300,8 +300,8 @@ void main() {
         routes: routes,
       );
 
-      final homePage = initialPages[0] as MaterialPage;
-      final initialWidget = homePage.child as HomePage;
+      final homePage = initialPages[0] as Page;
+      final initialWidget = (homePage as dynamic).child as HomePage;
       expect(initialWidget.tab, equals('/'));
 
       // Push the community page
@@ -316,8 +316,8 @@ void main() {
       );
 
       expect(updatedPages.length, 1);
-      final updatedPage = updatedPages[0] as MaterialPage;
-      final updatedWidget = updatedPage.child as HomePage;
+      final updatedPage = updatedPages[0] as Page;
+      final updatedWidget = (updatedPage as dynamic).child as HomePage;
       expect(updatedPage.key, equals(homePage.key));
       expect(updatedWidget.tab, equals('/community'));
     });
@@ -369,8 +369,8 @@ void main() {
         routes: routes,
       );
 
-      final homePage = initialPages[0] as MaterialPage;
-      final initialWidget = homePage.child as HomePage;
+      final homePage = initialPages[0] as Page;
+      final initialWidget = (homePage as dynamic).child as HomePage;
       expect(initialWidget.tab, equals('tab1'));
 
       // Update query parameters for grouped page
@@ -386,8 +386,8 @@ void main() {
         routes: routes,
       );
 
-      final updatedPage = updatedPages[0] as MaterialPage;
-      final updatedWidget = updatedPage.child as HomePage;
+      final updatedPage = updatedPages[0] as Page;
+      final updatedWidget = (updatedPage as dynamic).child as HomePage;
       expect(updatedPage.key, equals(homePage.key),
           reason: 'Grouped pages should maintain same instance');
       expect(updatedWidget.tab, equals('tab2'));
@@ -404,8 +404,8 @@ void main() {
         routes: routes,
       );
 
-      final postPage = initialPostPages[0] as MaterialPage;
-      final initialPostWidget = postPage.child as PostPage;
+      final postPage = initialPostPages[0] as Page;
+      final initialPostWidget = (postPage as dynamic).child as PostPage;
       expect(initialPostWidget.id, equals('1'));
 
       // Update query parameters for non-grouped page
@@ -420,8 +420,8 @@ void main() {
         routes: routes,
       );
 
-      final updatedPostPage = updatedPostPages[0] as MaterialPage;
-      final updatedPostWidget = updatedPostPage.child as PostPage;
+      final updatedPostPage = updatedPostPages[0] as Page;
+      final updatedPostWidget = (updatedPostPage as dynamic).child as PostPage;
       expect(updatedPostWidget.id, equals('2'));
     });
   });

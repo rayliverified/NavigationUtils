@@ -181,10 +181,15 @@ class NavigationBuilder {
           }
 
           // Generate a cache key if not already assigned to this route
-          String cacheKey =
-              route.cacheKey ?? generateCacheKey(navigationData, route);
+          // Use routeDataList to get existing routes in the current build context
+          List<DefaultRoute> existingRoutes = routeDataList
+              .whereType<DefaultRoute>()
+              .where((r) => r.cacheKey != null)
+              .toList();
+          String cacheKey = route.cacheKey ??
+              generateCacheKey(navigationData, route, existingRoutes);
           // Update the route with the cache key if it wasn't already set
-          if (route.cacheKey == null) {
+          if (route.cacheKey == null && i < mainRouterDelegate.routes.length) {
             mainRouterDelegate.routes[i] =
                 mainRouterDelegate.routes[i].copyWith(cacheKey: cacheKey);
           }
@@ -202,7 +207,7 @@ class NavigationBuilder {
           if (effectivePageBuilder != null) {
             page = effectivePageBuilder(
               pageKey,
-              route.name,
+              route.path,
               navigationData.builder(
                   context,
                   route.copyWith(pathParameters: pathParameters),
@@ -215,7 +220,7 @@ class NavigationBuilder {
             if (navigationData.group != null) {
               page = buildPage(
                 key: pageKey,
-                name: route.name,
+                name: route.path,
                 child: navigationData.builder(
                     context,
                     route.copyWith(pathParameters: pathParameters),
@@ -226,21 +231,25 @@ class NavigationBuilder {
                 barrierColor: navigationData.barrierColor,
               );
             } else {
-              // For non-groups, we use the cacheKey to decide if we need to build a new page
-              // This naturally handles duplicates since each has a unique cacheKey
-              page = _pageCache[cacheKey] ??
-                  buildPage(
-                    key: pageKey, // Use the unique cache key for the page key
-                    name: route.name,
-                    child: navigationData.builder(
-                        context,
-                        route.copyWith(pathParameters: pathParameters),
-                        mainRouterDelegate.globalData[route.path] ?? {}),
-                    arguments: route.arguments,
-                    pageType: navigationData.pageType ?? PageType.material,
-                    fullScreenDialog: navigationData.fullScreenDialog,
-                    barrierColor: navigationData.barrierColor,
-                  );
+              // For non-groups, always rebuild the page with updated child
+              // The page key stays the same (based on cacheKey) so Flutter recognizes
+              // it as the same page and calls didUpdateWidget on the child widget
+              page = buildPage(
+                key: pageKey, // Use the same cache key for the page key
+                name: route
+                    .path, // Use path (not name) so query params don't affect page identity
+                child: navigationData.builder(
+                    context,
+                    route.copyWith(pathParameters: pathParameters),
+                    mainRouterDelegate.globalData[route.path] ?? {}),
+                // Pass query parameters as arguments so Flutter can detect changes
+                arguments: route.queryParameters.isNotEmpty
+                    ? route.queryParameters
+                    : route.arguments,
+                pageType: navigationData.pageType ?? PageType.material,
+                fullScreenDialog: navigationData.fullScreenDialog,
+                barrierColor: navigationData.barrierColor,
+              );
             }
           }
 
@@ -281,7 +290,7 @@ class NavigationBuilder {
   }) {
     switch (pageType) {
       case PageType.material:
-        return MaterialPage(
+        return _UpdateableMaterialPage(
             key: key,
             name: name,
             arguments: arguments,
@@ -340,8 +349,13 @@ class NavigationBuilder {
 
   /// Generates a cache key for the route
   /// This method is public so it can be used when creating routes
+  ///
+  /// [navigationData] - The navigation data for the route
+  /// [route] - The route to generate a cache key for
+  /// [existingRoutes] - Optional list of existing routes to check for duplicates
   static String generateCacheKey(
-      NavigationData navigationData, DefaultRoute route) {
+      NavigationData navigationData, DefaultRoute route,
+      [List<DefaultRoute>? existingRoutes]) {
     // If the route already has a cacheKey, don't generate a new one
     if (route.cacheKey != null) {
       return route.cacheKey!;
@@ -352,34 +366,39 @@ class NavigationBuilder {
       return navigationData.group!;
     }
 
-    // For non-grouped routes, use path or name as base key
-    String basePath = route.name ?? route.path;
+    // For non-grouped routes, use path as base key (ignore query parameters)
+    // This ensures routes with same path but different query params get the same cache key
+    String basePath = route.path;
 
-    // Check if we already have a route with this path
-    // Initialize counter if not already tracked
-    if (!_routeIndices.containsKey(basePath)) {
-      _routeIndices[basePath] = 1;
-      return basePath;
+    // If existingRoutes is provided, check against actual routes in the stack
+    // This ensures we generate indexed keys for duplicates correctly
+    if (existingRoutes != null && existingRoutes.isNotEmpty) {
+      List<String> existingCacheKeys = existingRoutes
+          .where((r) => r.cacheKey != null)
+          .map((r) => r.cacheKey!)
+          .toList();
+
+      // If this path doesn't exist yet, use the base path
+      if (!existingCacheKeys.contains(basePath)) {
+        return basePath;
+      }
+
+      // Path exists, need to generate indexed key
+      int index = 2;
+      String candidateKey = '$basePath-$index';
+
+      while (existingCacheKeys.contains(candidateKey)) {
+        index++;
+        candidateKey = '$basePath-$index';
+      }
+
+      return candidateKey;
     }
 
-    // Look for the lowest available index
-    int index = 1;
-    String candidateKey = basePath;
-
-    // First try without index (if the base key isn't in use in current page stack)
-    if (!_pageCache.containsKey(basePath)) {
-      _routeIndices[basePath] = 1;
-      return basePath;
-    }
-
-    // Find the first available index gap
-    while (_pageCache.containsKey(candidateKey)) {
-      index++;
-      candidateKey = '$basePath-$index';
-    }
-
-    _routeIndices[basePath] = index;
-    return candidateKey;
+    // Fallback for when existingRoutes is not provided
+    // Just return the base path - indexing should only happen when checking
+    // against actual existing routes in the stack
+    return basePath;
   }
 
   // Add method to clear cache when needed
@@ -504,4 +523,60 @@ class NavigationBuilder {
   String _trim(String from, String pattern) {
     return _trimLeft(_trimRight(from, pattern), pattern);
   }
+}
+
+/// Custom MaterialPage that properly handles updates when only arguments change
+/// This ensures that when a page with the same key is rebuilt with new arguments,
+/// the widget tree is updated (didUpdateWidget called) rather than recreated
+class _UpdateableMaterialPage<T> extends Page<T> {
+  const _UpdateableMaterialPage({
+    required this.child,
+    this.maintainState = true,
+    this.fullscreenDialog = false,
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
+  });
+
+  final Widget child;
+  final bool maintainState;
+  final bool fullscreenDialog;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return _PageBasedMaterialPageRoute<T>(page: this);
+  }
+
+  @override
+  bool canUpdate(Page other) {
+    // Allow updates if the key and type match
+    // This enables didUpdateWidget to be called on the child
+    return other.runtimeType == runtimeType && other.key == key;
+  }
+}
+
+/// Custom MaterialPageRoute that preserves state during updates
+class _PageBasedMaterialPageRoute<T> extends PageRoute<T>
+    with MaterialRouteTransitionMixin<T> {
+  _PageBasedMaterialPageRoute({
+    required _UpdateableMaterialPage<T> page,
+  }) : super(settings: page);
+
+  _UpdateableMaterialPage<T> get _page =>
+      settings as _UpdateableMaterialPage<T>;
+
+  @override
+  Widget buildContent(BuildContext context) {
+    return _page.child;
+  }
+
+  @override
+  bool get maintainState => _page.maintainState;
+
+  @override
+  bool get fullscreenDialog => _page.fullscreenDialog;
+
+  @override
+  String get debugLabel => '${super.debugLabel}(${_page.name})';
 }

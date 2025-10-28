@@ -196,14 +196,8 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Unknown route. Show unknown route.
     configurationHolder ??= configuration;
 
-    // Generate and assign cache key if not already present
-    if (configurationHolder.cacheKey == null) {
-      if (navigationData != null) {
-        String cacheKey = NavigationBuilder.generateCacheKey(
-            navigationData, configurationHolder);
-        configurationHolder = configurationHolder.copyWith(cacheKey: cacheKey);
-      }
-    }
+    // Note: Cache keys are assigned by NavigationBuilder.build() when needed.
+    // No need to generate them here.
 
     // Handle InitialRoutePath logic here. Adding a page here ensures
     // there is always a page to display. The initial page is now set here
@@ -319,34 +313,40 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     // Save global data to unique path key.
     globalData[path] = data;
 
-    // Generate and assign a cache key
-    String cacheKey = NavigationBuilder.generateCacheKey(navigationData, route);
-    route = route.copyWith(cacheKey: cacheKey);
-
-    // Check duplicate route to prevent inadvertently
-    // adding the same page twice. Duplicate pages are
-    // commonly added if a user presses a navigation button twice
-    // very quickly.
-    //
-    // If the path is different, this is a new page.
-    // Else, return the current page.
-    if (routes.isNotEmpty &&
-        (_routes.last.path == route.path ||
-            (route.group != null && _routes.contains(route)))) {
-      // Note: Should probably move to keys or a canonicalized route identifier.
-      // There's a subtle behavior with routes matching based on label when the path is different.
-      // That behavior is sometimes intended but sometimes unintended.
-      for (int i = _routes.length - 1; i >= 0; i--) {
-        if (_routes[i] == route) {
-          _routes.removeAt(i);
-          break;
-        }
+    // Check if we're updating the LAST VISIBLE route with the same path
+    // Find the last route in the stack that has matching NavigationData (is actually rendered)
+    // This preserves widget state when only query parameters change on the current active page
+    // If the same route exists deeper in the stack (user navigated away), create a new duplicate
+    int lastVisibleRouteIndex = -1;
+    for (int i = _routes.length - 1; i >= 0; i--) {
+      NavigationData? navData = NavigationUtils.getNavigationDataFromRoute(
+          routes: navigationDataRoutes, route: _routes[i]);
+      if (navData != null) {
+        lastVisibleRouteIndex = i;
+        break;
       }
-      _routes.add(route);
+    }
+
+    if (lastVisibleRouteIndex >= 0 &&
+        _routes[lastVisibleRouteIndex].path == route.path) {
+      // Same path as current visible route - update it in place
+      // Reuse the existing route's cache key to preserve widget state
+      String existingCacheKey = _routes[lastVisibleRouteIndex].cacheKey ??
+          NavigationBuilder.generateCacheKey(navigationData, route, _routes);
+      route = route.copyWith(
+          cacheKey:
+              existingCacheKey); // Update the route in place instead of removing and re-adding
+      // This preserves widget state when only query parameters or other properties change
+      _routes[lastVisibleRouteIndex] = route;
       if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
       if (apply) notifyListeners();
       return _pageCompleters[route]?.future;
     }
+
+    // Different route - generate new cache key and add as new page (supports duplicates)
+    String cacheKey =
+        NavigationBuilder.generateCacheKey(navigationData, route, _routes);
+    route = route.copyWith(cacheKey: cacheKey);
 
     Completer<dynamic> pageCompleter = Completer<dynamic>();
     _pageCompleters[route] = pageCompleter;
@@ -648,7 +648,19 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
           navigationDataRoutes, newName);
     }
 
-    _routes[index] = defaultRouteHolder!;
+    // Generate cache key for new route if needed
+    if (defaultRouteHolder!.cacheKey == null) {
+      NavigationData? navigationData =
+          NavigationUtils.getNavigationDataFromRoute(
+              routes: navigationDataRoutes, route: defaultRouteHolder);
+      if (navigationData != null) {
+        String cacheKey = NavigationBuilder.generateCacheKey(
+            navigationData, defaultRouteHolder, _routes);
+        defaultRouteHolder = defaultRouteHolder.copyWith(cacheKey: cacheKey);
+      }
+    }
+
+    _routes[index] = defaultRouteHolder;
 
     // Save global data to name key.
     if (data != null) {
@@ -713,10 +725,25 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     assert(names.isNotEmpty, 'Names cannot be empty.');
     NavigationBuilder.clearCache();
     _routes.clear();
-    // Map route names to routes.
-    _routes.addAll(names.map((e) {
-      return NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, e);
-    }));
+    // Map route names to routes and generate cache keys
+    for (String name in names) {
+      DefaultRoute route =
+          NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+
+      // Generate cache key if not already present
+      if (route.cacheKey == null) {
+        NavigationData? navigationData =
+            NavigationUtils.getNavigationDataFromName(
+                navigationDataRoutes, name);
+        if (navigationData != null) {
+          String cacheKey = NavigationBuilder.generateCacheKey(
+              navigationData, route, _routes);
+          route = route.copyWith(cacheKey: cacheKey);
+        }
+      }
+
+      _routes.add(route);
+    }
 
     _routes = setMainRoutes?.call(_routes) ?? _routes;
     if (_routes.isEmpty) {
@@ -731,7 +758,26 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     assert(routes.isNotEmpty, 'Routes cannot be empty.');
     NavigationBuilder.clearCache();
     _routes.clear();
-    _routes.addAll(routes);
+
+    // Add routes and generate cache keys if needed
+    for (DefaultRoute route in routes) {
+      DefaultRoute routeToAdd = route;
+
+      // Generate cache key if not already present
+      if (route.cacheKey == null) {
+        NavigationData? navigationData =
+            NavigationUtils.getNavigationDataFromRoute(
+                routes: navigationDataRoutes, route: route);
+        if (navigationData != null) {
+          String cacheKey = NavigationBuilder.generateCacheKey(
+              navigationData, route, _routes);
+          routeToAdd = route.copyWith(cacheKey: cacheKey);
+        }
+      }
+
+      _routes.add(routeToAdd);
+    }
+
     _routes = setMainRoutes?.call(_routes) ?? _routes;
     if (_routes.isEmpty) {
       throw Exception('Routes cannot be empty.');
@@ -750,10 +796,27 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     }
     DefaultRoute currentRoute = _routes.last;
     _routes.clear();
-    // Map route names to routes.
-    _routes.addAll(names.map((e) {
-      return NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, e);
-    }));
+
+    // Map route names to routes and generate cache keys
+    for (String name in names) {
+      DefaultRoute route =
+          NavigationUtils.buildDefaultRouteFromName(navigationDataRoutes, name);
+
+      // Generate cache key if not already present
+      if (route.cacheKey == null) {
+        NavigationData? navigationData =
+            NavigationUtils.getNavigationDataFromName(
+                navigationDataRoutes, name);
+        if (navigationData != null) {
+          String cacheKey = NavigationBuilder.generateCacheKey(
+              navigationData, route, _routes);
+          route = route.copyWith(cacheKey: cacheKey);
+        }
+      }
+
+      _routes.add(route);
+    }
+
     _routes.add(currentRoute);
     if (_routes.isNotEmpty && apply) onRouteChanged(_routes.last);
     if (apply) notifyListeners();
@@ -820,9 +883,7 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
         .toString();
   }
 
-  // Route Functions
-
-  @override
+  // Route Functions  @override
   void navigate(BuildContext context, Function function) {
     Router.navigate(context, () {
       function.call();
