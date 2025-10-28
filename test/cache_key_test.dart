@@ -55,13 +55,21 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
-      final route1 = DefaultRoute(path: '/item');
-      final route2 = DefaultRoute(path: '/item');
-      final route3 = DefaultRoute(path: '/item');
+      final routes = <DefaultRoute>[];
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
-      final key3 = NavigationBuilder.generateCacheKey(navigationData, route3);
+      final route1 = DefaultRoute(path: '/item');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, routes);
+      routes.add(route1.copyWith(cacheKey: key1));
+
+      final route2 = DefaultRoute(path: '/item');
+      final key2 =
+          NavigationBuilder.generateCacheKey(navigationData, route2, routes);
+      routes.add(route2.copyWith(cacheKey: key2));
+
+      final route3 = DefaultRoute(path: '/item');
+      final key3 =
+          NavigationBuilder.generateCacheKey(navigationData, route3, routes);
 
       // First key should be the base path
       expect(key1, '/item');
@@ -77,20 +85,25 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
+      final routes = <DefaultRoute>[];
+
       final route1 = DefaultRoute(path: '/product');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, routes);
+      routes.add(route1.copyWith(cacheKey: key1));
+
       final route2 = DefaultRoute(path: '/product');
+      final key2 =
+          NavigationBuilder.generateCacheKey(navigationData, route2, routes);
+      routes.add(route2.copyWith(cacheKey: key2));
 
-      // Generate keys with indices
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
-
-      // Clear the highest indexed route
-      NavigationBuilder.clearCachedRoute(
-          DefaultRoute(path: '/product', cacheKey: key2));
+      // Remove the highest indexed route from stack
+      routes.removeLast();
 
       // Create another route and check its key
       final route3 = DefaultRoute(path: '/product');
-      final key3 = NavigationBuilder.generateCacheKey(navigationData, route3);
+      final key3 =
+          NavigationBuilder.generateCacheKey(navigationData, route3, routes);
 
       // Should reuse the index 2 since it was cleared
       expect(key3, '/product-2');
@@ -165,8 +178,11 @@ void main() {
         label: 'settings2',
       );
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData1, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData2, route2);
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData1, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
+      final key2 = NavigationBuilder.generateCacheKey(
+          navigationData2, route2, [routeWithKey1]);
 
       // Should generate different cache keys due to different labels
       expect(key1, '/settings');
@@ -299,32 +315,44 @@ void main() {
       final routerDelegate =
           DefaultRouterDelegate(navigationDataRoutes: routes);
 
+      final simulatedRoutes = <DefaultRoute>[];
+
       // Create some route entries and generate cache keys
       final route1 = DefaultRoute(path: '/home', label: 'home');
-      final route2 = DefaultRoute(path: '/details', label: 'details');
+      final key1 = NavigationBuilder.generateCacheKey(
+          routes[0], route1, simulatedRoutes);
+      simulatedRoutes.add(route1.copyWith(cacheKey: key1));
 
-      // Populate cache by generating keys
-      NavigationBuilder.generateCacheKey(routes[0], route1);
-      NavigationBuilder.generateCacheKey(routes[1], route2);
+      final route2 = DefaultRoute(path: '/details', label: 'details');
+      final key2 = NavigationBuilder.generateCacheKey(
+          routes[1], route2, simulatedRoutes);
+      simulatedRoutes.add(route2.copyWith(cacheKey: key2));
 
       // Add duplicate route to create an indexed cache entry
       final route3 = DefaultRoute(path: '/home', label: 'home');
-      final key3 = NavigationBuilder.generateCacheKey(routes[0], route3);
+      final key3 = NavigationBuilder.generateCacheKey(
+          routes[0], route3, simulatedRoutes);
       expect(key3, '/home-2', reason: 'Should have created indexed cache key');
 
       // Call set() method which should clear the cache
       routerDelegate.set(['profile'], apply: false);
 
+      // After set(), simulate starting fresh with empty route stack
+      simulatedRoutes.clear();
+
       // Check if cache was properly cleared by attempting to create a new key
       final route4 = DefaultRoute(path: '/home', label: 'home');
-      final key4 = NavigationBuilder.generateCacheKey(routes[0], route4);
+      final key4 = NavigationBuilder.generateCacheKey(
+          routes[0], route4, simulatedRoutes);
 
       // If cache was cleared, we should get the base key again, not an indexed one
       expect(key4, '/home', reason: 'Cache should be cleared after set() call');
 
       // Create another route to verify indices were reset properly
+      simulatedRoutes.add(route4.copyWith(cacheKey: key4));
       final route5 = DefaultRoute(path: '/home', label: 'home');
-      final key5 = NavigationBuilder.generateCacheKey(routes[0], route5);
+      final key5 = NavigationBuilder.generateCacheKey(
+          routes[0], route5, simulatedRoutes);
 
       // Should now be the first index after base
       expect(key5, '/home-2',
@@ -338,27 +366,31 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
+      final routes = <DefaultRoute>[];
+
       // Add the route first time
       final route1 = DefaultRoute(path: '/downloads', label: 'downloads');
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, routes);
+      routes.add(route1.copyWith(cacheKey: key1));
       expect(key1, '/downloads');
 
-      // Remove the route by clearing its cache entry
-      NavigationBuilder.clearCachedRoute(route1.copyWith(cacheKey: key1));
+      // Remove the route from stack
+      routes.clear();
 
-      // Add the route second time - should get index 2
+      // Add the route second time - should get base key again since stack is empty
       final route2 = DefaultRoute(path: '/downloads', label: 'downloads');
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
-      expect(key2, '/downloads-2');
+      final key2 =
+          NavigationBuilder.generateCacheKey(navigationData, route2, routes);
+      routes.add(route2.copyWith(cacheKey: key2));
+      expect(key2, '/downloads');
 
-      // Remove the route again
-      NavigationBuilder.clearCachedRoute(route2.copyWith(cacheKey: key2));
-
-      // Add the route third time - should get index 3, not stay at 2
+      // Add same route again (duplicate) - should get index 2
       final route3 = DefaultRoute(path: '/downloads', label: 'downloads');
-      final key3 = NavigationBuilder.generateCacheKey(navigationData, route3);
-      expect(key3, '/downloads-3',
-          reason: 'Index should increment on each addition after removal');
+      final key3 =
+          NavigationBuilder.generateCacheKey(navigationData, route3, routes);
+      expect(key3, '/downloads-2',
+          reason: 'Second instance in stack should get indexed key');
     });
 
     test('Navigation scenario: Home -> Downloads -> Pop -> Downloads', () {
@@ -426,11 +458,11 @@ void main() {
               'When re-adding a previously popped page, it should reuse the base key');
 
       // Step 5: Let's directly create a new route for the same path
-      // to test the cache key generation without the router delegate
+      // to test the cache key generation with the current route stack
       final downloadsPage3 =
           DefaultRoute(path: '/downloads', label: 'downloads');
-      final downloadKey3 =
-          NavigationBuilder.generateCacheKey(routes[1], downloadsPage3);
+      final downloadKey3 = NavigationBuilder.generateCacheKey(
+          routes[1], downloadsPage3, routerDelegate.routes);
 
       // Since there's already one downloads page in the stack,
       // this should get an incremented key

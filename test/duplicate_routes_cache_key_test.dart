@@ -44,10 +44,13 @@ void main() {
       );
 
       final route1 = DefaultRoute(path: '/item');
-      final route2 = DefaultRoute(path: '/item');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
+      final route2 = DefaultRoute(path: '/item');
+      final key2 = NavigationBuilder.generateCacheKey(
+          navigationData, route2, [routeWithKey1]);
 
       expect(key1, equals('/item'));
       expect(key2, equals('/item-2'),
@@ -62,10 +65,13 @@ void main() {
       );
 
       final keys = <String>[];
+      final routes = <DefaultRoute>[];
       for (int i = 0; i < 5; i++) {
         final route = DefaultRoute(path: '/page');
-        final key = NavigationBuilder.generateCacheKey(navigationData, route);
+        final key =
+            NavigationBuilder.generateCacheKey(navigationData, route, routes);
         keys.add(key);
+        routes.add(route.copyWith(cacheKey: key));
       }
 
       expect(keys[0], equals('/page'));
@@ -76,6 +82,7 @@ void main() {
     });
 
     test('Different routes maintain separate index counters', () {
+      final routes = <DefaultRoute>[];
       final itemNav = NavigationData(
         label: 'item',
         url: '/item',
@@ -89,14 +96,24 @@ void main() {
       );
 
       // Push items and products interleaved
-      final itemKey1 = NavigationBuilder.generateCacheKey(
-          itemNav, DefaultRoute(path: '/item'));
-      final prodKey1 = NavigationBuilder.generateCacheKey(
-          productNav, DefaultRoute(path: '/product'));
-      final itemKey2 = NavigationBuilder.generateCacheKey(
-          itemNav, DefaultRoute(path: '/item'));
-      final prodKey2 = NavigationBuilder.generateCacheKey(
-          productNav, DefaultRoute(path: '/product'));
+      final item1 = DefaultRoute(path: '/item');
+      final itemKey1 =
+          NavigationBuilder.generateCacheKey(itemNav, item1, routes);
+      routes.add(item1.copyWith(cacheKey: itemKey1));
+
+      final prod1 = DefaultRoute(path: '/product');
+      final prodKey1 =
+          NavigationBuilder.generateCacheKey(productNav, prod1, routes);
+      routes.add(prod1.copyWith(cacheKey: prodKey1));
+
+      final item2 = DefaultRoute(path: '/item');
+      final itemKey2 =
+          NavigationBuilder.generateCacheKey(itemNav, item2, routes);
+      routes.add(item2.copyWith(cacheKey: itemKey2));
+
+      final prod2 = DefaultRoute(path: '/product');
+      final prodKey2 =
+          NavigationBuilder.generateCacheKey(productNav, prod2, routes);
 
       expect(itemKey1, equals('/item'));
       expect(prodKey1, equals('/product'));
@@ -119,13 +136,17 @@ void main() {
         queryParameters: {'id': '1'},
       );
 
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
+
       final route2 = DefaultRoute(
         path: '/article',
         queryParameters: {'id': '2'},
       );
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
+      final key2 = NavigationBuilder.generateCacheKey(
+          navigationData, route2, [routeWithKey1]);
 
       // Both use /article as base, so second gets indexed
       expect(key1, equals('/article'));
@@ -147,25 +168,35 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
+      final routes = <DefaultRoute>[];
+
       // Create three instances
       final route1 = DefaultRoute(path: '/item');
-      final route2 = DefaultRoute(path: '/item');
-      final route3 = DefaultRoute(path: '/item');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, routes);
+      routes.add(route1.copyWith(cacheKey: key1));
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
-      final key3 = NavigationBuilder.generateCacheKey(navigationData, route3);
+      final route2 = DefaultRoute(path: '/item');
+      final key2 =
+          NavigationBuilder.generateCacheKey(navigationData, route2, routes);
+      routes.add(route2.copyWith(cacheKey: key2));
+
+      final route3 = DefaultRoute(path: '/item');
+      final key3 =
+          NavigationBuilder.generateCacheKey(navigationData, route3, routes);
+      routes.add(route3.copyWith(cacheKey: key3));
 
       expect(key1, equals('/item'));
       expect(key2, equals('/item-2'));
       expect(key3, equals('/item-3'));
 
-      // Remove the middle one (index 2)
-      NavigationBuilder.clearCachedRoute(route2.copyWith(cacheKey: key2));
+      // Remove the middle one (index 2) from the stack
+      routes.removeAt(1);
 
       // Push another - should reuse index 2
       final route4 = DefaultRoute(path: '/item');
-      final key4 = NavigationBuilder.generateCacheKey(navigationData, route4);
+      final key4 =
+          NavigationBuilder.generateCacheKey(navigationData, route4, routes);
 
       expect(key4, equals('/item-2'),
           reason: 'Should reuse the cleared index 2');
@@ -178,22 +209,29 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
+      final routes = <DefaultRoute>[];
+
       // Create two instances
       final route1 = DefaultRoute(path: '/page');
-      final route2 = DefaultRoute(path: '/page');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, routes);
+      routes.add(route1.copyWith(cacheKey: key1));
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
+      final route2 = DefaultRoute(path: '/page');
+      final key2 =
+          NavigationBuilder.generateCacheKey(navigationData, route2, routes);
+      routes.add(route2.copyWith(cacheKey: key2));
 
       expect(key1, equals('/page'));
       expect(key2, equals('/page-2'));
 
-      // Remove the base one
-      NavigationBuilder.clearCachedRoute(route1.copyWith(cacheKey: key1));
+      // Remove the base one from stack
+      routes.removeAt(0);
 
       // Push another - should get base key back
       final route3 = DefaultRoute(path: '/page');
-      final key3 = NavigationBuilder.generateCacheKey(navigationData, route3);
+      final key3 =
+          NavigationBuilder.generateCacheKey(navigationData, route3, routes);
 
       expect(key3, equals('/page'),
           reason: 'Should reuse the base key when available');
@@ -206,21 +244,31 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
+      final routes = <DefaultRoute>[];
+
       // Create three instances
       final route1 = DefaultRoute(path: '/item');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, routes);
+      routes.add(route1.copyWith(cacheKey: key1));
+
       final route2 = DefaultRoute(path: '/item');
+      final key2 =
+          NavigationBuilder.generateCacheKey(navigationData, route2, routes);
+      routes.add(route2.copyWith(cacheKey: key2));
+
       final route3 = DefaultRoute(path: '/item');
+      final key3 =
+          NavigationBuilder.generateCacheKey(navigationData, route3, routes);
+      routes.add(route3.copyWith(cacheKey: key3));
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
-      final key3 = NavigationBuilder.generateCacheKey(navigationData, route3);
-
-      // Remove highest index (3)
-      NavigationBuilder.clearCachedRoute(route3.copyWith(cacheKey: key3));
+      // Remove highest index (3) from stack
+      routes.removeLast();
 
       // Push another - should get index 3 again
       final route4 = DefaultRoute(path: '/item');
-      final key4 = NavigationBuilder.generateCacheKey(navigationData, route4);
+      final key4 =
+          NavigationBuilder.generateCacheKey(navigationData, route4, routes);
 
       expect(key4, equals('/item-3'),
           reason: 'Should reuse highest index after it was cleared');
@@ -239,23 +287,27 @@ void main() {
 
       for (int i = 0; i < 4; i++) {
         final route = DefaultRoute(path: '/page');
-        final key = NavigationBuilder.generateCacheKey(navigationData, route);
-        routes.add(route);
+        final key =
+            NavigationBuilder.generateCacheKey(navigationData, route, routes);
+        routes.add(route.copyWith(cacheKey: key));
         keys.add(key);
       }
 
       expect(keys, equals(['/page', '/page-2', '/page-3', '/page-4']));
 
-      // Remove /page-2 and /page-3
-      NavigationBuilder.clearCachedRoute(routes[1].copyWith(cacheKey: keys[1]));
-      NavigationBuilder.clearCachedRoute(routes[2].copyWith(cacheKey: keys[2]));
+      // Remove /page-2 and /page-3 from stack
+      routes.removeWhere(
+          (r) => r.cacheKey == '/page-2' || r.cacheKey == '/page-3');
 
       // Add two more - should fill the gaps
       final route5 = DefaultRoute(path: '/page');
-      final key5 = NavigationBuilder.generateCacheKey(navigationData, route5);
+      final key5 =
+          NavigationBuilder.generateCacheKey(navigationData, route5, routes);
+      routes.add(route5.copyWith(cacheKey: key5));
 
       final route6 = DefaultRoute(path: '/page');
-      final key6 = NavigationBuilder.generateCacheKey(navigationData, route6);
+      final key6 =
+          NavigationBuilder.generateCacheKey(navigationData, route6, routes);
 
       expect(key5, equals('/page-2'), reason: 'Should fill first gap');
       expect(key6, equals('/page-3'), reason: 'Should fill second gap');
@@ -274,17 +326,25 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
+      final routes = <DefaultRoute>[];
+
       // User browses products and opens multiple detail pages
       final product1 =
           DefaultRoute(path: '/product', queryParameters: {'id': '123'});
+      final key1 =
+          NavigationBuilder.generateCacheKey(productNav, product1, routes);
+      routes.add(product1.copyWith(cacheKey: key1));
+
       final product2 =
           DefaultRoute(path: '/product', queryParameters: {'id': '456'});
+      final key2 =
+          NavigationBuilder.generateCacheKey(productNav, product2, routes);
+      routes.add(product2.copyWith(cacheKey: key2));
+
       final product3 =
           DefaultRoute(path: '/product', queryParameters: {'id': '789'});
-
-      final key1 = NavigationBuilder.generateCacheKey(productNav, product1);
-      final key2 = NavigationBuilder.generateCacheKey(productNav, product2);
-      final key3 = NavigationBuilder.generateCacheKey(productNav, product3);
+      final key3 =
+          NavigationBuilder.generateCacheKey(productNav, product3, routes);
 
       expect(key1, equals('/product'));
       expect(key2, equals('/product-2'));
@@ -302,13 +362,16 @@ void main() {
       );
 
       // User reads an article, then clicks related articles
+      final routes = <DefaultRoute>[];
       final keys = <String>[];
       for (int articleId = 1; articleId <= 5; articleId++) {
         final route = DefaultRoute(
           path: '/article',
           queryParameters: {'id': '$articleId'},
         );
-        final key = NavigationBuilder.generateCacheKey(articleNav, route);
+        final key =
+            NavigationBuilder.generateCacheKey(articleNav, route, routes);
+        routes.add(route.copyWith(cacheKey: key));
         keys.add(key);
       }
 
@@ -339,25 +402,28 @@ void main() {
       );
 
       // User searches, views items, searches again
-      final search1Key = NavigationBuilder.generateCacheKey(
-        searchNav,
-        DefaultRoute(path: '/search', queryParameters: {'q': 'flutter'}),
-      );
+      final routes = <DefaultRoute>[];
 
-      final item1Key = NavigationBuilder.generateCacheKey(
-        itemNav,
-        DefaultRoute(path: '/item', queryParameters: {'id': '1'}),
-      );
+      final search1 =
+          DefaultRoute(path: '/search', queryParameters: {'q': 'flutter'});
+      final search1Key =
+          NavigationBuilder.generateCacheKey(searchNav, search1, routes);
+      routes.add(search1.copyWith(cacheKey: search1Key));
 
-      final item2Key = NavigationBuilder.generateCacheKey(
-        itemNav,
-        DefaultRoute(path: '/item', queryParameters: {'id': '2'}),
-      );
+      final item1 = DefaultRoute(path: '/item', queryParameters: {'id': '1'});
+      final item1Key =
+          NavigationBuilder.generateCacheKey(itemNav, item1, routes);
+      routes.add(item1.copyWith(cacheKey: item1Key));
 
-      final search2Key = NavigationBuilder.generateCacheKey(
-        searchNav,
-        DefaultRoute(path: '/search', queryParameters: {'q': 'dart'}),
-      );
+      final item2 = DefaultRoute(path: '/item', queryParameters: {'id': '2'});
+      final item2Key =
+          NavigationBuilder.generateCacheKey(itemNav, item2, routes);
+      routes.add(item2.copyWith(cacheKey: item2Key));
+
+      final search2 =
+          DefaultRoute(path: '/search', queryParameters: {'q': 'dart'});
+      final search2Key =
+          NavigationBuilder.generateCacheKey(searchNav, search2, routes);
 
       expect(search1Key, equals('/search'));
       expect(item1Key, equals('/item'));
@@ -376,21 +442,27 @@ void main() {
       );
 
       // Build stack: /page → /page-2 → /page-3
-      final route1 = DefaultRoute(path: '/page');
-      final route2 = DefaultRoute(path: '/page');
-      final route3 = DefaultRoute(path: '/page');
+      final routes = <DefaultRoute>[];
 
-      final key1 = NavigationBuilder.generateCacheKey(pageNav, route1);
-      final key2 = NavigationBuilder.generateCacheKey(pageNav, route2);
-      final key3 = NavigationBuilder.generateCacheKey(pageNav, route3);
+      final route1 = DefaultRoute(path: '/page');
+      final key1 = NavigationBuilder.generateCacheKey(pageNav, route1, routes);
+      routes.add(route1.copyWith(cacheKey: key1));
+
+      final route2 = DefaultRoute(path: '/page');
+      final key2 = NavigationBuilder.generateCacheKey(pageNav, route2, routes);
+      routes.add(route2.copyWith(cacheKey: key2));
+
+      final route3 = DefaultRoute(path: '/page');
+      final key3 = NavigationBuilder.generateCacheKey(pageNav, route3, routes);
+      routes.add(route3.copyWith(cacheKey: key3));
 
       // Simulate pop (remove route3)
-      NavigationBuilder.clearCachedRoute(route3.copyWith(cacheKey: key3));
+      routes.removeLast();
 
-      // Route 1 and 2 should still exist in cache
+      // Route 1 and 2 should still exist in stack
       // If we were to push again, we should get index 3 back
       final route4 = DefaultRoute(path: '/page');
-      final key4 = NavigationBuilder.generateCacheKey(pageNav, route4);
+      final key4 = NavigationBuilder.generateCacheKey(pageNav, route4, routes);
 
       expect(key4, equals('/page-3'),
           reason: 'After popping /page-3, pushing again reuses that index');
@@ -409,10 +481,13 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
+      final routes = <DefaultRoute>[];
       final keys = <String>[];
       for (int i = 0; i < 15; i++) {
         final route = DefaultRoute(path: '/deep');
-        final key = NavigationBuilder.generateCacheKey(navigationData, route);
+        final key =
+            NavigationBuilder.generateCacheKey(navigationData, route, routes);
+        routes.add(route.copyWith(cacheKey: key));
         keys.add(key);
       }
 
@@ -464,8 +539,11 @@ void main() {
 
       final route2 = DefaultRoute(path: '/custom');
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
+      final key2 = NavigationBuilder.generateCacheKey(
+          navigationData, route2, [routeWithKey1]);
 
       expect(key1, equals('my-custom-key'),
           reason: 'Explicit cache key is used as-is');
@@ -484,10 +562,13 @@ void main() {
       );
 
       final route1 = DefaultRoute(path: '/my-page');
-      final route2 = DefaultRoute(path: '/my-page');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
+      final route2 = DefaultRoute(path: '/my-page');
+      final key2 = NavigationBuilder.generateCacheKey(
+          navigationData, route2, [routeWithKey1]);
 
       expect(key1, equals('/my-page'));
       expect(key2, equals('/my-page-2'),
@@ -502,10 +583,13 @@ void main() {
       );
 
       final route1 = DefaultRoute(path: '/404');
-      final route2 = DefaultRoute(path: '/404');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
+      final route2 = DefaultRoute(path: '/404');
+      final key2 = NavigationBuilder.generateCacheKey(
+          navigationData, route2, [routeWithKey1]);
 
       expect(key1, equals('/404'));
       expect(key2, equals('/404-2'));
@@ -519,10 +603,13 @@ void main() {
       );
 
       final route1 = DefaultRoute(path: '/');
-      final route2 = DefaultRoute(path: '/');
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
+      final route2 = DefaultRoute(path: '/');
+      final key2 = NavigationBuilder.generateCacheKey(
+          navigationData, route2, [routeWithKey1]);
 
       expect(key1, equals('/'));
       expect(key2, equals('/-2'), reason: 'Even root path can have duplicates');
@@ -580,25 +667,24 @@ void main() {
       );
 
       // Stack: tab → item → tab → item
-      final tabKey1 = NavigationBuilder.generateCacheKey(
-        tabNav,
-        DefaultRoute(path: '/', group: 'tabs'),
-      );
+      final routes = <DefaultRoute>[];
 
-      final itemKey1 = NavigationBuilder.generateCacheKey(
-        itemNav,
-        DefaultRoute(path: '/item'),
-      );
+      final tab1 = DefaultRoute(path: '/', group: 'tabs');
+      final tabKey1 = NavigationBuilder.generateCacheKey(tabNav, tab1, routes);
+      routes.add(tab1.copyWith(cacheKey: tabKey1));
 
-      final tabKey2 = NavigationBuilder.generateCacheKey(
-        tabNav,
-        DefaultRoute(path: '/', group: 'tabs'),
-      );
+      final item1 = DefaultRoute(path: '/item');
+      final itemKey1 =
+          NavigationBuilder.generateCacheKey(itemNav, item1, routes);
+      routes.add(item1.copyWith(cacheKey: itemKey1));
 
-      final itemKey2 = NavigationBuilder.generateCacheKey(
-        itemNav,
-        DefaultRoute(path: '/item'),
-      );
+      final tab2 = DefaultRoute(path: '/', group: 'tabs');
+      final tabKey2 = NavigationBuilder.generateCacheKey(tabNav, tab2, routes);
+      routes.add(tab2.copyWith(cacheKey: tabKey2));
+
+      final item2 = DefaultRoute(path: '/item');
+      final itemKey2 =
+          NavigationBuilder.generateCacheKey(itemNav, item2, routes);
 
       expect(tabKey1, equals('tabs'));
       expect(itemKey1, equals('/item'));
@@ -622,10 +708,11 @@ void main() {
       );
 
       final route1 = DefaultRoute(path: '/user/123', label: 'profile');
-      final route2 = DefaultRoute(path: '/user/456', label: 'profile');
+      final key1 = NavigationBuilder.generateCacheKey(nav1, route1, []);
 
-      final key1 = NavigationBuilder.generateCacheKey(nav1, route1);
-      final key2 = NavigationBuilder.generateCacheKey(nav1, route2);
+      final route2 = DefaultRoute(path: '/user/456', label: 'profile');
+      final key2 = NavigationBuilder.generateCacheKey(
+          nav1, route2, [route1.copyWith(cacheKey: key1)]);
 
       // Both different paths but same label
       // After fix, should use path for cache key base
@@ -648,10 +735,12 @@ void main() {
       );
 
       final route1 = DefaultRoute(path: '/shared', label: 'view1');
-      final route2 = DefaultRoute(path: '/shared', label: 'view2');
+      final key1 = NavigationBuilder.generateCacheKey(nav1, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
 
-      final key1 = NavigationBuilder.generateCacheKey(nav1, route1);
-      final key2 = NavigationBuilder.generateCacheKey(nav2, route2);
+      final route2 = DefaultRoute(path: '/shared', label: 'view2');
+      final key2 =
+          NavigationBuilder.generateCacheKey(nav2, route2, [routeWithKey1]);
 
       // Same path, so second gets indexed
       // (Assuming fix is applied and we use route.path)

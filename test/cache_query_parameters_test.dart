@@ -138,9 +138,18 @@ void main() {
         queryParameters: {'id': '3'},
       );
 
-      final key1 = NavigationBuilder.generateCacheKey(navigationData, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navigationData, route2);
-      final key3 = NavigationBuilder.generateCacheKey(navigationData, route3);
+      final routes = <DefaultRoute>[];
+
+      final key1 =
+          NavigationBuilder.generateCacheKey(navigationData, route1, routes);
+      routes.add(route1.copyWith(cacheKey: key1));
+
+      final key2 =
+          NavigationBuilder.generateCacheKey(navigationData, route2, routes);
+      routes.add(route2.copyWith(cacheKey: key2));
+
+      final key3 =
+          NavigationBuilder.generateCacheKey(navigationData, route3, routes);
 
       // First gets base key, subsequent duplicates get indexed
       expect(key1, equals('/item'));
@@ -338,12 +347,15 @@ void main() {
         queryParameters: {'mode': 'view'},
       );
 
-      final key1 = NavigationBuilder.generateCacheKey(navData1, route1);
-      final key2 = NavigationBuilder.generateCacheKey(navData2, route2);
+      final key1 = NavigationBuilder.generateCacheKey(navData1, route1, []);
+      final routeWithKey1 = route1.copyWith(cacheKey: key1);
+      final key2 =
+          NavigationBuilder.generateCacheKey(navData2, route2, [routeWithKey1]);
 
-      // Different labels should produce different keys
-      expect(key1, isNot(equals(key2)),
-          reason: 'Different labels should have different cache keys');
+      // Same path should produce indexed keys (labels don't affect cache key)
+      expect(key1, equals('/shared'));
+      expect(key2, equals('/shared-2'),
+          reason: 'Same path should create duplicate with indexed key');
     });
   });
 
@@ -476,13 +488,20 @@ void main() {
         builder: (_, __, ___) => const SizedBox(),
       );
 
-      final list = DefaultRoute(path: '/list');
-      final item1 = DefaultRoute(path: '/item', queryParameters: {'id': '1'});
-      final item2 = DefaultRoute(path: '/item', queryParameters: {'id': '2'});
+      final routes = <DefaultRoute>[];
 
-      final listKey = NavigationBuilder.generateCacheKey(listNav, list);
-      final itemKey1 = NavigationBuilder.generateCacheKey(itemNav, item1);
-      final itemKey2 = NavigationBuilder.generateCacheKey(itemNav, item2);
+      final list = DefaultRoute(path: '/list');
+      final listKey = NavigationBuilder.generateCacheKey(listNav, list, routes);
+      routes.add(list.copyWith(cacheKey: listKey));
+
+      final item1 = DefaultRoute(path: '/item', queryParameters: {'id': '1'});
+      final itemKey1 =
+          NavigationBuilder.generateCacheKey(itemNav, item1, routes);
+      routes.add(item1.copyWith(cacheKey: itemKey1));
+
+      final item2 = DefaultRoute(path: '/item', queryParameters: {'id': '2'});
+      final itemKey2 =
+          NavigationBuilder.generateCacheKey(itemNav, item2, routes);
 
       expect(listKey, equals('/list'));
       expect(itemKey1, equals('/item'));
