@@ -1,3 +1,7 @@
+## 0.9.9
+- Cache Key V2. Fix cache key generation query parameter change inadvertently recreating pages.
+  - Add 40+ tests.
+
 ## 0.9.8
 - Fix `runFunction` deeplink execution behavior.
 
