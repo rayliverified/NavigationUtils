@@ -189,7 +189,10 @@ class NavigationBuilder {
           String cacheKey = route.cacheKey ??
               generateCacheKey(navigationData, route, existingRoutes);
           // Update the route with the cache key if it wasn't already set
-          if (route.cacheKey == null && i < mainRouterDelegate.routes.length) {
+          // Only update if route exists in delegate's routes list at the same index
+          if (route.cacheKey == null &&
+              i < mainRouterDelegate.routes.length &&
+              mainRouterDelegate.routes[i].path == route.path) {
             mainRouterDelegate.routes[i] =
                 mainRouterDelegate.routes[i].copyWith(cacheKey: cacheKey);
           }

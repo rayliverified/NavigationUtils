@@ -274,6 +274,7 @@ void main() {
 
       // Generate cache keys
       final key1 = NavigationBuilder.generateCacheKey(navigationData1, route1);
+      // ignore: unused_local_variable
       final key2 = NavigationBuilder.generateCacheKey(navigationData2, route2);
 
       // Clear the first route
