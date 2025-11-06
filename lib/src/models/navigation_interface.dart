@@ -2,6 +2,11 @@ import 'package:flutter/widgets.dart';
 
 import '../navigation_delegate.dart';
 
+/// Abstract interface for navigation operations.
+///
+/// This interface defines the contract for navigation operations including
+/// pushing, popping, replacing, and managing routes in the navigation stack.
+/// Implementations of this interface provide the actual navigation functionality.
 abstract class NavigationInterface {
   /// Pushes a new route onto the navigation stack.
   Future<dynamic> push(String name,

@@ -8,11 +8,19 @@ import 'navigation_builder.dart';
 import 'navigation_delegate.dart';
 import 'navigation_information_parser.dart';
 
+/// Singleton manager for navigation operations.
+///
+/// This class provides a centralized interface for navigation operations
+/// and manages the router delegate and route information parser.
 class NavigationManager implements NavigationInterface {
+  /// The name of this navigation manager.
   static const String name = 'NavigationManager';
 
   static NavigationManager? _instance;
 
+  /// Gets the singleton instance of [NavigationManager].
+  ///
+  /// Throws an exception if [init] has not been called.
   static NavigationManager get instance {
     if (_instance == null) {
       throw Exception(
@@ -21,11 +29,23 @@ class NavigationManager implements NavigationInterface {
     return _instance!;
   }
 
+  /// The router delegate managing navigation.
   BaseRouterDelegate routerDelegate;
+
+  /// The route information parser.
   DefaultRouteInformationParser routeInformationParser;
 
+  /// Private constructor for singleton pattern.
   NavigationManager._(this.routerDelegate, this.routeInformationParser);
 
+  /// Initializes the [NavigationManager] singleton.
+  ///
+  /// This must be called before using [NavigationManager.instance].
+  ///
+  /// [mainRouterDelegate] - The router delegate to use (required).
+  /// [routeInformationParser] - The route information parser to use (required).
+  ///
+  /// Returns the initialized [NavigationManager] instance.
   static NavigationManager init(
       {required BaseRouterDelegate mainRouterDelegate,
       required DefaultRouteInformationParser routeInformationParser}) {
@@ -33,23 +53,31 @@ class NavigationManager implements NavigationInterface {
     return _instance!;
   }
 
+  /// Stream of current route changes.
   Stream<DefaultRoute> get getCurrentRoute => routerDelegate.getCurrentRoute;
+
+  /// The current route, or null if no route is active.
   DefaultRoute? get currentRoute => routerDelegate.currentConfiguration;
+
+  /// Sets the callback for customizing the route stack.
   set setMainRoutes(SetMainRoutesCallback? setMainRoutes) {
     routerDelegate.setMainRoutes = setMainRoutes;
   }
 
+  /// Sets the function to determine the initial route from a URI.
   set setInitialRouteFunction(
       DefaultRoute Function(Uri initialRoute)? setInitialRouteFunction) {
     routeInformationParser.setInitialRouteFunction = setInitialRouteFunction;
   }
 
+  /// Sets the function to determine the initial route path from a URI.
   set setInitialRoutePathFunction(
       String Function(Uri initialRoute)? setInitialRoutePathFunction) {
     routeInformationParser.setInitialRoutePathFunction =
         setInitialRoutePathFunction;
   }
 
+  /// The current list of routes in the navigation stack.
   List<DefaultRoute> get routes => routerDelegate.routes;
 
   @override

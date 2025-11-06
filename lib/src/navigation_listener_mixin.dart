@@ -5,6 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'navigation_delegate.dart';
 import 'navigation_manager.dart';
 
+/// A mixin that provides navigation state listening capabilities.
+///
+/// This mixin allows classes to listen to navigation changes and receive
+/// callbacks when routes are paused or resumed.
 mixin NavigationListenerMixin {
   late BuildContext _context;
   late StreamSubscription navigationListener;
@@ -12,6 +16,11 @@ mixin NavigationListenerMixin {
   bool mounted = true;
   bool paused = false;
 
+  /// Initializes the navigation listener.
+  ///
+  /// [context] - The build context to use for route detection.
+  /// [routeName] - Optional route name to track. If not provided, the route
+  /// name is extracted from the context.
   void initNavigationListener(BuildContext context, {String? routeName}) {
     _context = context;
     _routeName = routeName;
@@ -86,13 +95,23 @@ mixin NavigationListenerMixin {
   void onRoutePause(
       {required String oldRouteName, required String newRouteName}) {}
 
+  /// Called when the route becomes active (resumed).
+  ///
+  /// Override this method to handle route resume events.
   void onRouteResume() {}
 
+  /// Disposes the navigation listener and cancels the subscription.
+  ///
+  /// This method should be called when navigation listening is no longer needed.
   void disposeNavigationListener() {
     navigationListener.cancel();
   }
 }
 
+/// A mixin that provides navigation state listening capabilities to [State] classes.
+///
+/// This mixin automatically initializes navigation listening in [initState]
+/// and disposes it in [dispose], making it convenient for use in StatefulWidgets.
 mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
   late StreamSubscription navigationListener;
   String? _routeName;
@@ -136,13 +155,23 @@ mixin NavigationListenerStateMixin<T extends StatefulWidget> on State<T> {
   void onRoutePause(
       {required String oldRouteName, required String newRouteName}) {}
 
+  /// Called when the route becomes active (resumed).
+  ///
+  /// Override this method to handle route resume events.
   void onRouteResume() {}
 
+  /// Sets the route name to track.
+  ///
+  /// If not set, the route name is extracted from the context.
   void setRouteName(String routeName) {
     _routeName = routeName;
   }
 }
 
+/// A mixin that provides navigation state listening capabilities to [ChangeNotifier] classes.
+///
+/// This mixin allows ChangeNotifier classes to listen to navigation changes.
+/// The navigation listener is automatically disposed when the ChangeNotifier is disposed.
 mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
   late BuildContext _context;
   late StreamSubscription navigationListener;
@@ -150,6 +179,11 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
   bool mounted = true;
   bool paused = false;
 
+  /// Initializes the navigation listener.
+  ///
+  /// [context] - The build context to use for route detection.
+  /// [routeName] - Optional route name to track. If not provided, the route
+  /// name is extracted from the context.
   void initNavigationListener(BuildContext context, {String? routeName}) {
     _context = context;
     _routeName = routeName;
@@ -189,5 +223,8 @@ mixin NavigationListenerChangeNotifierMixin on ChangeNotifier {
   void onRoutePause(
       {required String oldRouteName, required String newRouteName}) {}
 
+  /// Called when the route becomes active (resumed).
+  ///
+  /// Override this method to handle route resume events.
   void onRouteResume() {}
 }

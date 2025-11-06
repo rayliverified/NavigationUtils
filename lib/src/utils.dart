@@ -3,6 +3,11 @@ import 'navigation_builder.dart';
 import 'navigation_delegate.dart';
 import 'path_utils_go_router.dart';
 
+/// Utility class for navigation operations.
+///
+/// This class provides static methods for working with navigation routes,
+/// deeplinks, and path parameters. It serves as a helper class for
+/// common navigation tasks.
 class NavigationUtils {
   /// Extracts the corresponding `NavigationData` from a given `uri`.
   ///

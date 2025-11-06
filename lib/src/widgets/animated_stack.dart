@@ -1,21 +1,57 @@
 import 'package:flutter/material.dart';
 
+/// Function type for building animated widgets.
+///
+/// Takes a child widget and an animation, returns an animated widget.
 typedef AnimationBuilder = Widget Function(
     Widget child, Animation<double> animation);
 
+/// A stack widget that animates transitions between children.
+///
+/// This widget manages animations for child widgets, providing smooth
+/// transitions when children are added, removed, or reordered.
 class AnimatedStack extends StatefulWidget {
+  /// The name identifier for this widget.
   static const String name = 'animated_stack';
 
+  /// The list of child widgets to display in the stack.
   final List<Widget> children;
+
+  /// Function that builds animated widgets from children and animations.
   final AnimationBuilder animation;
+
+  /// The duration of animations.
   final Duration duration;
+
+  /// Position in the animation timeline where cross-fade occurs (0.0 to 1.0).
   final double crossFadePosition;
+
+  /// Whether to animate the initial child.
   final bool initialAnimation;
+
+  /// How to align the children.
   final AlignmentGeometry alignment;
+
+  /// The text direction for the stack.
   final TextDirection? textDirection;
+
+  /// How to size the non-positioned children.
   final StackFit fit;
+
+  /// The clip behavior for the stack.
   final Clip clipBehavior;
 
+  /// Creates an [AnimatedStack] with the given configuration.
+  ///
+  /// [children] - List of child widgets (required).
+  /// [animation] - Animation builder function (required).
+  /// [duration] - Animation duration (required).
+  /// [initialAnimation] - Whether to animate the initial child.
+  /// [crossFadePosition] - Position for cross-fade transition.
+  /// [alignment] - Alignment for children.
+  /// [textDirection] - Text direction.
+  /// [fit] - How to size non-positioned children.
+  /// [clipBehavior] - Clip behavior.
   const AnimatedStack({
     super.key,
     required this.duration,

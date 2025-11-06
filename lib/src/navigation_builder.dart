@@ -6,11 +6,25 @@ import 'path_utils_go_router.dart';
 import 'route_builders/transparent_route.dart';
 import 'utils.dart';
 
+/// Function type for building navigation pages.
+///
+/// This function is called to build the widget for a given route.
+/// [context] - The build context.
+/// [routeData] - The route data containing path, query parameters, etc.
+/// [globalData] - Global data associated with the route.
 typedef NavigationPageFactory = Widget Function(BuildContext context,
     DefaultRoute routeData, Map<String, dynamic> globalData);
 
+/// Function type for handling unknown routes.
+///
+/// Called when a route is not found in the navigation routes.
+/// Should return a [Page] to display for the unknown route.
 typedef OnUnknownRoute = Page Function(DefaultRoute route);
 
+/// Function type for custom page building.
+///
+/// Allows custom creation of [Page] objects with full control over
+/// the page configuration.
 typedef CustomPageBuilder = Page Function(
   ValueKey<String>? key,
   String? name,
@@ -20,14 +34,38 @@ typedef CustomPageBuilder = Page Function(
   Object? arguments,
 );
 
+/// Configuration data for a navigation route.
+///
+/// This class defines how a route should be built and displayed,
+/// including the URL pattern, page builder, and optional metadata.
 class NavigationData {
+  /// Optional label for the route, used for named navigation.
   final String? label;
+
+  /// The URL pattern for this route.
+  ///
+  /// Must start with '/'. Supports path parameters using ':' syntax,
+  /// e.g., '/user/:id'.
   final String url;
+
+  /// Function that builds the widget for this route.
   final NavigationPageFactory builder;
+
+  /// The type of page transition to use.
   final PageType? pageType;
+
+  /// Whether this route should be displayed as a fullscreen dialog.
   final bool? fullScreenDialog;
+
+  /// The barrier color for modal routes.
   final Color? barrierColor;
+
+  /// Optional metadata associated with this route.
   final Map<String, dynamic> metadata;
+
+  /// Optional custom page builder for this route.
+  ///
+  /// If provided, this takes precedence over the default page building logic.
   final CustomPageBuilder? pageBuilder;
 
   /// Routes can be grouped together by setting
@@ -60,8 +98,13 @@ class NavigationData {
   /// ```
   final String? group;
 
+  /// The parsed URI from [url].
   Uri get uri => Uri.tryParse(url) ?? Uri();
+
+  /// The canonical path from [url].
   String get path => canonicalUri(Uri.tryParse(url)?.path ?? '');
+
+  /// The query parameters extracted from [url].
   Map<String, String> get queryParameters =>
       Uri.tryParse(url)?.queryParameters ?? {};
 
@@ -84,23 +127,48 @@ class NavigationData {
 }
 
 /// Custom navigation builder for gradual migration support.
-/// Wrapper the legacy navigation page builder with this function.
+///
+/// Wraps the legacy navigation page builder with this function.
+/// Allows migrating from legacy navigation systems by providing
+/// a custom page builder that can handle legacy route data.
 typedef MigrationPageBuilder = Page? Function(
     BuildContext context, dynamic routeData);
 
+/// Types of page transitions available for navigation.
 enum PageType {
+  /// Material Design page transition (default).
   material,
+
+  /// Transparent page transition (allows underlying page to show through).
   transparent,
+
+  /// Cupertino (iOS-style) page transition.
   cupertino,
 }
 
+/// Builder class for creating navigation pages from route data.
+///
+/// This class handles the conversion of route data into Flutter [Page] objects,
+/// including page caching, group handling, and duplicate route management.
 class NavigationBuilder {
+  /// Creates a [NavigationBuilder] instance.
   NavigationBuilder();
 
   // Cache pages directly
   static final Map<String, Page> _pageCache = {};
   static final Map<String, int> _routeIndices = {};
 
+  /// Builds a list of [Page] objects from route data.
+  ///
+  /// [context] - The build context.
+  /// [routeDataList] - List of route data objects to build pages from.
+  /// [routes] - List of [NavigationData] defining available routes.
+  /// [onUnknownRoute] - Optional handler for unknown routes.
+  /// [pageBuilder] - Optional custom page builder.
+  /// [migrationPageBuilder] - Optional migration page builder for legacy routes.
+  /// [group] - Optional group filter to only build pages for a specific group.
+  ///
+  /// Returns a list of [Page] objects ready for use in a [Navigator].
   static List<Page> build(
       {required BuildContext context,
       required List<Object> routeDataList,
@@ -282,6 +350,17 @@ class NavigationBuilder {
 
   static final Map<String, int> _pageKeys = {};
 
+  /// Builds a single [Page] object with the given configuration.
+  ///
+  /// [name] - The route name.
+  /// [child] - The widget to display in the page.
+  /// [key] - Optional key for the page.
+  /// [arguments] - Optional arguments to pass to the route.
+  /// [pageType] - The type of page transition to use.
+  /// [fullScreenDialog] - Whether to display as a fullscreen dialog.
+  /// [barrierColor] - The barrier color for modal routes.
+  ///
+  /// Returns a [Page] object configured with the given parameters.
   static Page buildPage({
     required String? name,
     required Widget child,
@@ -317,6 +396,17 @@ class NavigationBuilder {
     }
   }
 
+  /// Builds a list of [Widget] objects from route data.
+  ///
+  /// Similar to [build], but returns widgets instead of pages.
+  /// Useful for nested navigation scenarios.
+  ///
+  /// [context] - The build context.
+  /// [routeDataList] - List of route data objects to build widgets from.
+  /// [routes] - List of [NavigationData] defining available routes.
+  /// [group] - Optional group filter to only build widgets for a specific group.
+  ///
+  /// Returns a list of [Widget] objects.
   static List<Widget> buildWidgets(
       {required BuildContext context,
       required List<Object> routeDataList,
@@ -404,7 +494,10 @@ class NavigationBuilder {
     return basePath;
   }
 
-  // Add method to clear cache when needed
+  /// Clears the page cache.
+  ///
+  /// This method should be called when you want to force all pages
+  /// to be rebuilt, such as when routes are significantly changed.
   static void clearCache() {
     _pageCache.clear();
     _routeIndices.clear();
@@ -528,9 +621,10 @@ class NavigationBuilder {
   }
 }
 
-/// Custom MaterialPage that properly handles updates when only arguments change
+/// Custom MaterialPage that properly handles updates when only arguments change.
+///
 /// This ensures that when a page with the same key is rebuilt with new arguments,
-/// the widget tree is updated (didUpdateWidget called) rather than recreated
+/// the widget tree is updated (didUpdateWidget called) rather than recreated.
 class _UpdateableMaterialPage<T> extends Page<T> {
   const _UpdateableMaterialPage({
     required this.child,
@@ -559,7 +653,10 @@ class _UpdateableMaterialPage<T> extends Page<T> {
   }
 }
 
-/// Custom MaterialPageRoute that preserves state during updates
+/// Custom MaterialPageRoute that preserves state during updates.
+///
+/// This route implementation ensures proper state preservation when
+/// pages are updated with new arguments or data.
 class _PageBasedMaterialPageRoute<T> extends PageRoute<T>
     with MaterialRouteTransitionMixin<T> {
   _PageBasedMaterialPageRoute({

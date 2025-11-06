@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 
-/// Copied from Flutter animation's private ZoomedFadeInFadeOut widget.
+/// A fade-through animation widget.
+///
+/// This widget provides a fade and zoom animation effect, typically used
+/// for page transitions. Copied from Flutter animation's private
+/// ZoomedFadeInFadeOut widget.
 class FadeThroughAnimation extends StatelessWidget {
+  /// Creates a [FadeThroughAnimation] with the given animation.
+  ///
+  /// [animation] - The animation controller (required).
+  /// [child] - The child widget to animate.
   const FadeThroughAnimation({super.key, required this.animation, this.child});
 
+  /// The animation controller for the fade-through effect.
   final Animation<double> animation;
+
+  /// The child widget to animate.
   final Widget? child;
 
   @override
@@ -36,14 +47,22 @@ class FadeThroughAnimation extends StatelessWidget {
   }
 }
 
+/// A widget that provides a zoomed fade-in animation.
 class ZoomedFadeIn extends StatelessWidget {
+  /// Creates a [ZoomedFadeIn] widget.
+  ///
+  /// [animation] - The animation controller (required).
+  /// [child] - The child widget to animate.
   const ZoomedFadeIn({
     super.key,
     this.child,
     required this.animation,
   });
 
+  /// The child widget to animate.
   final Widget? child;
+
+  /// The animation controller for the zoomed fade-in effect.
   final Animation<double> animation;
 
   static final CurveTween _inCurve = CurveTween(
@@ -86,14 +105,22 @@ class ZoomedFadeIn extends StatelessWidget {
   }
 }
 
+/// A widget that provides a fade-out animation.
 class FadeOut extends StatelessWidget {
+  /// Creates a [FadeOut] widget.
+  ///
+  /// [animation] - The animation controller (required).
+  /// [child] - The child widget to animate.
   const FadeOut({
     super.key,
     this.child,
     required this.animation,
   });
 
+  /// The child widget to animate.
   final Widget? child;
+
+  /// The animation controller for the fade-out effect.
   final Animation<double> animation;
 
   static final CurveTween _outCurve = CurveTween(

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 /// Determines which type of shared axis transition is used.
+///
+/// Shared axis transitions create a sense of continuity between pages
+/// by animating along a shared axis (x, y, or z).
 enum SharedAxisAnimationType {
   /// Creates a shared axis vertical (y-axis) page transition.
   vertical,
@@ -14,6 +17,12 @@ enum SharedAxisAnimationType {
 
 /// Copied from Flutter animation's private EnterTransition widget.
 class SharedAxisAnimation extends StatelessWidget {
+  /// Creates a [SharedAxisAnimation] with the given configuration.
+  ///
+  /// [animation] - The animation controller (required).
+  /// [transitionType] - The type of shared axis transition (required).
+  /// [child] - The child widget to animate (required).
+  /// [reverse] - Whether to reverse the animation direction.
   const SharedAxisAnimation({
     super.key,
     required this.animation,
@@ -22,9 +31,16 @@ class SharedAxisAnimation extends StatelessWidget {
     this.reverse = false,
   });
 
+  /// The animation controller for the shared axis transition.
   final Animation<double> animation;
+
+  /// The type of shared axis transition to use.
   final SharedAxisAnimationType transitionType;
+
+  /// The child widget to animate.
   final Widget? child;
+
+  /// Whether to reverse the animation direction.
   final bool reverse;
 
   static final Animatable<double> _fadeInTransition = CurveTween(

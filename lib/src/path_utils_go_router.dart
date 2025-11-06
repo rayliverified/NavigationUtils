@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/// Regular expression for matching path parameters in route patterns.
+///
+/// Matches patterns like `:id` or `:id(pattern)` in route paths.
 final RegExp _parameterRegExp = RegExp(r':(\w+)(\((?:\\.|[^\\()])+\))?');
 
 /// Converts a [pattern] such as `/user/:id` into [RegExp].

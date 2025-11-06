@@ -5,19 +5,41 @@ import 'navigation_delegate.dart';
 
 /// The RouteInformationParser takes the RouteInformation
 /// from a RouteInformationProvider and parses it into a user-defined data type.
+///
+/// This implementation parses route information into [DefaultRoute] objects.
 class DefaultRouteInformationParser
     extends RouteInformationParser<DefaultRoute> {
+  /// The current route URI.
   Uri routeUri = Uri(path: '/');
+
+  /// The initial route path.
   String initialRoute = '/';
+
+  /// Whether the parser has been initialized.
   bool initialized = false;
 
+  /// Optional default route to use on initialization.
   DefaultRoute? defaultRoute;
+
+  /// Optional default route path to use on initialization.
   String? defaultRoutePath;
+
+  /// Optional function to set the initial route from a URI.
   DefaultRoute Function(Uri initialRoute)? setInitialRouteFunction;
+
+  /// Optional function to set the initial route path from a URI.
   String Function(Uri initialRoute)? setInitialRoutePathFunction;
 
+  /// Whether to enable debug logging.
   bool debugLog;
 
+  /// Creates a [DefaultRouteInformationParser] with the given configuration.
+  ///
+  /// [defaultRoute] - Optional default route to use on initialization.
+  /// [defaultRoutePath] - Optional default route path (must start with '/').
+  /// [setInitialRouteFunction] - Optional function to set initial route from URI.
+  /// [setInitialRoutePathFunction] - Optional function to set initial route path from URI.
+  /// [debugLog] - Whether to enable debug logging.
   DefaultRouteInformationParser({
     this.defaultRoute,
     this.defaultRoutePath,

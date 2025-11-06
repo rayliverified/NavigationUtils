@@ -8,19 +8,45 @@ import 'navigation_builder.dart';
 import 'path_utils_go_router.dart';
 import 'utils.dart';
 
+/// Default route implementation extending [RouteSettings].
+///
+/// This class represents a route in the navigation system, containing
+/// path information, parameters, metadata, and optional grouping.
 class DefaultRoute extends RouteSettings {
+  /// The path of this route.
   final String path;
+
+  /// The label of this route, used for named navigation.
   final String label;
+
+  /// Query parameters for this route.
   final Map<String, String> queryParameters;
+
+  /// Path parameters extracted from the route path.
   final Map<String, String> pathParameters;
+
+  /// Optional metadata associated with this route.
   final Map<String, dynamic>? metadata;
+
+  /// Optional group name for grouping related routes.
   final String? group;
 
-  /// A unique cache key for this route, used to manage page caching
+  /// A unique cache key for this route, used to manage page caching.
   final String? cacheKey;
 
+  /// The URI representation of this route.
   Uri get uri => Uri(path: path, queryParameters: queryParameters);
 
+  /// Creates a [DefaultRoute] with the given configuration.
+  ///
+  /// [path] - The route path (required).
+  /// [label] - Optional route label.
+  /// [queryParameters] - Query parameters.
+  /// [pathParameters] - Path parameters.
+  /// [metadata] - Optional metadata.
+  /// [group] - Optional group name.
+  /// [cacheKey] - Optional cache key.
+  /// [arguments] - Optional route arguments.
   DefaultRoute(
       {required this.path,
       this.label = '',
@@ -34,6 +60,15 @@ class DefaultRoute extends RouteSettings {
             name: canonicalUri(
                 Uri(path: path, queryParameters: queryParameters).toString()));
 
+  /// Creates a [DefaultRoute] from a URL string.
+  ///
+  /// Parses the URL and extracts path and query parameters.
+  ///
+  /// [url] - The URL to parse.
+  /// [label] - Optional route label.
+  /// [group] - Optional group name.
+  /// [metadata] - Optional metadata.
+  /// [cacheKey] - Optional cache key.
   factory DefaultRoute.fromUrl(String url,
       {String label = '',
       String? group,
@@ -49,6 +84,15 @@ class DefaultRoute extends RouteSettings {
         cacheKey: cacheKey);
   }
 
+  /// Creates a [DefaultRoute] from a [Uri] object.
+  ///
+  /// Extracts path and query parameters from the URI.
+  ///
+  /// [uri] - The URI to parse.
+  /// [label] - Optional route label.
+  /// [group] - Optional group name.
+  /// [metadata] - Optional metadata.
+  /// [cacheKey] - Optional cache key.
   factory DefaultRoute.fromUri(Uri uri,
       {String label = '',
       String? group,
@@ -63,6 +107,9 @@ class DefaultRoute extends RouteSettings {
         cacheKey: cacheKey);
   }
 
+  /// Creates a copy of this route with the given fields replaced.
+  ///
+  /// All parameters are optional. If not provided, the original value is used.
   DefaultRoute copyWith(
       {String? label,
       String? path,
@@ -97,59 +144,108 @@ class DefaultRoute extends RouteSettings {
   String toString() =>
       'Route(label: $label, path: $path, name: $name, queryParameters: $queryParameters, metadata: $metadata, group: $group, arguments: $arguments, cacheKey: $cacheKey)';
 
+  /// Accesses query parameters using the bracket operator.
+  ///
+  /// Returns the value of the query parameter with the given [key],
+  /// or `null` if the key doesn't exist.
+  ///
+  /// Example:
+  /// ```dart
+  /// String? userId = route['userId'];
+  /// ```
   operator [](String key) => queryParameters[key];
 }
 
-/// Pop until definition.
+/// Function type for determining when to stop popping routes.
+///
+/// Used in [popUntilRoute] to determine which route to stop at.
+/// Return `true` to stop at the given route, `false` to continue popping.
 typedef PopUntilRouteFunction = bool Function(DefaultRoute route);
 
-/// Set navigation callback.
+/// Function type for customizing the route stack.
+///
+/// Allows modification of the route stack before it's applied.
+/// The function receives the current route list and returns a modified list.
 typedef SetMainRoutesCallback = List<DefaultRoute> Function(
     List<DefaultRoute> controller);
 
+/// Base class for router delegates.
+///
 /// The RouteDelegate defines application specific behaviors of how the router
 /// learns about changes in the application state and how it responds to them.
 /// It listens to the RouteInformation Parser and the app state and builds the Navigator with
 /// the current list of pages (immutable object used to set navigator's history stack).
+///
+/// This abstract class provides the core navigation functionality and should be
+/// extended to create custom router delegates.
 abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<DefaultRoute>
     implements NavigationInterface {
-  // Persist the navigator with a global key.
+  /// Global key for the Navigator widget.
+  ///
+  /// Persists the navigator across rebuilds.
   @override
   GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   /// Internal backstack and pages representation.
   List<DefaultRoute> _routes = [];
 
+  /// The current list of routes in the navigation stack.
   List<DefaultRoute> get routes => _routes;
 
   bool _canPop = true;
 
+  /// Whether the current route can be popped.
+  ///
+  /// Returns `false` if [canPop] was explicitly set to false,
+  /// or if there are no routes in the stack.
   bool get canPop {
     if (_canPop == false) return false;
 
     return _routes.isNotEmpty;
   }
 
+  /// Sets whether the current route can be popped.
   set canPop(bool canPop) => _canPop = canPop;
 
-  /// CurrentConfiguration detects changes in the route information
+  /// CurrentConfiguration detects changes in the route information.
+  ///
   /// It helps complete the browser history and enables browser back and forward buttons.
+  /// Returns the last route in the stack, or null if the stack is empty.
   @override
   DefaultRoute? get currentConfiguration =>
       routes.isNotEmpty ? routes.last : null;
 
-  // Current route name.
+  /// Stream controller for current route changes.
+  ///
+  /// This controller is used internally to broadcast route changes.
+  /// Use [getCurrentRoute] to listen to route changes instead.
   StreamController<DefaultRoute> currentRouteController =
       StreamController<DefaultRoute>.broadcast();
+
+  /// Stream of current route changes.
+  ///
+  /// Listen to this stream to be notified when the current route changes.
   Stream<DefaultRoute> get getCurrentRoute => currentRouteController.stream;
 
+  /// Global data map for storing route-specific data.
   Map<String, dynamic> globalData = {};
 
+  /// List of navigation data routes.
+  ///
+  /// This must be set by the implementing class.
   List<NavigationData> navigationDataRoutes = [];
 
+  /// Optional page override function.
+  ///
+  /// If set, this function is called to build a page that overrides
+  /// the normal navigation stack. Useful for loading screens.
   Page Function(String name)? pageOverride;
 
+  /// Optional page overlay function.
+  ///
+  /// If set, this function is called to build a page that overlays
+  /// the normal navigation stack. Useful for lock screens.
   Page Function(String name)? pageOverlay;
 
   /// Exposes the [routes] history to the implementation to allow
@@ -159,6 +255,10 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
   /// Unknown route generation function.
   OnUnknownRoute? onUnknownRoute;
 
+  /// Whether to enable debug logging for navigation operations.
+  ///
+  /// When enabled, navigation operations will print debug messages
+  /// to help with troubleshooting navigation issues.
   bool debugLog = false;
 
   /// Internal method that takes a Navigator initial route
