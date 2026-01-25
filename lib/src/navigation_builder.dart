@@ -224,12 +224,21 @@ class NavigationBuilder {
         if (navigationData != null &&
             (group == null || navigationData.group == group)) {
           // Skip building duplicated groups.
-          // Skip non-top contiguous group items
-          if (navigationData.group != null) {
-            String groupName = navigationData.group!;
+          // Skip non-top contiguous group items.
+          //
+          // IMPORTANT: Use route.group (not navigationData.group) to be consistent
+          // with the first pass that builds lastGroupIndex. This ensures we use
+          // the same source of truth for group lookups.
+          //
+          // If route.group is null but navigationData.group is set, it means the
+          // route wasn't created properly through mapNavigationDataToDefaultRoute().
+          // In that case, we don't apply group logic rather than risking a mismatch.
+          if (route.group != null) {
+            String groupName = route.group!;
 
             // Skip if this is part of a contiguous group but not the last item
-            if (i < lastGroupIndex[groupName]!) {
+            final lastIndex = lastGroupIndex[groupName];
+            if (lastIndex != null && i < lastIndex) {
               continue;
             }
 

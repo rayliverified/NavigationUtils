@@ -1,3 +1,6 @@
+## 0.9.10
+- Fix NavigationBuilder group mismatch crash on macOS/desktop platforms due to timing differences and native deeplinks.
+
 ## 0.9.9
 - Cache Key V2. Fix cache key generation query parameter change inadvertently recreating pages.
   - Add 40+ tests.
