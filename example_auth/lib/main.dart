@@ -151,6 +151,13 @@ class AppState extends State<App> {
   }
 
   @override
+  void reassemble() {
+    NavigationManager.instance.routerDelegate.navigationDataRoutes =
+        navigation_routes.routes;
+    super.reassemble();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // On Android 10+, extend background color into bottom bar area.
     // SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

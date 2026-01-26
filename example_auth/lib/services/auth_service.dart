@@ -55,27 +55,36 @@ class AuthService {
         .authStateChanges()
         .asBroadcastStream()
         .listen((user) async {
-      DebugLogger.instance.printFunction('authStateChanges: $user', name: name);
-      firebaseAuthInitialized = true;
-      if (user != null) {
-        DebugLogger.instance
-            .printFunction('onUserAuthenticated ${user.uid}', name: name);
-        await UserManager.instance.startUserStreamSubscription(user.uid);
-        isAuthenticated.value = true;
-        firebaseAuthUserStreamController.add(user.uid);
-      } else if (UserManager.instance.user.value.id.isNotEmpty &&
-          isAuthenticated.value == false) {
-        // If UserModel exists, app is authenticated. Firebase Auth will return authenticated in a bit.
-        DebugLogger.instance.printInfo(
-            'Waiting for FirebaseAuth to authenticate...',
-            name: name);
-        return;
-      } else {
-        DebugLogger.instance.printFunction('onUserUnauthenticated', name: name);
-        isAuthenticated.value = false;
-        firebaseAuthUserStreamController.add(null);
-      }
-    });
+          DebugLogger.instance.printFunction(
+            'authStateChanges: $user',
+            name: name,
+          );
+          firebaseAuthInitialized = true;
+          if (user != null) {
+            DebugLogger.instance.printFunction(
+              'onUserAuthenticated ${user.uid}',
+              name: name,
+            );
+            await UserManager.instance.startUserStreamSubscription(user.uid);
+            isAuthenticated.value = true;
+            firebaseAuthUserStreamController.add(user.uid);
+          } else if (UserManager.instance.user.value.id.isNotEmpty &&
+              isAuthenticated.value == false) {
+            // If UserModel exists, app is authenticated. Firebase Auth will return authenticated in a bit.
+            DebugLogger.instance.printInfo(
+              'Waiting for FirebaseAuth to authenticate...',
+              name: name,
+            );
+            return;
+          } else {
+            DebugLogger.instance.printFunction(
+              'onUserUnauthenticated',
+              name: name,
+            );
+            isAuthenticated.value = false;
+            firebaseAuthUserStreamController.add(null);
+          }
+        });
   }
 
   Future<AuthService> init() async {
@@ -91,9 +100,13 @@ class AuthService {
 
   /// Method to handle user sign in using email and password
   Future<ValueResponse<void>> signInWithEmailAndPassword(
-      String email, String password) async {
-    DebugLogger.instance
-        .printFunction('signInWithEmailAndPassword', name: name);
+    String email,
+    String password,
+  ) async {
+    DebugLogger.instance.printFunction(
+      'signInWithEmailAndPassword',
+      name: name,
+    );
     try {
       final UserCredential credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
@@ -107,23 +120,29 @@ class AuthService {
     } on FirebaseAuthException catch (e, stackTrace) {
       debugPrint('FirebaseAuthException: ${e.toString()}');
 
-      return ValueResponse.exception(ExceptionWrapper(
+      return ValueResponse.exception(
+        ExceptionWrapper(
           e.message ?? 'An error has occurred.',
           stackTrace: stackTrace,
-          code: e.code));
+          code: e.code,
+        ),
+      );
     }
 
     return ValueResponse.success();
   }
 
   /// User registration using email and password
-  Future<ValueResponse<void>> registerWithEmailAndPassword(
-      {required String email,
-      required String password,
-      String? firstName,
-      String? lastName}) async {
-    DebugLogger.instance
-        .printFunction('registerWithEmailAndPassword', name: name);
+  Future<ValueResponse<void>> registerWithEmailAndPassword({
+    required String email,
+    required String password,
+    String? firstName,
+    String? lastName,
+  }) async {
+    DebugLogger.instance.printFunction(
+      'registerWithEmailAndPassword',
+      name: name,
+    );
     try {
       final UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -134,8 +153,9 @@ class AuthService {
         firstName: firstName ?? userCredential.user?.displayName,
         lastName: lastName,
       );
-      UserModel? userModel =
-          await UserManager.instance.createUserModel(firebaseUser);
+      UserModel? userModel = await UserManager.instance.createUserModel(
+        firebaseUser,
+      );
       if (userModel == null) {
         return ValueResponse.error('Error: unable to create user.');
       }
@@ -144,29 +164,38 @@ class AuthService {
     } on FirebaseAuthException catch (e, stackTrace) {
       debugPrint('FirebaseAuthException: ${e.toString()}');
 
-      return ValueResponse.exception(ExceptionWrapper(
+      return ValueResponse.exception(
+        ExceptionWrapper(
           e.message ?? 'An error has occurred.',
           stackTrace: stackTrace,
-          code: e.code));
+          code: e.code,
+        ),
+      );
     } on Exception catch (e, stackTrace) {
       return ValueResponse.exception(
-          ExceptionWrapper(e.toString(), stackTrace: stackTrace));
+        ExceptionWrapper(e.toString(), stackTrace: stackTrace),
+      );
     }
   }
 
   /// Password reset email
   Future<ValueResponse<void>> sendPasswordResetEmail(String email) async {
-    DebugLogger.instance
-        .printFunction('sendPasswordResetEmail: $email', name: name);
+    DebugLogger.instance.printFunction(
+      'sendPasswordResetEmail: $email',
+      name: name,
+    );
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e, stackTrace) {
       debugPrint('FirebaseAuthException: ${e.toString()}');
 
-      return ValueResponse.exception(ExceptionWrapper(
+      return ValueResponse.exception(
+        ExceptionWrapper(
           e.message ?? 'An error has occurred.',
           stackTrace: stackTrace,
-          code: e.code));
+          code: e.code,
+        ),
+      );
     }
 
     return ValueResponse.success();
@@ -183,27 +212,26 @@ class AuthService {
       if (kIsWeb) {
         GoogleAuthProvider googleProvider = GoogleAuthProvider();
 
-        userCredential =
-            await FirebaseAuth.instance.signInWithPopup(googleProvider);
+        userCredential = await FirebaseAuth.instance.signInWithPopup(
+          googleProvider,
+        );
       } else {
         if (Platform.isWindows && !kIsWeb) {
           // Default is a MissingPluginException error.
           return ValueResponse.error(
-              'Sign in with Google is not yet supported on Windows');
+            'Sign in with Google is not yet supported on Windows',
+          );
         }
-        GoogleSignInAccount? googleSignInAccount =
-            await GoogleSignIn().signIn();
-        if (googleSignInAccount == null) {
-          return ValueResponse.error('Sign in canceled.');
-        }
+        GoogleSignInAccount googleSignInAccount =
+            await GoogleSignIn.instance.authenticate();
         GoogleSignInAuthentication googleAuth =
-            await googleSignInAccount.authentication;
+            googleSignInAccount.authentication;
         final AuthCredential credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
-        userCredential =
-            await FirebaseAuth.instance.signInWithCredential(credential);
+        userCredential = await FirebaseAuth.instance.signInWithCredential(
+          credential,
+        );
       }
       if (userCredential.user == null) {
         return ValueResponse.error('User credential missing.');
@@ -213,17 +241,18 @@ class AuthService {
         email: userCredential.user!.email ?? '',
         photoUrl: userCredential.user!.photoURL ?? '',
         firstName: userCredential.user!.displayName?.split(' ').first ?? '',
-        lastName: userCredential.user!.displayName?.contains(' ') == true
-            ? userCredential.user!.displayName!.split(' ').skip(1).join(' ')
-            : '',
+        lastName:
+            userCredential.user!.displayName?.contains(' ') == true
+                ? userCredential.user!.displayName!.split(' ').skip(1).join(' ')
+                : '',
       );
       // When auth returns a null user, an AuthException is thrown.
       // This failure return is just for a null check.
       if (user.id.isEmpty) return ValueResponse.error('Unable to sign in.');
       // Google auth does not differentiate between
       // login and signup. Check to see if user is already created.
-      final ValueResponse<UserModel> response =
-          await UserManager.instance.fetchUserModel(user.id);
+      final ValueResponse<UserModel> response = await UserManager.instance
+          .fetchUserModel(user.id);
       if (response.isError) {
         // User is not created
         UserModel? userModel = await UserManager.instance.createUserModel(user);

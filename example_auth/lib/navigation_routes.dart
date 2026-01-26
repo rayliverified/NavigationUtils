@@ -4,7 +4,7 @@ import 'main.dart';
 import 'pages/auth/auth_components.dart';
 import 'pages/auth/page_auth.dart';
 
-List<NavigationData> routes = [
+List<NavigationData> get routes => [
   NavigationData(
       label: HomePage.name,
       url: '/',
@@ -13,18 +13,21 @@ List<NavigationData> routes = [
   NavigationData(
       label: LoginForm.name,
       url: '/login',
+      group: 'auth',
       builder: (context, routeData, globalData) =>
-          const AuthPage(type: AuthPageType.login),
+          AuthPage(type: AuthPageType.login),
       metadata: {'type': 'auth'}),
   NavigationData(
       label: SignUpForm.name,
       url: '/signup',
+      group: 'auth',
       builder: (context, routeData, globalData) =>
-          const AuthPage(type: AuthPageType.signup),
+          AuthPage(type: AuthPageType.signup),
       metadata: {'type': 'auth'}),
   NavigationData(
       label: ResetPasswordForm.name,
       url: '/reset_password',
+      group: 'auth',
       builder: (context, routeData, globalData) =>
-          const AuthPage(type: AuthPageType.resetPassword)),
+          AuthPage(type: AuthPageType.resetPassword)),
 ];

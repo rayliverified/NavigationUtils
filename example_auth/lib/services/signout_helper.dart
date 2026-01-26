@@ -27,7 +27,7 @@ class SignoutHelper {
     // Signout Auth.
     try {
       await FirebaseAuth.instance.signOut();
-      await GoogleSignIn().signOut();
+      await GoogleSignIn.instance.signOut();
     } catch (e) {
       debugPrint(e.toString());
     }

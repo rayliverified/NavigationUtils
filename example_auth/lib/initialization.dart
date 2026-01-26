@@ -5,7 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:navigation_utils/navigation_utils.dart';
+import 'package:universal_io/io.dart';
 
 import 'firebase_options.dart';
 import 'navigation_routes.dart';
@@ -38,6 +40,12 @@ class Initialization {
       Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
       SharedPreferencesHelper.init(),
     ]);
+
+    // Initialize GoogleSignIn singleton (required for google_sign_in 7.x)
+    // Skip on Windows and Web as they don't use the plugin
+    if (!kIsWeb && !Platform.isWindows) {
+      await GoogleSignIn.instance.initialize();
+    }
 
     await Future.wait([
       AuthService.instance.init(),
