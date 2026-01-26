@@ -441,6 +441,88 @@ NavigationData(
 
 In this example, three different URLs (`'/'`, `'/community'`, and `'/news'`) are mapped to the same `HomePage`. This feature is particularly useful when you want multiple routes to lead to the same page while maintaining state and animations.
 
+### Widget Reuse and Performance Optimization
+
+Routes with the same `group` share the same widget instance, meaning the widget is **reused** rather than destroyed and recreated when navigating between grouped routes. This provides significant performance benefits:
+
+- **Preserves widget state** - The widget's state is maintained across navigation
+- **Avoids rebuild overhead** - Only `didUpdateWidget` is called instead of `initState`
+- **Smooth animations** - Transitions between grouped routes are seamless
+
+#### Example: Auth Pages
+
+```dart
+NavigationData(
+  label: LoginForm.name,
+  url: '/login',
+  group: 'auth',
+  builder: (context, routeData, globalData) =>
+      AuthPage(type: AuthPageType.login),
+  metadata: {'type': 'auth'},
+),
+NavigationData(
+  label: SignUpForm.name,
+  url: '/signup',
+  group: 'auth',
+  builder: (context, routeData, globalData) =>
+      AuthPage(type: AuthPageType.signup),
+  metadata: {'type': 'auth'},
+),
+```
+
+**Important:** When grouping routes that reuse widgets:
+
+1. **Do NOT use `const` constructors** - The `const` keyword prevents Flutter from detecting widget parameter changes. Use regular constructors to ensure `didUpdateWidget` is called properly.
+
+   ```dart
+   // ❌ Wrong - const prevents widget updates
+   builder: (context, routeData, globalData) =>
+       const AuthPage(type: AuthPageType.login),
+
+   // ✅ Correct - allows widget to detect parameter changes
+   builder: (context, routeData, globalData) =>
+       AuthPage(type: AuthPageType.login),
+   ```
+
+2. **Implement `didUpdateWidget`** - Override this method in your StatefulWidget to handle parameter changes:
+
+   ```dart
+   @override
+   void didUpdateWidget(AuthPage oldWidget) {
+     super.didUpdateWidget(oldWidget);
+     if (oldWidget.type != widget.type) {
+       setState(() {
+         // Update state when type changes
+       });
+     }
+   }
+   ```
+
+This pattern is ideal for:
+- Authentication flows (login, signup, reset password)
+- Multi-step forms or wizards
+- Tabbed interfaces where tabs share common UI elements
+- Any scenario where you want to preserve expensive widget state (like scroll position, form data, or animation controllers)
+
+### How This Works: Flutter Navigator 2 Internals
+
+**Flutter's Page Update Detection:**
+When Navigator 2 determines whether to update or recreate a Page's child widget, it uses `Page.canUpdate`:
+1. **canUpdate returns true** - The Route is **reused**, and the child can receive `didUpdateWidget`
+2. **canUpdate returns false** - A **new Route** is created, calling `initState`
+
+For grouped routes:
+- All routes in the same group share the **same Page key** (the group name)
+- When `canUpdate` returns true (same key), the Route is reused
+- The Route's `buildPage` method reads `_page.child` at **build time**
+- Since `_page` (settings) now points to the new Page with a new child widget, the new child is returned
+- Flutter sees the child widget changed and calls `didUpdateWidget`
+
+**The Critical Mechanism:**
+The Route must read the child from `settings` (the Page) at **build time**, not capture it at creation time. This ensures that when navigating between grouped routes, the Route always uses the latest child widget from the Page settings, triggering `didUpdateWidget` as expected.
+
+**For detailed technical documentation, see [docs/FLUTTER_NAVIGATOR2_PAGE_UPDATE_MECHANISM.md](docs/FLUTTER_NAVIGATOR2_PAGE_UPDATE_MECHANISM.md).**
+
 ## Route Guards
 
 #### Authentication
@@ -491,14 +573,16 @@ NavigationUtils allows you to customize route transitions both globally and on a
 
 ### Global Transitions
 
-You can define a global transition that will be applied to all routes unless overridden by a local (per-page) transition. To set a global transition, create a custom `Page` class that defines the transition within its `createRoute` method using `PageRouteBuilder`.
+You can define a global transition that will be applied to all routes unless overridden by a local (per-page) transition. To set a global transition, create a custom `Page` class with a custom `Route` that reads the child at build time.
+
+> **⚠️ Important:** Do NOT use `PageRouteBuilder` for custom transitions. It captures the child widget in a closure at Route creation time, which prevents page updates when using grouped routes or query parameter changes. Always create a custom Route class that reads `_page.child` at build time.
 
 ```dart
 // Define a Custom Page for your global transition
-class ScaleTransitionPageBuilder extends Page {
+class ScaleTransitionPage extends Page<void> {
   final Widget child;
 
-  const ScaleTransitionPageBuilder({
+  const ScaleTransitionPage({
     required this.child,
     super.key,
     super.name,
@@ -506,18 +590,44 @@ class ScaleTransitionPageBuilder extends Page {
   });
 
   @override
-  Route createRoute(BuildContext context) {
-    return PageRouteBuilder(
-      settings: this,
-      pageBuilder: (context, animation, secondaryAnimation) => child,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        // Define your custom transition animation here
-        return ScaleTransition(
-          scale: animation,
-          alignment: Alignment.center,
-          child: child,
-        );
-      },
+  Route<void> createRoute(BuildContext context) {
+    return _ScaleTransitionRoute(page: this);
+  }
+}
+
+// Custom Route that reads child at BUILD TIME (not creation time)
+class _ScaleTransitionRoute extends PageRoute<void> {
+  _ScaleTransitionRoute({required ScaleTransitionPage page})
+      : super(settings: page);
+
+  // Read from settings at build time - this is the key!
+  ScaleTransitionPage get _page => settings as ScaleTransitionPage;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool get maintainState => true;
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 300);
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
+    return _page.child; // Read child from CURRENT page at build time
+  }
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    return ScaleTransition(
+      scale: animation,
+      alignment: Alignment.center,
+      child: child,
     );
   }
 }
@@ -534,7 +644,7 @@ NavigationManager.init(
       globalData,
       arguments,
     }) =>
-        ScaleTransitionPageBuilder(
+        ScaleTransitionPage(
           key: key,
           name: name,
           arguments: arguments,
@@ -545,15 +655,15 @@ NavigationManager.init(
 );
 ```
 
-This will override the default MaterialPage transition animation and apply a scale transition to all pages.
+This will override the default MaterialPage transition animation and apply a scale transition to all pages. The custom Route class ensures that `didUpdateWidget()` is called correctly when the page updates.
 
 ### Per-Page Transitions
 
-To override the global transition for a specific route, create a custom `Page` class for that route and use the `pageBuilder` property in `NavigationData`:
+To override the global transition for a specific route, create a custom `Page` class with its own `Route` and use the `pageBuilder` property in `NavigationData`:
 
 ```dart
 // Define a custom Page for your per-page transition
-class RightToLeftTransitionPage extends Page {
+class RightToLeftTransitionPage extends Page<void> {
   final Widget child;
 
   const RightToLeftTransitionPage({
@@ -564,19 +674,45 @@ class RightToLeftTransitionPage extends Page {
   });
 
   @override
-  Route createRoute(BuildContext context) {
-    return PageRouteBuilder(
-      settings: this,
-      pageBuilder: (context, animation, secondaryAnimation) => child,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1.0, 0.0),
-            end: Offset.zero,
-          ).animate(animation),
-          child: child,
-        );
-      },
+  Route<void> createRoute(BuildContext context) {
+    return _RightToLeftRoute(page: this);
+  }
+}
+
+// Custom Route that reads child at BUILD TIME
+class _RightToLeftRoute extends PageRoute<void> {
+  _RightToLeftRoute({required RightToLeftTransitionPage page})
+      : super(settings: page);
+
+  RightToLeftTransitionPage get _page => settings as RightToLeftTransitionPage;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool get maintainState => true;
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 300);
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
+    return _page.child; // Read child at build time
+  }
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(1.0, 0.0),
+        end: Offset.zero,
+      ).animate(animation),
+      child: child,
     );
   }
 }
@@ -604,8 +740,7 @@ In this example, the `DetailsPage` will have a right-to-left slide transition, o
 #### Globally
 
 ```dart
-// Define a custom Page for no transition
-class NoTransitionPage extends Page {
+class NoTransitionPage extends Page<void> {
   final Widget child;
 
   const NoTransitionPage({
@@ -616,14 +751,47 @@ class NoTransitionPage extends Page {
   });
 
   @override
-  Route createRoute(BuildContext context) {
-    return PageRouteBuilder(
-      settings: this,
-      pageBuilder: (context, animation, secondaryAnimation) => child,
-      transitionDuration: Duration.zero,
-      reverseTransitionDuration: Duration.zero,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) => child, // No transition
-    );
+  Route<void> createRoute(BuildContext context) {
+    return _NoTransitionRoute(page: this);
+  }
+}
+
+class _NoTransitionRoute extends PageRoute<void> {
+  _NoTransitionRoute({required NoTransitionPage page}) : super(settings: page);
+
+  NoTransitionPage get _page => settings as NoTransitionPage;
+
+  @override
+  bool get opaque => true;
+
+  @override
+  bool get barrierDismissible => false;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool get maintainState => true;
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Duration get reverseTransitionDuration => Duration.zero;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
+    return _page.child;  // Read from CURRENT page at build time!
+  }
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    return child;  // No transition animation
   }
 }
 

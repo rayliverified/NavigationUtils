@@ -322,10 +322,9 @@ class NavigationBuilder {
                     context,
                     route.copyWith(pathParameters: pathParameters),
                     mainRouterDelegate.globalData[route.path] ?? {}),
-                // Pass query parameters as arguments so Flutter can detect changes
-                arguments: route.queryParameters.isNotEmpty
-                    ? route.queryParameters
-                    : route.arguments,
+                // Don't pass query params as arguments - this allows Routes to be
+                // reused when only query params change, enabling didUpdateWidget()
+                arguments: route.arguments,
                 pageType: navigationData.pageType ?? PageType.material,
                 fullScreenDialog: navigationData.fullScreenDialog,
                 barrierColor: navigationData.barrierColor,
@@ -630,7 +629,7 @@ class NavigationBuilder {
   }
 }
 
-/// Custom MaterialPage that properly handles updates when only arguments change.
+/// Custom MaterialPage that properly handles updates when arguments or child change.
 ///
 /// This ensures that when a page with the same key is rebuilt with new arguments,
 /// the widget tree is updated (didUpdateWidget called) rather than recreated.
@@ -656,9 +655,9 @@ class _UpdateableMaterialPage<T> extends Page<T> {
 
   @override
   bool canUpdate(Page other) {
-    // Allow updates if the key and type match
-    // This enables didUpdateWidget to be called on the child
-    return other.runtimeType == runtimeType && other.key == key;
+    return other.runtimeType == runtimeType &&
+        other.key == key &&
+        other.arguments == arguments;
   }
 }
 

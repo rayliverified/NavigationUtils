@@ -342,8 +342,22 @@ abstract class BaseRouterDelegate extends RouterDelegate<DefaultRoute>
 
       // If path exists, remove all paths on top.
       if (route == newRoute) {
-        // Important: preserve the existing route's cache key
-        newRoute = newRoute.copyWith(cacheKey: route.cacheKey);
+        // Important: preserve the existing route's cache key but ensure other
+        // properties come from the newRoute (which was built from NavigationData)
+        // to avoid inheriting stale properties like 'group' from the old route.
+        // Only copy cacheKey explicitly to prevent copyWith from preserving
+        // all properties through the ?? operator.
+        String? existingCacheKey = route.cacheKey;
+        newRoute = DefaultRoute(
+          label: newRoute.label,
+          path: newRoute.path,
+          pathParameters: newRoute.pathParameters,
+          queryParameters: newRoute.queryParameters,
+          metadata: newRoute.metadata,
+          group: newRoute.group,
+          cacheKey: existingCacheKey,
+          arguments: newRoute.arguments,
+        );
 
         int index = routes.indexOf(route);
         int count = routes.length;

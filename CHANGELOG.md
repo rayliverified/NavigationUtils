@@ -1,3 +1,9 @@
+## 0.9.11
+- Fix `pushReplacement` incorrectly inheriting `group` property from the replaced route. Routes created from `NavigationData` now correctly use their own properties instead of inheriting stale properties from previous routes through `copyWith`. This ensures route properties like `group` and `metadata` accurately reflect the `NavigationData` definition.
+- Fix grouped routes not calling `didUpdateWidget` when switching between routes in the same group. Custom Page classes (and the library's `_UpdateableMaterialPage`) now use Routes that read `_page.child` at **build time** instead of capturing it in a closure. This enables Flutter to pick up the new child widget when the Page is updated, triggering `didUpdateWidget`.
+  - Add comprehensive documentation on Flutter Navigator 2 internals explaining the closure capture problem with `PageRouteBuilder` and the correct implementation pattern. See `docs/FLUTTER_NAVIGATOR2_PAGE_UPDATE_MECHANISM.md`.
+- Update `example_auth` to Firebase v4.4.0.
+
 ## 0.9.10
 - Fix NavigationBuilder group mismatch crash on macOS/desktop platforms due to timing differences and native deeplinks.
 
