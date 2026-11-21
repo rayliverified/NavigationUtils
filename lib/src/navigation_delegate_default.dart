@@ -50,6 +50,9 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
   /// Optional callback for handling pop page events.
   PopPageCallback? onPopPage;
 
+  /// The page produced by [pageOverlay] on the last Navigator build.
+  Page<dynamic>? _builtOverlayPage;
+
   /// Creates a [DefaultRouterDelegate] with the given configuration.
   ///
   /// [navigationDataRoutes] - List of navigation routes (required).
@@ -84,6 +87,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
           'NavigationUtils Build: Current Route: ${routes.last} Routes: $routes');
     }
 
+    _builtOverlayPage = pageOverlay?.call(currentConfiguration?.name ?? '');
     return Navigator(
       key: navigatorKey,
       pages: [
@@ -98,8 +102,7 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
             migrationPageBuilder: migrationPageBuilder,
             onUnknownRoute: onUnknownRoute ?? _buildUnknownRouteDefault,
           ),
-          if (pageOverlay != null)
-            pageOverlay!(currentConfiguration?.name ?? '')
+          if (_builtOverlayPage != null) _builtOverlayPage!
         ],
       ],
       onPopPage: (route, result) {
@@ -109,6 +112,18 @@ class DefaultRouterDelegate extends BaseRouterDelegate {
         // If the route handled pop internally, return false.
         if (route.didPop(result) == false) {
           return false;
+        }
+        // An overlay is a Page in the Navigator, but not a route in the
+        // manager's stack. Removing the top managed route here would expose a
+        // stale page and leave the overlay blocking the screen after back.
+        final settings = route.settings;
+        if (_builtOverlayPage != null &&
+            (identical(settings, _builtOverlayPage) ||
+                (settings is Page &&
+                    settings.key != null &&
+                    settings.key == _builtOverlayPage!.key))) {
+          removeOverlay();
+          return true;
         }
         pop(result);
         return true;
